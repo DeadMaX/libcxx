@@ -291,7 +291,7 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     ostrstream(char* __s, int __n, ios_base::openmode __mode = ios_base::out)
         : ostream(&__sb_),
-          __sb_(__s, __n, __s + (__mode & ios::app ? strlen(__s) : 0))
+          __sb_(__s, __n, __s + (__mode & ios::app ? char_traits<char>::length(__s) : 0))
         {}
 
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
@@ -351,7 +351,7 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     strstream(char* __s, int __n, ios_base::openmode __mode = ios_base::in | ios_base::out)
         : iostream(&__sb_),
-          __sb_(__s, __n, __s + (__mode & ios::app ? strlen(__s) : 0))
+          __sb_(__s, __n, __s + (__mode & ios::app ? char_traits<char>::length(__s) : 0))
         {}
 
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES

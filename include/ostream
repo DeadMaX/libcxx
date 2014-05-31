@@ -829,52 +829,6 @@ operator<<(basic_ostream<_CharT, _Traits>& __os, const _CharT* __str)
     return _VSTD::__put_character_sequence(__os, __str, _Traits::length(__str));
 }
 
-template<class _CharT, class _Traits>
-basic_ostream<_CharT, _Traits>&
-operator<<(basic_ostream<_CharT, _Traits>& __os, const char* __strn)
-{
-#ifndef _LIBCPP_NO_EXCEPTIONS
-    try
-    {
-#endif  // _LIBCPP_NO_EXCEPTIONS
-        typename basic_ostream<_CharT, _Traits>::sentry __s(__os);
-        if (__s)
-        {
-            typedef ostreambuf_iterator<_CharT, _Traits> _Ip;
-            size_t __len = char_traits<char>::length(__strn);
-            const int __bs = 100;
-            _CharT __wbb[__bs];
-            _CharT* __wb = __wbb;
-            unique_ptr<_CharT, void(*)(void*)> __h(0, free);
-            if (__len > __bs)
-            {
-                __wb = (_CharT*)malloc(__len*sizeof(_CharT));
-                if (__wb == 0)
-                    __throw_bad_alloc();
-                __h.reset(__wb);
-            }
-            for (_CharT* __p = __wb; *__strn != '\0'; ++__strn, ++__p)
-                *__p = __os.widen(*__strn);
-            if (__pad_and_output(_Ip(__os),
-                                 __wb,
-                                 (__os.flags() & ios_base::adjustfield) == ios_base::left ?
-                                     __wb + __len :
-                                     __wb,
-                                 __wb + __len,
-                                 __os,
-                                 __os.fill()).failed())
-                __os.setstate(ios_base::badbit | ios_base::failbit);
-        }
-#ifndef _LIBCPP_NO_EXCEPTIONS
-    }
-    catch (...)
-    {
-        __os.__set_badbit_and_consider_rethrow();
-    }
-#endif  // _LIBCPP_NO_EXCEPTIONS
-    return __os;
-}
-
 template<class _Traits>
 basic_ostream<char, _Traits>&
 operator<<(basic_ostream<char, _Traits>& __os, const char* __str)

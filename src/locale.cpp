@@ -25,7 +25,6 @@
 #  include "type_traits"
 #endif
 #include "clocale"
-#include "cstring"
 #include "cwctype"
 #include "__sso_allocator"
 #if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
@@ -35,6 +34,7 @@
 #endif // !_LIBCPP_MSVCRT
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h> // for strcoll_l and strxfrm_l
 
 // On Linux, wint_t and wchar_t have different signed-ness, and this causes
 // lots of noise in the build log, but no bugs that I know of. 
@@ -4225,7 +4225,7 @@ numpunct_byname<char>::~numpunct_byname()
 void
 numpunct_byname<char>::__init(const char* nm)
 {
-    if (strcmp(nm, "C") != 0)
+    if (nm[0] != 'C' || nm[1] != '\0')
     {
         __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
 #ifndef _LIBCPP_NO_EXCEPTIONS
@@ -4268,7 +4268,7 @@ numpunct_byname<wchar_t>::~numpunct_byname()
 void
 numpunct_byname<wchar_t>::__init(const char* nm)
 {
-    if (strcmp(nm, "C") != 0)
+    if (nm[0] != 'C' || nm[1] != '\0')
     {
         __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
 #ifndef _LIBCPP_NO_EXCEPTIONS

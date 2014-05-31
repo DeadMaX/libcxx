@@ -206,7 +206,7 @@ const collationnames collatenames[] =
 
 struct classnames
 {
-    const char* elem_;
+    const std::string elem_;
     ctype_base::mask mask_;
 };
 
@@ -235,32 +235,32 @@ const classnames ClassNames[] =
 
 struct use_strcmp
 {
-    bool operator()(const collationnames& x, const char* y)
-        {return strcmp(x.elem_, y) < 0;}
-    bool operator()(const classnames& x, const char* y)
-        {return strcmp(x.elem_, y) < 0;}
+    bool operator()(const collationnames& x, const std::string &y)
+        {return x.elem_ < y;}
+    bool operator()(const classnames& x, const std::string &y)
+        {return x.elem_ < y;}
 };
 
 }
 
 string
-__get_collation_name(const char* s)
+__get_collation_name(const std::string &s)
 {
     const collationnames* i =
             _VSTD::lower_bound(begin(collatenames), end(collatenames), s, use_strcmp());
     string r;
-    if (i != end(collatenames) && strcmp(s, i->elem_) == 0)
+    if (i != end(collatenames) && s == i->elem_)
         r = char(i->char_);
     return r;
 }
 
 ctype_base::mask
-__get_classname(const char* s, bool __icase)
+__get_classname(const std::string &s, bool __icase)
 {
     const classnames* i =
             _VSTD::lower_bound(begin(ClassNames), end(ClassNames), s, use_strcmp());
     ctype_base::mask r = 0;
-    if (i != end(ClassNames) && strcmp(s, i->elem_) == 0)
+    if (i != end(ClassNames) && s == i->elem_)
     {
         r = i->mask_;
         if (r == regex_traits<char>::__regex_word)

@@ -623,7 +623,6 @@ template <class BidirectionalIterator, class Compare>
 #include <__config>
 #include <initializer_list>
 #include <type_traits>
-#include <cstring>
 #include <utility>
 #include <memory>
 #include <iterator>
@@ -1748,9 +1747,11 @@ typename enable_if
 >::type
 __copy(_Tp* __first, _Tp* __last, _Up* __result)
 {
-    const size_t __n = static_cast<size_t>(__last - __first);
-    _VSTD::memmove(__result, __first, __n * sizeof(_Up));
-    return __result + __n;
+    while (__first != __last) {
+        *__result = *__first;
+        ++__result; ++__first;
+    }
+    return __result;
 }
 
 template <class _InputIterator, class _OutputIterator>
@@ -1783,9 +1784,10 @@ typename enable_if
 >::type
 __copy_backward(_Tp* __first, _Tp* __last, _Up* __result)
 {
-    const size_t __n = static_cast<size_t>(__last - __first);
-    __result -= __n;
-    _VSTD::memmove(__result, __first, __n * sizeof(_Up));
+    while (__last != __first)
+    {
+        *(--__result) = *(--__last);
+    }
     return __result;
 }
 
@@ -1877,9 +1879,11 @@ typename enable_if
 >::type
 __move(_Tp* __first, _Tp* __last, _Up* __result)
 {
-    const size_t __n = static_cast<size_t>(__last - __first);
-    _VSTD::memmove(__result, __first, __n * sizeof(_Up));
-    return __result + __n;
+    while (__first != __last) {
+        *__result = std::move(*__first);
+        ++__result; ++__first;
+    }
+    return __result;
 }
 
 template <class _InputIterator, class _OutputIterator>
@@ -1912,9 +1916,10 @@ typename enable_if
 >::type
 __move_backward(_Tp* __first, _Tp* __last, _Up* __result)
 {
-    const size_t __n = static_cast<size_t>(__last - __first);
-    __result -= __n;
-    _VSTD::memmove(__result, __first, __n * sizeof(_Up));
+    while (__last != __first)
+    {
+        *(--__result) = std::move(*(--__last));
+    }
     return __result;
 }
 
@@ -2033,9 +2038,12 @@ typename enable_if
 >::type
 __fill_n(_Tp* __first, _Size __n,_Up __value_)
 {
-    if (__n > 0)
-        _VSTD::memset(__first, (unsigned char)__value_, (size_t)(__n));
-    return __first + __n;
+    while (__n > 0)
+    {
+        *__first = __value_;
+        ++__first; --__n;
+    }
+    return __first;
 }
 
 template <class _OutputIterator, class _Size, class _Tp>

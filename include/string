@@ -433,7 +433,6 @@ basic_string<char32_t> operator "" s( const char32_t *str, size_t len ); // C++1
 
 #include <__config>
 #include <iosfwd>
-#include <cstring>
 #include <cstdio>  // For EOF.
 #include <cwchar>
 #include <algorithm>
@@ -643,27 +642,51 @@ struct _LIBCPP_TYPE_VIS_ONLY char_traits<char>
     _LIBCPP_INLINE_VISIBILITY
     static _LIBCPP_CONSTEXPR bool lt(char_type __c1, char_type __c2) _NOEXCEPT
         {return (unsigned char)__c1 < (unsigned char)__c2;}
-
     _LIBCPP_INLINE_VISIBILITY
     static int compare(const char_type* __s1, const char_type* __s2, size_t __n)
-        {return memcmp(__s1, __s2, __n);}
+        {
+            while(__n--)
+            {
+                auto __s1_data = *__s1;
+                auto __s2_data = *__s2;
+                if (__s1_data < __s2_data)
+                    return -1;
+                if (__s1_data > __s2_data)
+                    return 1;
+            }
+            return 0;
+        }
     _LIBCPP_INLINE_VISIBILITY
-    static size_t length(const char_type* __s) {return strlen(__s);}
+    static size_t length(const char_type* __s)
+        {
+            size_t __len = 0;
+            while (*__s++)
+                ++__len;
+            return __len;
+        }
     _LIBCPP_INLINE_VISIBILITY
     static const char_type* find(const char_type* __s, size_t __n, const char_type& __a)
-        {return (const char_type*)memchr(__s, to_int_type(__a), __n);}
+        {
+            while(__n--)
+            {
+                if (*__s == __a)
+                    return __s;
+                ++__s;
+            }
+            return nullptr;
+        }
     _LIBCPP_INLINE_VISIBILITY
     static char_type* move(char_type* __s1, const char_type* __s2, size_t __n)
-        {return (char_type*)memmove(__s1, __s2, __n);}
+        {return std::move(__s2, __s2 + __n, __s1);}
     _LIBCPP_INLINE_VISIBILITY
     static char_type* copy(char_type* __s1, const char_type* __s2, size_t __n)
         {
             _LIBCPP_ASSERT(__s2 < __s1 || __s2 >= __s1+__n, "char_traits::copy overlapped range");
-            return (char_type*)memcpy(__s1, __s2, __n);
+            return (char_type*)std::copy_n(__s2, __n, __s1);
         }
     _LIBCPP_INLINE_VISIBILITY
     static char_type* assign(char_type* __s, size_t __n, char_type __a)
-        {return (char_type*)memset(__s, to_int_type(__a), __n);}
+        {return std::fill_n(__s, __n, __a);}
 
     _LIBCPP_INLINE_VISIBILITY
     static _LIBCPP_CONSTEXPR int_type  not_eof(int_type __c) _NOEXCEPT

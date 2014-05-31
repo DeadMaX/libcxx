@@ -121,3 +121,7 @@ N: Jeffrey Yasskin
 E: jyasskin@gmail.com
 E: jyasskin@google.com
 D: Linux fixes.
+
+N: Alexandre Martins
+E: deadmaxfr@gmail.com
+D: Make libcxx free of C linkage

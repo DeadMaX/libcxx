@@ -270,7 +270,6 @@ void swap(vector<T,Allocator>& x, vector<T,Allocator>& y)
 #include <memory>
 #include <stdexcept>
 #include <algorithm>
-#include <cstring>
 #include <__split_buffer>
 #include <__functional_base>
 

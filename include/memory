@@ -605,7 +605,6 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space);
 #include <__functional_base>
 #include <iosfwd>
 #include <tuple>
-#include <cstring>
 #if defined(_LIBCPP_NO_EXCEPTIONS)
     #include <cassert>
 #endif
@@ -1520,7 +1519,8 @@ struct _LIBCPP_TYPE_VIS_ONLY allocator_traits
         __construct_forward(allocator_type& __a, _Tp* __begin1, _Tp* __end1, _Tp*& __begin2)
         {
             ptrdiff_t _Np = __end1 - __begin1;
-            _VSTD::memcpy(__begin2, __begin1, _Np * sizeof(_Tp));
+	    
+            std::copy(__begin2, __begin2 + _Np, __begin1);
             __begin2 += _Np;
         }
 
@@ -1551,7 +1551,7 @@ struct _LIBCPP_TYPE_VIS_ONLY allocator_traits
         {
             ptrdiff_t _Np = __end1 - __begin1;
             __end2 -= _Np;
-            _VSTD::memcpy(__end2, __begin1, _Np * sizeof(_Tp));
+	    std::copy(__end2, __end2 + _Np, __begin1);
         }
 
 private:
@@ -3069,8 +3069,8 @@ inline _LIBCPP_INLINE_VISIBILITY
 _Size
 __loadword(const void* __p)
 {
-    _Size __r;
-    std::memcpy(&__r, __p, sizeof(__r));
+    const _Size *__s = reinterpret_cast<const _Size *>(__p);
+    _Size __r = *__s;
     return __r;
 }
 

@@ -10,7 +10,6 @@
 #include "strstream"
 #include "algorithm"
 #include "climits"
-#include "cstring"
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
@@ -34,7 +33,7 @@ void
 strstreambuf::__init(char* __gnext, streamsize __n, char* __pbeg)
 {
     if (__n == 0)
-        __n = static_cast<streamsize>(strlen(__gnext));
+        __n = static_cast<streamsize>(char_traits<char>::length(__gnext));
     else if (__n < 0)
         __n = INT_MAX;
     if (__pbeg == nullptr)
@@ -167,7 +166,7 @@ strstreambuf::overflow(int_type __c)
             buf = new char[new_size];
         if (buf == nullptr)
             return int_type(EOF);
-        memcpy(buf, eback(), static_cast<size_t>(old_size));
+	copy_n(eback(), old_size, buf);
         ptrdiff_t ninp = gptr()  - eback();
         ptrdiff_t einp = egptr() - eback();
         ptrdiff_t nout = pptr()  - pbase();

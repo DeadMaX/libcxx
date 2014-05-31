@@ -10,7 +10,7 @@
 #define _LIBCPP_BUILDING_SYSTEM_ERROR
 #include "system_error"
 #include "string"
-#include "cstring"
+#include <string.h> // for strerror
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

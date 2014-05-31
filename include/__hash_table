@@ -1339,7 +1339,7 @@ __hash_table<_Tp, _Hash, _Equal, _Alloc>::__deallocate(__node_pointer __np)
             {
                 (*__p)->__c_ = nullptr;
                 if (--__c->end_ != __p)
-                    memmove(__p, __p+1, (__c->end_ - __p)*sizeof(__i_node*));
+                    std::move(__p+1, __c->end_, __p);
             }
         }
         __get_db()->unlock();
@@ -2254,7 +2254,7 @@ __hash_table<_Tp, _Hash, _Equal, _Alloc>::remove(const_iterator __p) _NOEXCEPT
         {
             (*__p)->__c_ = nullptr;
             if (--__c->end_ != __p)
-                memmove(__p, __p+1, (__c->end_ - __p)*sizeof(__i_node*));
+                std::move(__p+1, __c->end_, __p);
         }
     }
     __get_db()->unlock();

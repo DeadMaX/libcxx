@@ -441,7 +441,7 @@ __c_node::__add(__i_node* i)
             abort();
 #endif
         if (nc > 1)
-            memcpy(beg, beg_, nc/2*sizeof(__i_node*));
+            std::copy_n(beg_, nc/2, beg);
         free(beg_);
         beg_ = beg;
         end_ = beg_ + nc/2;
@@ -524,7 +524,7 @@ __c_node::__remove(__i_node* p)
     __i_node** r = find(beg_, end_, p);
     _LIBCPP_ASSERT(r != end_, "debug mode internal logic error __c_node::__remove");
     if (--end_ != r)
-        memmove(r, r+1, static_cast<size_t>(end_ - r)*sizeof(__i_node*));
+        std::move(r+1, end_, r);
 }
 
 _LIBCPP_END_NAMESPACE_STD

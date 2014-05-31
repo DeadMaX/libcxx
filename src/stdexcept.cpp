@@ -22,16 +22,14 @@
 #include <cxxabi.h>
 #endif
 
-static_assert(sizeof(std::__libcpp_refstring) == sizeof(const char *), "");
-
 namespace std  // purposefully not using versioning namespace
 {
 
-logic_error::logic_error(const string& msg) : __imp_(msg.c_str())
+logic_error::logic_error(const string& msg) : __imp_(msg.c_str(), msg.length())
 {
 }
 
-logic_error::logic_error(const char* msg) : __imp_(msg)
+logic_error::logic_error(const char* msg) : __imp_(msg, char_traits<char>::length(msg))
 {
 }
 
@@ -60,11 +58,11 @@ logic_error::what() const _NOEXCEPT
 
 #endif
 
-runtime_error::runtime_error(const string& msg) : __imp_(msg.c_str())
+runtime_error::runtime_error(const string& msg) : __imp_(msg.c_str(), msg.length())
 {
 }
 
-runtime_error::runtime_error(const char* msg) : __imp_(msg)
+runtime_error::runtime_error(const char* msg) : __imp_(msg, char_traits<char>::length(msg))
 {
 }
 
