@@ -220,122 +220,12 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 #define __cloc_defined
 #endif
 
-typedef _VSTD::remove_pointer<locale_t>::type __locale_struct;
-typedef _VSTD::unique_ptr<__locale_struct, decltype(&freelocale)> __locale_unique_ptr;
-#ifndef _LIBCPP_LOCALE__L_EXTENSIONS
-typedef _VSTD::unique_ptr<__locale_struct, decltype(&uselocale)> __locale_raii;
-#endif
-
-// OSX has nice foo_l() functions that let you turn off use of the global
-// locale.  Linux, not so much.  The following functions avoid the locale when
-// that's possible and otherwise do the wrong thing.  FIXME.
-#if defined(__linux__) || defined(__EMSCRIPTEN__) || defined(_AIX)
-
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-decltype(MB_CUR_MAX_L(_VSTD::declval<locale_t>()))
-inline _LIBCPP_INLINE_VISIBILITY
-__mb_cur_max_l(locale_t __l)
-{
-  return MB_CUR_MAX_L(__l);
-}
-#else  // _LIBCPP_LOCALE__L_EXTENSIONS
-inline _LIBCPP_ALWAYS_INLINE
-decltype(MB_CUR_MAX) __mb_cur_max_l(locale_t __l)
-{
-  __locale_raii __current(uselocale(__l), uselocale);
-  return MB_CUR_MAX;
-}
-#endif // _LIBCPP_LOCALE__L_EXTENSIONS
-
-inline _LIBCPP_ALWAYS_INLINE
-wint_t __btowc_l(int __c, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return btowc_l(__c, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return btowc(__c);
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-int __wctob_l(wint_t __c, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return wctob_l(__c, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return wctob(__c);
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-size_t __wcsnrtombs_l(char *__dest, const wchar_t **__src, size_t __nwc,
-                      size_t __len, mbstate_t *__ps, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return wcsnrtombs_l(__dest, __src, __nwc, __len, __ps, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return wcsnrtombs(__dest, __src, __nwc, __len, __ps);
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-size_t __wcrtomb_l(char *__s, wchar_t __wc, mbstate_t *__ps, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return wcrtomb_l(__s, __wc, __ps, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return wcrtomb(__s, __wc, __ps);
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-size_t __mbsnrtowcs_l(wchar_t * __dest, const char **__src, size_t __nms,
-                      size_t __len, mbstate_t *__ps, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return mbsnrtowcs_l(__dest, __src, __nms, __len, __ps, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return mbsnrtowcs(__dest, __src, __nms, __len, __ps);
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-size_t __mbrtowc_l(wchar_t *__pwc, const char *__s, size_t __n,
-                   mbstate_t *__ps, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return mbrtowc_l(__pwc, __s, __n, __ps, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return mbrtowc(__pwc, __s, __n, __ps);
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-int __mbtowc_l(wchar_t *__pwc, const char *__pmb, size_t __max, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return mbtowc_l(__pwc, __pmb, __max, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return mbtowc(__pwc, __pmb, __max);
-#endif
-}
-
 inline _LIBCPP_ALWAYS_INLINE
 size_t __mbrlen_l(const char *__s, size_t __n, mbstate_t *__ps, locale_t __l)
 {
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return mbrlen_l(__s, __n, __ps, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return mbrlen(__s, __n, __ps);
-#endif
+	/* Assume pure "ASCII" for now. Locales will come later
+	 */
+	return char_traits<char>::length(__s);
 }
 
 inline _LIBCPP_ALWAYS_INLINE
@@ -402,8 +292,6 @@ int __sscanf_l(const char *__s, locale_t __l, const char *__format, ...) {
   va_end(__va);
   return __res;
 }
-
-#endif  // __linux__
 
 // __scan_keyword
 // Scans [__b, __e) until a match is found in the basic_strings range

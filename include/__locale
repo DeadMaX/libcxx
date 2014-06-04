@@ -18,14 +18,6 @@
 #include <mutex>
 #include <cstdint>
 #include <cctype>
-#include <locale.h>
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-# include <support/win32/locale_win32.h>
-#elif defined(_AIX)
-# include <support/ibm/xlocale.h>
-#elif (defined(__GLIBC__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__sun__)) || defined(__EMSCRIPTEN__) || defined(__IBMCPP__)
-# include <xlocale.h>
-#endif  // _WIN32 || __GLIBC__ || __APPLE__ || __FreeBSD__ || __sun__ || __EMSCRIPTEN__ || __IBMCPP__
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -52,16 +44,17 @@ public:
     class _LIBCPP_TYPE_VIS facet;
     class _LIBCPP_TYPE_VIS id;
 
-    typedef int category;
-    static const category // values assigned here are for exposition only
-        none     = 0,
-        collate  = LC_COLLATE_MASK,
-        ctype    = LC_CTYPE_MASK,
-        monetary = LC_MONETARY_MASK,
-        numeric  = LC_NUMERIC_MASK,
-        time     = LC_TIME_MASK,
-        messages = LC_MESSAGES_MASK,
-        all = collate | ctype | monetary | numeric | time | messages;
+    static const enum class category // values assigned here are for exposition only
+    {
+        none,
+        collate,
+        ctype,
+        monetary,
+        numeric,
+        time,
+        messages,
+        all
+    };
 
     // construct/copy/destroy:
     locale()  _NOEXCEPT;
