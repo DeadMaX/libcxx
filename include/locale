@@ -209,90 +209,6 @@ template <class charT> class messages_byname;
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-#if defined(__APPLE__) || defined(__FreeBSD__)
-#  define _LIBCPP_GET_C_LOCALE 0
-#elif defined(__NetBSD__)
-#  define _LIBCPP_GET_C_LOCALE LC_C_LOCALE
-#else
-#  define _LIBCPP_GET_C_LOCALE __cloc()
-   // Get the C locale object
-   _LIBCPP_FUNC_VIS locale_t __cloc();
-#define __cloc_defined
-#endif
-
-inline _LIBCPP_ALWAYS_INLINE
-size_t __mbrlen_l(const char *__s, size_t __n, mbstate_t *__ps, locale_t __l)
-{
-	/* Assume pure "ASCII" for now. Locales will come later
-	 */
-	return char_traits<char>::length(__s);
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-lconv *__localeconv_l(locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return localeconv_l(__l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return localeconv();
-#endif
-}
-
-inline _LIBCPP_ALWAYS_INLINE
-size_t __mbsrtowcs_l(wchar_t *__dest, const char **__src, size_t __len,
-                     mbstate_t *__ps, locale_t __l)
-{
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  return mbsrtowcs_l(__dest, __src, __len, __ps, __l);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  return mbsrtowcs(__dest, __src, __len, __ps);
-#endif
-}
-
-inline
-int __snprintf_l(char *__s, size_t __n, locale_t __l, const char *__format, ...) {
-  va_list __va;
-  va_start(__va, __format);
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  int __res = vsnprintf_l(__s, __n, __l, __format, __va);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  int __res = vsnprintf(__s, __n, __format, __va);
-#endif
-  va_end(__va);
-  return __res;
-}
-
-inline
-int __asprintf_l(char **__s, locale_t __l, const char *__format, ...) {
-  va_list __va;
-  va_start(__va, __format);
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  int __res = vasprintf_l(__s, __l, __format, __va);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  int __res = vasprintf(__s, __format, __va);
-#endif
-  va_end(__va);
-  return __res;
-}
-
-inline
-int __sscanf_l(const char *__s, locale_t __l, const char *__format, ...) {
-  va_list __va;
-  va_start(__va, __format);
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-  int __res = vsscanf_l(__s, __l, __format, __va);
-#else
-  __locale_raii __current(uselocale(__l), uselocale);
-  int __res = vsscanf(__s, __format, __va);
-#endif
-  va_end(__va);
-  return __res;
-}
-
 // __scan_keyword
 // Scans [__b, __e) until a match is found in the basic_strings range
 //  [__kb, __ke) or until it can be shown that there is no match in [__kb, __ke).
@@ -744,99 +660,374 @@ num_get<_CharT, _InputIterator>::id;
 
 template <class _Tp>
 _Tp
-__num_get_signed_integral(const char* __a, const char* __a_end,
+__num_get_integral(const char* __a, const char* __a_end,
                           ios_base::iostate& __err, int __base)
 {
-    if (__a != __a_end)
+	/* DeadMaX:
+	 * TODO: use localisation settings (thousands separator & cie)
+	 */
+    while(__a != __a_end && (*__a == ' ' || *__a == '\t'))
+        __a++;
+
+    if (__a == __a_end)
+    {    
+        __err = ios_base::failbit;
+        return 0;
+    }    
+
+    bool minus = false;
+    if (*__a == '-') 
+    {    
+        if (!numeric_limits<_Tp>::is_signed())
+        {    
+                __err = ios_base::failbit;
+                return 0;
+        }    
+        minus = true;
+        __a++;
+    }    
+    else if (*__a == '+') 
+    {    
+        __a++;
+    }    
+    if (__a == __a_end)
+    {    
+        __err = ios_base::failbit;
+        return 0;
+    }    
+
+        if (__base == 0 || __base == 16)
+        {    
+                if ((__a_end - __a) > 1 && *__a == '0' && (*(__a + 1) == 'x' || *(__a + 1) == 'X'))
+                {    
+                        __base = 16;
+                        __a += 2;
+                }    
+                else if (__base == 0 && *__a == '0') 
+                {    
+                        __base = 8; 
+                        __a += 1;
+                }    
+                else if (__base == 0)
+                {    
+                        __base = 10;
+                }
+        }
+    if (__a == __a_end)
     {
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
-        char *__p2;
-        long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
-        if (__current_errno == 0)
-            errno = __save_errno;
-        if (__p2 != __a_end)
-        {
-            __err = ios_base::failbit;
-            return 0;
-        }
-        else if (__current_errno == ERANGE         ||
-                 __ll < numeric_limits<_Tp>::min() ||
-                 numeric_limits<_Tp>::max() < __ll)
-        {
-            __err = ios_base::failbit;
-            if (__ll > 0)
-                return numeric_limits<_Tp>::max();
-            else
-                return numeric_limits<_Tp>::min();
-        }
-        return static_cast<_Tp>(__ll);
+        __err = ios_base::failbit;
+        return 0;
     }
-    __err = ios_base::failbit;
-    return 0;
+    long long __ll = 0;
+
+        for (; __a != __a_end; ++__a)
+        {
+                if (__ll > numeric_limits<_Tp>::max() / __base)
+                {
+                        __err = ios_base::failbit;
+                        return numeric_limits<_Tp>::max();
+                }
+                if (__ll < numeric_limits<_Tp>::min() / __base)
+                {
+                        __err = ios_base::failbit;
+                        return numeric_limits<_Tp>::min();
+                }
+                char v = *__a;
+                if (v >= '0' && v <= '9')
+                        v -= '0';
+                else if (v >= 'a' && v <= 'z')
+                        v -= 'a';
+                else if (v >= 'A' && v <= 'Z')
+                        v -= 'A';
+                else
+                {
+                        __err = ios_base::failbit;
+                        return 0;
+                }
+                if (v >= __base)
+                {
+                        __err = ios_base::failbit;
+                        return 0;
+                }
+                __ll *= __base;
+                if (minus)
+                        __ll -= v;
+                else
+                        __ll += v;
+        }
+
+    return static_cast<_Tp>(__ll);
 }
 
-template <class _Tp>
-_Tp
-__num_get_unsigned_integral(const char* __a, const char* __a_end,
-                            ios_base::iostate& __err, int __base)
+static long double pow(char base, int exp)
 {
-    if (__a != __a_end)
+    if (exp == 0)
+        return 1.0;
+    else if (exp < 0)
+        return 1.0 / pow(base, -exp);
+    else if (exp % 2 == 0)
     {
-        if (*__a == '-')
-        {
-            __err = ios_base::failbit;
-            return 0;
-        }
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
-        char *__p2;
-        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
-        if (__current_errno == 0)
-            errno = __save_errno;
-        if (__p2 != __a_end)
-        {
-            __err = ios_base::failbit;
-            return 0;
-        }
-        else if (__current_errno == ERANGE ||
-                 numeric_limits<_Tp>::max() < __ll)
-        {
-            __err = ios_base::failbit;
-            return numeric_limits<_Tp>::max();
-        }
-        return static_cast<_Tp>(__ll);
+        long double half_pow = pow(base, exp / 2);
+        return half_pow * half_pow;
     }
-    __err = ios_base::failbit;
-    return 0;
+    else
+        return base * pow(base, exp - 1);
 }
 
 template <class _Tp>
 _Tp
 __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
 {
-    if (__a != __a_end)
-    {
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
-        char *__p2;
-        long double __ld = strtold_l(__a, &__p2, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
-        if (__current_errno == 0)
-            errno = __save_errno;
-        if (__p2 != __a_end)
-        {
-            __err = ios_base::failbit;
-            return 0;
-        }
-        else if (__current_errno == ERANGE)
-            __err = ios_base::failbit;
-        return static_cast<_Tp>(__ld);
+	/* DeadMaX:
+	 * TODO: use localisation settings (thousands separator & cie)
+	 */
+    while(__a != __a_end && (*__a == ' ' || *__a == '\t'))
+        __a++;
+
+    if (__a == __a_end)
+    {    
+        __err = ios_base::failbit;
+        return 0;
+    }    
+
+    bool minus = false;
+    if (*__a == '-') 
+    {    
+	static_assert(numeric_limits<_Tp>::is_signed(), "The type must be signed");
+        minus = true;
+        __a++;
+    }    
+    else if (*__a == '+') 
+    {    
+        __a++;
+    }    
+    if (__a == __a_end)
+    {    
+        __err = ios_base::failbit;
+        return 0;
     }
-    __err = ios_base::failbit;
-    return 0;
+
+	if (*__a == 'I' || *__a == 'i')
+	{
+		/* INF / INFINITY check */
+		static_assert(numeric_limits<_Tp>::has_infinity, "The type must have infinity");
+		auto len = __a_end - __a;
+		if (len == 3 &&
+			(__a[1] == 'n' || __a[1] == 'N') &&
+			(__a[2] == 'f' || __a[2] == 'F'))
+		{
+			if (minus)
+				return -(numeric_limits<_Tp>::infinity());
+			return numeric_limits<_Tp>::infinity();
+
+		}
+		else if (len == 8 &&
+			(__a[1] == 'n' || __a[1] == 'N') &&
+			(__a[2] == 'f' || __a[2] == 'F') &&
+			(__a[3] == 'i' || __a[3] == 'I') &&
+			(__a[4] == 'n' || __a[4] == 'N') &&
+			(__a[5] == 'i' || __a[5] == 'I') &&
+			(__a[6] == 't' || __a[6] == 'T') &&
+			(__a[7] == 'y' || __a[7] == 'Y'))
+		{
+			if (minus)
+				return -(numeric_limits<_Tp>::infinity());
+			return numeric_limits<_Tp>::infinity();
+		}
+
+		__err = ios_base::failbit;
+		return 0;
+	}
+
+	if (*__a == 'N' || *__a == 'n')
+	{
+		/* NAN check */
+		static_assert(numeric_limits<_Tp>::has_signaling_NaN, "The type must have NAN");
+		auto len = __a_end - __a;
+		if (len < 3 ||
+			( __a[1] != 'a' && __a[1] != 'A') ||
+			( __a[2] != 'n' && __a[2] != 'N'))
+		{
+			__err = ios_base::failbit;
+			return 0;
+		}
+		if (len == 3)
+		{
+			if (minus)
+				return -(numeric_limits<_Tp>::signaling_NaN());
+			return numeric_limits<_Tp>::signaling_NaN();
+		}
+		__a += 3;
+		if (*__a != '(')
+		{
+			__err = ios_base::failbit;
+			return 0;
+		}
+		for (++__a; *__a != ')' && __a < __a_end; ++__a)
+			/* Search end */ ;
+		if (__a != __a_end - 1)
+		{
+			__err = ios_base::failbit;
+			return 0;
+		}
+		if (minus)
+			return -(numeric_limits<_Tp>::signaling_NaN());
+		return numeric_limits<_Tp>::signaling_NaN();
+	}
+
+        char __base = 10;
+        if ((__a_end - __a) > 1 && *__a == '0' && (*(__a + 1) == 'x' || *(__a + 1) == 'X'))
+        {    
+                __base = 16;
+                __a += 2;
+        }    
+    if (__a == __a_end)
+    {
+        __err = ios_base::failbit;
+        return 0;
+    }
+    long double __ll = 0.0;
+
+        for (; __a != __a_end; ++__a)
+        {
+                char v = *__a;
+                if (v >= '0' && v <= '9')
+                        v -= '0';
+                else if (v >= 'a' && v <= 'f')
+                        v -= 'a';
+                else if (v >= 'A' && v <= 'F')
+                        v -= 'A';
+		else if (v == '.' ||
+			( __base == 10 && (v == 'e' || v == 'E')) ||
+			( __base == 16 && (v == 'p' || v == 'P')))
+			break;
+                else
+                {
+                        __err = ios_base::failbit;
+                        return 0;
+                }
+                if (v >= __base)
+                {
+                        __err = ios_base::failbit;
+                        return 0;
+                }
+                __ll *= __base;
+                if (minus)
+                        __ll -= v;
+                else
+                        __ll += v;
+        }
+	if (__a == __a_end)
+    		return static_cast<_Tp>(__ll);
+
+	++__a;
+	if (__a == __a_end)
+	{
+		__err = ios_base::failbit;
+		return 0;
+	}
+
+	if (*(__a - 1) == '.')
+	{
+		/* decimal */
+		long double num = 0.0;
+		long double denom = 1.0;
+        	for (; __a != __a_end; ++__a)
+        	{
+                	char v = *__a;
+                	if (v >= '0' && v <= '9')
+                        	v -= '0';
+                	else if (v >= 'a' && v <= 'f')
+                        	v -= 'a';
+                	else if (v >= 'A' && v <= 'F')
+                        	v -= 'A';
+			else if (( __base == 10 && (v == 'e' || v == 'E')) ||
+				( __base == 16 && (v == 'p' || v == 'P')))
+				break;
+                	else
+                	{
+                        	__err = ios_base::failbit;
+                        	return 0;
+                	}
+                	if (v >= __base)
+                	{
+                        	__err = ios_base::failbit;
+                        	return 0;
+                	}
+			denom *= __base;
+			num *= __base;
+			if (minus)
+				num -= v;
+			else
+				num += v;
+		}
+		if (minus)
+			__ll -= (num / denom);
+		else
+			__ll += (num / denom);
+		if (__a == __a_end)
+    			return static_cast<_Tp>(__ll);
+		++__a;
+		if (__a == __a_end)
+		{
+			__err = ios_base::failbit;
+			return 0;
+		}
+	}
+
+	bool minus_exp = false;
+	if (*__a == '-')
+	{
+		minus_exp = true;
+		++__a;
+	}
+	else
+	{
+		if (*__a == '+')
+			++__a;
+	}
+
+	if (__a == __a_end)
+	{
+		__err = ios_base::failbit;
+		return 0;
+	}
+
+	/* exponant */
+	int exp = 0;
+        for (; __a != __a_end; ++__a)
+        {
+                if (exp > numeric_limits<int>::max() / 10)
+                {
+			if (minus)
+				return -(numeric_limits<_Tp>::infinity());
+			return numeric_limits<_Tp>::infinity();
+                }
+                if (exp < numeric_limits<int>::min() / 10)
+                {
+			if (minus)
+				return -0.0;
+                        return 0.0;
+                }
+
+                char v = *__a;
+                if (v >= '0' && v <= '9')
+                        v -= '0';
+                else
+                {
+                        __err = ios_base::failbit;
+                        return 0;
+                }
+		exp *= 10;
+                if (minus_exp)
+                        exp -= v;
+                else
+                        exp += v;
+        }
+	if (__base == 16)
+		__base = 2;
+
+    	return static_cast<_Tp>(__ll * pow(__base, exp));
 }
 
 template <class _CharT, class _InputIterator>
@@ -916,7 +1107,7 @@ num_get<_CharT, _InputIterator>::__do_get_signed(iter_type __b, iter_type __e,
     if (__grouping.size() != 0 && __g_end-__g < __num_get_base::__num_get_buf_sz)
         *__g_end++ = __dc;
     // Stage 3
-    __v = __num_get_signed_integral<_Signed>(__a, __a_end, __err, __base);
+    __v = __num_get_integral<_Signed>(__a, __a_end, __err, __base);
     // Digit grouping checked
     __check_grouping(__grouping, __g, __g_end, __err);
     // EOF checked
@@ -966,7 +1157,7 @@ num_get<_CharT, _InputIterator>::__do_get_unsigned(iter_type __b, iter_type __e,
     if (__grouping.size() != 0 && __g_end-__g < __num_get_base::__num_get_buf_sz)
         *__g_end++ = __dc;
     // Stage 3
-    __v = __num_get_unsigned_integral<_Unsigned>(__a, __a_end, __err, __base);
+    __v = __num_get_integral<_Unsigned>(__a, __a_end, __err, __base);
     // Digit grouping checked
     __check_grouping(__grouping, __g, __g_end, __err);
     // EOF checked

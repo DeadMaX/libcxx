@@ -44,7 +44,7 @@ public:
     class _LIBCPP_TYPE_VIS facet;
     class _LIBCPP_TYPE_VIS id;
 
-    static const enum class category // values assigned here are for exposition only
+    enum class category // values assigned here are for exposition only
     {
         none,
         collate,
