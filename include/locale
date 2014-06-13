@@ -191,6 +191,7 @@ template <class charT> class messages_byname;
 #endif
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
 #include <support/win32/locale_win32.h>
 #else // _LIBCPP_MSVCRT
@@ -1854,66 +1855,137 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
                                          char_type __fl, double __v) const
 {
     // Stage 1 - Get number in narrow char
-    char __fmt[8] = {'%', 0};
-    const char* __len = "";
-    bool __specify_precision = this->__format_float(__fmt+1, __len, __iob.flags());
-    const unsigned __nbuf = 30;
+    auto numbers = __iob.precision();
+    if (numbers < 1)
+	numbers = 1;
+    const unsigned __nbuf = numbers*2 + 10;
     char __nar[__nbuf];
-    char* __nb = __nar;
-    int __nc;
-    if (__specify_precision)
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-        __nc = snprintf_l(__nb, __nbuf, _LIBCPP_GET_C_LOCALE, __fmt,
-                                   (int)__iob.precision(), __v);
-#else
-        __nc = __snprintf_l(__nb, __nbuf, __cloc(), __fmt,
-                            (int)__iob.precision(), __v);
-#endif
-    else
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-        __nc = snprintf_l(__nb, __nbuf, _LIBCPP_GET_C_LOCALE, __fmt, __v);
-#else
-        __nc = __snprintf_l(__nb, __nbuf, __cloc(), __fmt, __v);
-#endif
-    unique_ptr<char, void(*)(void*)> __nbh(0, free);
-    if (__nc > static_cast<int>(__nbuf-1))
-    {
-        if (__specify_precision)
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-            __nc = asprintf_l(&__nb, _LIBCPP_GET_C_LOCALE, __fmt, (int)__iob.precision(), __v);
-#else
-            __nc = __asprintf_l(&__nb, __cloc(), __fmt,
-                              (int)__iob.precision(), __v);
-#endif
-        else
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-            __nc = asprintf_l(&__nb, _LIBCPP_GET_C_LOCALE, __fmt, __v);
-#else
-            __nc = __asprintf_l(&__nb, __cloc(), __fmt, (int)__iob.precision(), __v);
-#endif
-        if (__nb == 0)
-            __throw_bad_alloc();
-        __nbh.reset(__nb);
-    }
-    char* __ne = __nb + __nc;
-    char* __np = this->__identify_padding(__nb, __ne, __iob);
+    char *__ne = __nar;
+    int printed_num = 0;
+
+    bool upper = __iob.flags() & ios_base::uppercase ? true : false;
+
+	if (__v == std::numeric_limits<double>::quiet_NaN())
+		return __s<<(upper ? "NAN" : "nan");
+
+	if (__v == std::numeric_limits<double>::infinity())
+		return __s<<(upper ? "INFINITY" : "infinity");
+
+	if (__v == -std::numeric_limits<double>::infinity())
+		return __s<<(upper ? "-INFINITY":"-infinity");
+
+	if (__v == 0.0)
+	{
+		__s<<'0';
+		if (__s.flags() & (ios_base::fixed | ios_base::scientific))
+		{
+			__s<<'.';
+			do
+			{
+				__s<<'0';
+			}
+			while(--numbers>0);
+		}
+		if (__s.flags() & (ios_base::fixed | ios_base::scientific) != (ios_base::fixed | ios_base::scientific))
+			__s<<(upper ? "E+00":"e+00");
+		else
+			__s<<(upper ? "P+00":"p+00");
+		return __s;
+	}
+
+	bool neg = __v < 0.0;
+	if(neg)
+	{
+		*__ne++ = '-';
+		__v = -__v;
+	}
+
+	bool sciantific = __s.flags() & ios_base::scientific ? true : false;
+	bool hex = (sciantific && __s.flags() & ios_base::fixed) ? true : false;
+
+	int m, m1;
+	if (hex)
+		m = std::log2(__v);
+	else
+		m = std::log10(__v);
+	if (!sciantific && ( m > numbers || -m > numbers || m >= 14.0 || (neg && m >= 9.0) || m <= -9.0))
+		sciantific = true;
+
+	if (sciantific) {
+            if (m < 0)
+               m -= 1;
+	    if (hex)
+            	__v = __v / pow(16, m);
+	    else
+            	__v = __v / pow(10, m);
+            m1 = m;
+            m = 0;
+        }
+	if (m < 1)
+            m = 0;
+
+	while (m >= 0 && numbers > 0) {
+            double weight;
+		if(hex)
+		 weight = pow(16, m);
+		else
+		 weight = pow(10, m);
+                char digit = floor(__v / weight);
+                __v -= (digit * weight);
+		if (digit > 10)
+                	*__ne++ = (upper ? 'A' : 'a') - 10 + digit;
+		else
+                	*__ne++ = '0' + digit;
+            if (m == 0 && __v > 0.0)
+                *__ne++ = '.';
+	    if(hex)
+		m-=4;
+	    else
+            	m--;
+	    numbers--;
+        }
+
+	// TODO round the result
+
+	if (sciantific)
+	{
+		if (hex)
+			*__ne++ = (upper ? 'P' : 'p');
+		else
+			*__ne++ = (upper ? 'E' : 'e');
+		if (m1 > 0) {
+                *__ne++ = '+';
+            } else {
+                *__ne++ = '-';
+                m1 = -m1;
+            }
+            m = 0;
+            while (m1 > 0) {
+                *__ne++ = '0' + m1 % 10;
+                m1 /= 10;
+                m++;
+            }
+            __ne -= m;
+            for (int i = 0, j = m-1; i<j; i++, j--) {
+		auto tmp = __ne[j];
+                __ne[j] = __ne[i];
+                __ne[i] = tmp;
+            }
+            __ne += m;
+	}
+	*__ne = '\0';
+
+    char* __np = this->__identify_padding(__nar, __ne, __iob);
     // Stage 2 - Widen __nar while adding thousands separators
     char_type __o[2*(__nbuf-1) - 1];
     char_type* __ob = __o;
     unique_ptr<char_type, void(*)(void*)> __obh(0, free);
-    if (__nb != __nar)
-    {
-        __ob = (char_type*)malloc(2*static_cast<size_t>(__nc)*sizeof(char_type));
-        if (__ob == 0)
-            __throw_bad_alloc();
-        __obh.reset(__ob);
-    }
     char_type* __op;  // pad here
     char_type* __oe;  // end of output
-    this->__widen_and_group_float(__nb, __np, __ne, __ob, __op, __oe, __iob.getloc());
+    this->__widen_and_group_float(__nar, __np, __ne, __ob, __op, __oe, __iob.getloc());
     // [__o, __oe) contains thousands_sep'd wide number
     // Stage 3 & 4
-    __s = __pad_and_output(__s, __ob, __op, __oe, __iob, __fl);
+    __s = __pad_and_output(__s, __nar, __op, __oe, __iob, __fl);
     return __s;
 }
 
