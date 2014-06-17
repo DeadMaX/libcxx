@@ -679,7 +679,7 @@ __num_get_integral(const char* __a, const char* __a_end,
     bool minus = false;
     if (*__a == '-') 
     {    
-        if (!numeric_limits<_Tp>::is_signed())
+        if (!numeric_limits<_Tp>::is_signed)
         {    
                 __err = ios_base::failbit;
                 return 0;
@@ -794,7 +794,7 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
     bool minus = false;
     if (*__a == '-') 
     {    
-	static_assert(numeric_limits<_Tp>::is_signed(), "The type must be signed");
+	static_assert(numeric_limits<_Tp>::is_signed, "The type must be signed");
         minus = true;
         __a++;
     }    
@@ -1261,7 +1261,7 @@ num_get<_CharT, _InputIterator>::do_get(iter_type __b, iter_type __e,
     }
     // Stage 3
     __buf.resize(__a_end - __a);
-    __v = __num_get_integral<intptr_t>(__a, __a_end, __err, __base);
+    __v = reinterpret_cast<void*>(__num_get_integral<intptr_t>(__a, __a_end, __err, __base));
 
     // EOF checked
     if (__b == __e)
@@ -1275,10 +1275,6 @@ _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS num_get<wchar_t>)
 struct _LIBCPP_TYPE_VIS __num_put_base
 {
 protected:
-    static void __format_int(char* __fmt, const char* __len, bool __signd,
-                             ios_base::fmtflags __flags);
-    static bool __format_float(char* __fmt, const char* __len,
-                               ios_base::fmtflags __flags);
     static char* __identify_padding(char* __nb, char* __ne,
                                     const ios_base& __iob);
 };
@@ -1666,6 +1662,12 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		--__nar;
 		*__nar = '-';
 	}
+	else if (__iob.flags() & ios_base::showpos)
+	{
+		--__nar;
+		*__nar = '+';
+	}
+	
     char* __ne = __nar_buf + __nbuf;
 
     char* __np = this->__identify_padding(__nar, __ne, __iob);
@@ -1727,6 +1729,11 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 	{
 		--__nar;
 		*__nar = '-';
+	}
+	else if (__iob.flags() & ios_base::showpos)
+	{
+		--__nar;
+		*__nar = '+';
 	}
     char* __ne = __nar_buf + __nbuf;
 
@@ -1899,6 +1906,10 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		*__ne++ = '-';
 		__v = -__v;
 	}
+	else if (__s.flags() & ios_base::showpos)
+	{
+		*__ne++ = '+';
+	}
 
 	bool sciantific = __s.flags() & ios_base::scientific ? true : false;
 	bool hex = (sciantific && __s.flags() & ios_base::fixed) ? true : false;
@@ -1945,7 +1956,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 	    numbers--;
         }
 
-	// TODO round the result
+	// TODO round the result and showpoint option
 
 	if (sciantific)
 	{
@@ -2039,6 +2050,10 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		*__ne++ = '-';
 		__v = -__v;
 	}
+	else if (__s.flags() & ios_base::showpos)
+	{
+		*__ne++ = '+';
+	}
 
 	bool sciantific = __s.flags() & ios_base::scientific ? true : false;
 	bool hex = (sciantific && __s.flags() & ios_base::fixed) ? true : false;
@@ -2085,7 +2100,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 	    numbers--;
         }
 
-	// TODO round the result
+	// TODO round the result and showpoint option
 
 	if (sciantific)
 	{
@@ -2138,7 +2153,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
     const unsigned __nbuf = 20;
     char __nar[__nbuf];
     char* __ne = __nar;
-    std::uintptr_t num = __v;
+    std::uintptr_t num = reinterpret_cast<std::uintptr_t>(__v);
 
     bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
@@ -2850,46 +2865,9 @@ time_get<_CharT, _InputIterator>::do_get(iter_type __b, iter_type __e,
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS time_get<char>)
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS time_get<wchar_t>)
 
-class _LIBCPP_TYPE_VIS __time_get
-{
-protected:
-
-    __time_get(const char* __nm);
-    __time_get(const string& __nm);
-    ~__time_get();
-};
-
-template <class _CharT>
-class _LIBCPP_TYPE_VIS __time_get_storage
-    : public __time_get
-{
-protected:
-    typedef basic_string<_CharT> string_type;
-
-    string_type __weeks_[14];
-    string_type __months_[24];
-    string_type __am_pm_[2];
-    string_type __c_;
-    string_type __r_;
-    string_type __x_;
-    string_type __X_;
-
-    explicit __time_get_storage(const char* __nm);
-    explicit __time_get_storage(const string& __nm);
-
-    _LIBCPP_ALWAYS_INLINE ~__time_get_storage() {}
-
-    time_base::dateorder __do_date_order() const;
-
-private:
-    void init(const ctype<_CharT>&);
-    string_type __analyze(char __fmt, const ctype<_CharT>&);
-};
-
 template <class _CharT, class _InputIterator = istreambuf_iterator<_CharT> >
 class _LIBCPP_TYPE_VIS_ONLY time_get_byname
-    : public time_get<_CharT, _InputIterator>,
-      private __time_get_storage<_CharT>
+    : public time_get<_CharT, _InputIterator>
 {
 public:
     typedef time_base::dateorder    dateorder;
@@ -2899,12 +2877,10 @@ public:
 
     _LIBCPP_INLINE_VISIBILITY
     explicit time_get_byname(const char* __nm, size_t __refs = 0)
-        : time_get<_CharT, _InputIterator>(__refs),
-          __time_get_storage<_CharT>(__nm) {}
+        : time_get<_CharT, _InputIterator>(__refs) {}
     _LIBCPP_INLINE_VISIBILITY
     explicit time_get_byname(const string& __nm, size_t __refs = 0)
-        : time_get<_CharT, _InputIterator>(__refs),
-          __time_get_storage<_CharT>(__nm) {}
+        : time_get<_CharT, _InputIterator>(__refs) {}
 
 protected:
     _LIBCPP_INLINE_VISIBILITY
@@ -2932,23 +2908,9 @@ private:
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS time_get_byname<char>)
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS time_get_byname<wchar_t>)
 
-class _LIBCPP_TYPE_VIS __time_put
-{
-protected:
-    _LIBCPP_ALWAYS_INLINE __time_put() {}
-    __time_put(const char* __nm);
-    __time_put(const string& __nm);
-    ~__time_put();
-    void __do_put(char* __nb, char*& __ne, const tm* __tm,
-                  char __fmt, char __mod) const;
-    void __do_put(wchar_t* __wb, wchar_t*& __we, const tm* __tm,
-                  char __fmt, char __mod) const;
-};
-
 template <class _CharT, class _OutputIterator = ostreambuf_iterator<_CharT> >
 class _LIBCPP_TYPE_VIS_ONLY time_put
-    : public locale::facet,
-      private __time_put
+    : public locale::facet
 {
 public:
     typedef _CharT char_type;
@@ -2978,12 +2940,10 @@ protected:
 
     _LIBCPP_ALWAYS_INLINE
     explicit time_put(const char* __nm, size_t __refs)
-        : locale::facet(__refs),
-          __time_put(__nm) {}
+        : locale::facet(__refs) {}
     _LIBCPP_ALWAYS_INLINE
     explicit time_put(const string& __nm, size_t __refs)
-        : locale::facet(__refs),
-          __time_put(__nm) {}
+        : locale::facet(__refs) {}
 };
 
 template <class _CharT, class _OutputIterator>
