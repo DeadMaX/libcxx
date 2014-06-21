@@ -1995,7 +1995,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
     this->__widen_and_group_float(__nar, __np, __ne, __ob, __op, __oe, __iob.getloc());
     // [__o, __oe) contains thousands_sep'd wide number
     // Stage 3 & 4
-    __s = __pad_and_output(__s, __nar, __op, __oe, __iob, __fl);
+    __s = __pad_and_output(__s, __ob, __op, __oe, __iob, __fl);
     return __s;
 }
 
@@ -2138,7 +2138,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
     this->__widen_and_group_float(__nar, __np, __ne, __ob, __op, __oe, __iob.getloc());
     // [__o, __oe) contains thousands_sep'd wide number
     // Stage 3 & 4
-    __s = __pad_and_output(__s, __nar, __op, __oe, __iob, __fl);
+    __s = __pad_and_output(__s, __ob, __op, __oe, __iob, __fl);
     return __s;
 }
 
@@ -2883,24 +2883,6 @@ public:
 protected:
     _LIBCPP_INLINE_VISIBILITY
     ~time_get_byname() {}
-
-    _LIBCPP_INLINE_VISIBILITY
-    virtual dateorder do_date_order() const {return this->__do_date_order();}
-private:
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type* __weeks() const  {return this->__weeks_;}
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type* __months() const {return this->__months_;}
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type* __am_pm() const  {return this->__am_pm_;}
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type& __c() const      {return this->__c_;}
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type& __r() const      {return this->__r_;}
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type& __x() const      {return this->__x_;}
-    _LIBCPP_INLINE_VISIBILITY
-    virtual const string_type& __X() const      {return this->__X_;}
 };
 
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS time_get_byname<char>)
@@ -2992,11 +2974,55 @@ time_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base&,
                                           char_type, const tm* __tm,
                                           char __fmt, char __mod) const
 {
-    char_type __nar[100];
-    char_type* __nb = __nar;
-    char_type* __ne = __nb + 100;
-    __do_put(__nb, __ne, __tm, __fmt, __mod);
-    return _VSTD::copy(__nb, __ne, __s);
+    switch (__fmt)
+    {
+	case 'a':
+	case 'A':
+	case 'b':
+	case 'B':
+	case 'c':
+	case 'C':
+	case 'd':
+	case 'D':
+	case 'e':
+	case 'F':
+	case 'g':
+	case 'G':
+	case 'h':
+	case 'H':
+	case 'I':
+	case 'j':
+	case 'm':
+	case 'M':
+	case 'n':
+	case 'p':
+	case 'r':
+	case 'R':
+	case 'S':
+	case 't':
+	case 'T':
+	case 'u':
+	case 'U':
+	case 'V':
+	case 'w':
+	case 'W':
+	case 'x':
+	case 'X':
+	case 'y':
+	case 'Y':
+	case 'z':
+	case 'Z':
+		break;
+
+	case '%':
+		*__s++ = __fmt;
+		break;
+	default:
+		*__s++ = __fmt;
+		break;
+    }
+
+    return __s;
 }
 
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_TYPE_VIS time_put<char>)
