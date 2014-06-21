@@ -1873,31 +1873,30 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
     bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
 	if (__v == std::numeric_limits<double>::quiet_NaN())
-		return __s<<(upper ? "NAN" : "nan");
+		return std::copy_n(upper ? "NAN" : "nan",3,__s);
 
 	if (__v == std::numeric_limits<double>::infinity())
-		return __s<<(upper ? "INFINITY" : "infinity");
+		return std::copy_n(upper ? "INFINITY" : "infinity",8,__s);
 
 	if (__v == -std::numeric_limits<double>::infinity())
-		return __s<<(upper ? "-INFINITY":"-infinity");
+		return std::copy_n(upper ? "-INFINITY":"-infinity",9,__s);
 
 	if (__v == 0.0)
 	{
-		__s<<'0';
-		if (__s.flags() & (ios_base::fixed | ios_base::scientific))
+		*__s++ = '0';
+		if (__iob.flags() & (ios_base::fixed | ios_base::scientific))
 		{
-			__s<<'.';
+			*__s++ = '.';
 			do
 			{
-				__s<<'0';
+				*__s++ = '0';
 			}
 			while(--numbers>0);
 		}
-		if (__s.flags() & (ios_base::fixed | ios_base::scientific) != (ios_base::fixed | ios_base::scientific))
-			__s<<(upper ? "E+00":"e+00");
+		if (__iob.flags() & (ios_base::fixed | ios_base::scientific) != (ios_base::fixed | ios_base::scientific))
+			return std::copy_n(upper ? "E+00":"e+00",4,__s);
 		else
-			__s<<(upper ? "P+00":"p+00");
-		return __s;
+			return std::copy_n(upper ? "P+00":"p+00",4,__s);
 	}
 
 	bool neg = __v < 0.0;
@@ -1906,13 +1905,13 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		*__ne++ = '-';
 		__v = -__v;
 	}
-	else if (__s.flags() & ios_base::showpos)
+	else if (__iob.flags() & ios_base::showpos)
 	{
 		*__ne++ = '+';
 	}
 
-	bool sciantific = __s.flags() & ios_base::scientific ? true : false;
-	bool hex = (sciantific && __s.flags() & ios_base::fixed) ? true : false;
+	bool sciantific = __iob.flags() & ios_base::scientific ? true : false;
+	bool hex = (sciantific && __iob.flags() & ios_base::fixed) ? true : false;
 
 	int m, m1;
 	if (hex)
@@ -2017,31 +2016,30 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
     bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
 	if (__v == std::numeric_limits<long double>::quiet_NaN())
-		return __s<<(upper ? "NAN" : "nan");
+		return std::copy_n(upper ? "NAN" : "nan",3,__s);
 
 	if (__v == std::numeric_limits<long double>::infinity())
-		return __s<<(upper ? "INFINITY" : "infinity");
+		return std::copy_n(upper ? "INFINITY" : "infinity",8,__s);
 
 	if (__v == -std::numeric_limits<long double>::infinity())
-		return __s<<(upper ? "-INFINITY":"-infinity");
+		return std::copy_n(upper ? "-INFINITY":"-infinity",9,__s);
 
 	if (__v == 0.0)
 	{
-		__s<<'0';
-		if (__s.flags() & (ios_base::fixed | ios_base::scientific))
+		*__s++ = '0';
+		if (__iob.flags() & (ios_base::fixed | ios_base::scientific))
 		{
-			__s<<'.';
+			*__s++ = '.';
 			do
 			{
-				__s<<'0';
+				*__s++ = '0';
 			}
 			while(--numbers>0);
 		}
-		if (__s.flags() & (ios_base::fixed | ios_base::scientific) != (ios_base::fixed | ios_base::scientific))
-			__s<<(upper ? "E+00":"e+00");
+		if (__iob.flags() & (ios_base::fixed | ios_base::scientific) != (ios_base::fixed | ios_base::scientific))
+			return std::copy_n(upper ? "E+00":"e+00",4,__s);
 		else
-			__s<<(upper ? "P+00":"p+00");
-		return __s;
+			return std::copy_n(upper ? "P+00":"p+00",4,__s);
 	}
 
 	bool neg = __v < 0.0;
@@ -2050,13 +2048,13 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		*__ne++ = '-';
 		__v = -__v;
 	}
-	else if (__s.flags() & ios_base::showpos)
+	else if (__iob.flags() & ios_base::showpos)
 	{
 		*__ne++ = '+';
 	}
 
-	bool sciantific = __s.flags() & ios_base::scientific ? true : false;
-	bool hex = (sciantific && __s.flags() & ios_base::fixed) ? true : false;
+	bool sciantific = __iob.flags() & ios_base::scientific ? true : false;
+	bool hex = (sciantific && __iob.flags() & ios_base::fixed) ? true : false;
 
 	int m, m1;
 	if (hex)
@@ -3824,17 +3822,18 @@ money_put<_CharT, _OutputIterator>::do_put(iter_type __s, bool __intl,
         bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
 	if (__units == std::numeric_limits<long double>::quiet_NaN())
-		return __s<<(upper ? "NAN" : "nan");
+		return std::copy_n(upper ? "NAN" : "nan",3,__s);
 
 	if (__units == std::numeric_limits<long double>::infinity())
-		return __s<<(upper ? "INFINITY" : "infinity");
+		return std::copy_n(upper ? "INFINITY" : "infinity",8,__s);
 
 	if (__units == -std::numeric_limits<long double>::infinity())
-		return __s<<(upper ? "-INFINITY":"-infinity");
+		return std::copy_n(upper ? "-INFINITY":"-infinity",9,__s);
 
 	if (__units == 0.0)
 	{
-		return __s<<'0';
+		*__s++ = '0';
+		return __s;
 	}
 
 	bool __neg = __units < 0.0;
