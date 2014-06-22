@@ -580,21 +580,8 @@ public:
 
     static locale::id id;
 
-#ifdef _CACHED_RUNES
-    static const size_t table_size = _CACHED_RUNES;
-#else
-    static const size_t table_size = 256;  // FIXME: Don't hardcode this.
-#endif
     _LIBCPP_ALWAYS_INLINE const mask* table() const  _NOEXCEPT {return __tab_;}
     static const mask* classic_table()  _NOEXCEPT;
-#if defined(__GLIBC__) || defined(__EMSCRIPTEN__)
-    static const int* __classic_upper_table() _NOEXCEPT;
-    static const int* __classic_lower_table() _NOEXCEPT;
-#endif
-#if defined(__NetBSD__)
-    static const short* __classic_upper_table() _NOEXCEPT;
-    static const short* __classic_lower_table() _NOEXCEPT;
-#endif
 
 protected:
     ~ctype();
