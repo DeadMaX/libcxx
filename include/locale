@@ -843,7 +843,7 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
 	if (*__a == 'N' || *__a == 'n')
 	{
 		/* NAN check */
-		static_assert(numeric_limits<_Tp>::has_signaling_NaN, "The type must have NAN");
+		static_assert(numeric_limits<_Tp>::has_quiet_NaN, "The type must have NAN");
 		auto len = __a_end - __a;
 		if (len < 3 ||
 			( __a[1] != 'a' && __a[1] != 'A') ||
@@ -855,8 +855,8 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
 		if (len == 3)
 		{
 			if (minus)
-				return -(numeric_limits<_Tp>::signaling_NaN());
-			return numeric_limits<_Tp>::signaling_NaN();
+				return -(numeric_limits<_Tp>::quiet_NaN());
+			return numeric_limits<_Tp>::quiet_NaN();
 		}
 		__a += 3;
 		if (*__a != '(')
@@ -872,8 +872,8 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
 			return 0;
 		}
 		if (minus)
-			return -(numeric_limits<_Tp>::signaling_NaN());
-		return numeric_limits<_Tp>::signaling_NaN();
+			return -(numeric_limits<_Tp>::quiet_NaN());
+		return numeric_limits<_Tp>::quiet_NaN();
 	}
 
         char __base = 10;
@@ -957,10 +957,7 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
                 	}
 			denom *= __base;
 			num *= __base;
-			if (minus)
-				num -= v;
-			else
-				num += v;
+			num += v;
 		}
 		if (minus)
 			__ll -= (num / denom);
@@ -1627,7 +1624,10 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 	*__nar = '\0';
     bool minus = false;
 	if (__v < 0)
+	{
+		__v = -__v;
 		minus = true;
+	}
 
     char __base = 10;
     if (__iob.flags() & std::ios::hex)
@@ -1696,7 +1696,10 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 	*__nar = '\0';
     bool minus = false;
 	if (__v < 0)
+	{
+		__v = -__v;
 		minus = true;
+	}
 
     char __base = 10;
     if (__iob.flags() & std::ios::hex)
@@ -1872,7 +1875,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 
     bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
-	if (__v == std::numeric_limits<double>::quiet_NaN())
+	if (std::isnan(__v))
 		return std::copy_n(upper ? "NAN" : "nan",3,__s);
 
 	if (__v == std::numeric_limits<double>::infinity())
@@ -1941,12 +1944,14 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		else
 		 weight = pow(10, m);
                 char digit = floor(__v / weight);
+		if (digit < 0)
+			digit = 0;
                 __v -= (digit * weight);
 		if (digit > 10)
                 	*__ne++ = (upper ? 'A' : 'a') - 10 + digit;
 		else
                 	*__ne++ = '0' + digit;
-            if (m == 0 && __v > 0.0)
+            if (m == 0 && __v >= 0.0)
                 *__ne++ = '.';
 	    if(hex)
 		m-=4;
@@ -2015,7 +2020,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 
     bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
-	if (__v == std::numeric_limits<long double>::quiet_NaN())
+	if (std::isnan(__v))
 		return std::copy_n(upper ? "NAN" : "nan",3,__s);
 
 	if (__v == std::numeric_limits<long double>::infinity())
@@ -3847,7 +3852,7 @@ money_put<_CharT, _OutputIterator>::do_put(iter_type __s, bool __intl,
 
         bool upper = __iob.flags() & ios_base::uppercase ? true : false;
 
-	if (__units == std::numeric_limits<long double>::quiet_NaN())
+	if (std::isnan(__units))
 		return std::copy_n(upper ? "NAN" : "nan",3,__s);
 
 	if (__units == std::numeric_limits<long double>::infinity())
