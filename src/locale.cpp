@@ -1377,6 +1377,7 @@ codecvt<wchar_t, char, mbstate_t>::do_unshift(state_type& st,
     extern_type* to, extern_type* to_end, extern_type*& to_nxt) const
 {
   // TODO charset conversion
+    to_nxt = to;
     return noconv;
 }
 
