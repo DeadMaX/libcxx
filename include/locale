@@ -2089,12 +2089,14 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 		else
 		 weight = pow(10, m);
                 char digit = floor(__v / weight);
+		if (digit < 0)
+			digit = 0;
                 __v -= (digit * weight);
 		if (digit > 10)
                 	*__ne++ = (upper ? 'A' : 'a') - 10 + digit;
 		else
                 	*__ne++ = '0' + digit;
-            if (m == 0 && __v > 0.0)
+            if (m == 0 && __v >= 0.0)
                 *__ne++ = '.';
 	    if(hex)
 		m-=4;
