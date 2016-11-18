@@ -52,6 +52,7 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
 include(CMakeDependentOption)
 
 # Basic options ---------------------------------------------------------------
+option(LIBCXX_DISABLE_C_LINKAGE "Disable the use of standard libc" OFF)
 option(LIBCXX_ENABLE_ASSERTIONS "Enable assertions independent of build mode." ON)
 option(LIBCXX_ENABLE_SHARED "Build libc++ as a shared library." ON)
 option(LIBCXX_ENABLE_STATIC "Build libc++ as a static library." ON)
@@ -362,6 +363,14 @@ if (NOT MSVC AND NOT ${SUPPORTS_DIALECT_NAME})
   message(FATAL_ERROR "C++11 or greater is required but the compiler does not support ${LIBCXX_STANDARD_VER}")
 endif()
 
+if(LIBCXX_DISABLE_C_LINKAGE)
+  message(STATUS "Build libc++ whitout any C linkage")
+  add_compile_flags_if_supported(-nostdinc -nostdlib)
+  if (NOT LIBCXX_TARGET_TRIPLE)
+	message(FATAL_ERROR "Please set LIBCXX_TARGET_TRIPLE when disabling C linkage")
+  endif()
+endif()
+
 # On all systems the system c++ standard library headers need to be excluded.
 # MSVC only has -X, which disables all default includes; including the crt.
 # Thus, we do nothing and hope we don't accidentally include any of the C++
@@ -506,6 +515,7 @@ config_define_if_not(LIBCXX_ENABLE_THREADS _LIBCPP_HAS_NO_THREADS)
 config_define_if_not(LIBCXX_ENABLE_MONOTONIC_CLOCK _LIBCPP_HAS_NO_MONOTONIC_CLOCK)
 config_define_if_not(LIBCXX_ENABLE_THREAD_UNSAFE_C_FUNCTIONS _LIBCPP_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS)
 
+config_define_if(LIBCXX_DISABLE_C_LINKAGE _LIBCXX_DISABLE_C_LINKAGE)
 config_define_if(LIBCXX_HAS_PTHREAD_API _LIBCPP_HAS_THREAD_API_PTHREAD)
 config_define_if(LIBCXX_HAS_EXTERNAL_THREAD_API _LIBCPP_HAS_THREAD_API_EXTERNAL)
 config_define_if(LIBCXX_HAS_MUSL_LIBC _LIBCPP_HAS_MUSL_LIBC)

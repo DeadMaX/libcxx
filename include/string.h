@@ -58,7 +58,9 @@ size_t strlen(const char* s);
 #pragma GCC system_header
 #endif
 
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 #include_next <string.h>
+#endif
 
 // MSVCRT, GNU libc and its derivates may already have the correct prototype in
 // <string.h>. This macro can be defined by users if their C library provides

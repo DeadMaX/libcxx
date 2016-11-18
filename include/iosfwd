@@ -87,7 +87,9 @@ typedef fpos<char_traits<wchar_t>::state_type> wstreampos;
 */
 
 #include <__config>
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 #include <wchar.h>  // for mbstate_t
+#endif
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -171,6 +173,17 @@ typedef basic_filebuf<wchar_t>       wfilebuf;
 typedef basic_ifstream<wchar_t>      wifstream;
 typedef basic_ofstream<wchar_t>      wofstream;
 typedef basic_fstream<wchar_t>       wfstream;
+
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+namespace {
+
+	struct mbstate_t
+	{
+		char buf[128];
+	};
+}
+
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 template <class _State>             class _LIBCPP_TYPE_VIS_ONLY fpos;
 typedef fpos<mbstate_t>    streampos;

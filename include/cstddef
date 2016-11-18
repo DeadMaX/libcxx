@@ -40,13 +40,29 @@ Types:
 #endif
 
 // Don't include our own <stddef.h>; we don't want to declare ::nullptr_t.
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 #include_next <stddef.h>
+#endif
 #include <__nullptr>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 using ::ptrdiff_t;
 using ::size_t;
+#else // _LIBCXX_DISABLE_C_LINKAGE
+
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+typedef __SIZE_TYPE__ size_t;
+#ifndef __SSIZE_TYPE__
+#define unsigned signed
+typedef __SIZE_TYPE__ ssize_t;
+#undef unsigned
+#else
+typedef __SSIZE_TYPE__ ssize_t;
+#endif
+
+#endif
 
 #if defined(__CLANG_MAX_ALIGN_T_DEFINED) || defined(_GCC_MAX_ALIGN_T)
 // Re-use the compiler's <stddef.h> max_align_t where possible.

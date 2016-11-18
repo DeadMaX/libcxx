@@ -302,7 +302,9 @@ long double    truncl(long double x);
 */
 
 #include <__config>
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 #include <math.h>
+#endif
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header

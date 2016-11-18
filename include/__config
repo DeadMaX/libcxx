@@ -819,21 +819,25 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 #endif
 
 // Thread API
-#if !defined(_LIBCPP_HAS_NO_THREADS) && \
-    !defined(_LIBCPP_HAS_THREAD_API_PTHREAD) && \
-    !defined(_LIBCPP_HAS_THREAD_API_EXTERNAL)
-# if defined(__FreeBSD__) || \
-    defined(__Fuchsia__) || \
-    defined(__NetBSD__) || \
-    defined(__linux__) || \
-    defined(__APPLE__) || \
-    defined(__CloudABI__) || \
-    defined(__sun__)
-#  define _LIBCPP_HAS_THREAD_API_PTHREAD
-# else
-#  error "No thread API"
-# endif // _LIBCPP_HAS_THREAD_API
-#endif // _LIBCPP_HAS_NO_THREADS
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+# define _LIBCPP_HAS_THREAD_API_EXTERNAL
+#else
+# if !defined(_LIBCPP_HAS_NO_THREADS) && \
+     !defined(_LIBCPP_HAS_THREAD_API_PTHREAD) && \
+     !defined(_LIBCPP_HAS_THREAD_API_EXTERNAL)
+#  if defined(__FreeBSD__) || \
+     defined(__Fuchsia__) || \
+     defined(__NetBSD__) || \
+     defined(__linux__) || \
+     defined(__APPLE__) || \
+     defined(__CloudABI__) || \
+     defined(__sun__)
+#   define _LIBCPP_HAS_THREAD_API_PTHREAD
+#  else
+#   error "No thread API"
+#  endif // _LIBCPP_HAS_THREAD_API
+# endif // _LIBCPP_HAS_NO_THREADS
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 #if defined(_LIBCPP_HAS_NO_THREADS) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)
 #  error _LIBCPP_HAS_THREAD_API_PTHREAD may only be defined when \
