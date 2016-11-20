@@ -6,7 +6,6 @@
 // Source Licenses. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-#include <stdlib.h>
 
 #if defined(__APPLE__) || defined(LIBCXXRT) ||                                 \
     defined(LIBCXX_BUILDING_LIBCXXABI)

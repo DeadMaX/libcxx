@@ -1,0 +1,58 @@
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCPP_ALLOC_SUPPORT
+#define _LIBCPP_ALLOC_SUPPORT
+
+#include <__config>
+
+#ifndef _LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER
+#pragma GCC system_header
+#endif
+
+#ifndef __libcpp_has_include
+  #ifndef __has_include
+    #define __libcpp_has_include(x) 0
+  #else
+    #define __libcpp_has_include(x) __has_include(x)
+  #endif
+#endif
+
+#if defined(_LIBCPP_HAS_ALLOC_API_EXTERNAL) && \
+    __libcpp_has_include(<__external_alloc>)
+#include <__external_alloc>
+#else
+
+#include <stdlib.h>
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+inline _LIBCPP_INLINE_VISIBILITY
+void *__libcpp_alloc(size_t len)
+{
+        return ::malloc(len);
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+int __libcpp_alloc_align(void **memptr, size_t alignment, size_t size)
+{
+    return ::posix_memalign(memptr, alignment, size)
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_free(void *memptr)
+{
+    ::free(memptr);
+}
+_LIBCPP_END_NAMESPACE_STD
+
+#endif
+
+#endif // _LIBCPP_ALLOC_SUPPORT
