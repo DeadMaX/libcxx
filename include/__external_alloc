@@ -1,0 +1,28 @@
+// -*- C++ -*-
+#include <cstddef>
+
+extern "C" void *malloc(std::size_t);
+extern "C" int posix_memalign(void **, std::size_t, std::size_t);
+extern "C" void free(void *);
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+inline _LIBCPP_INLINE_VISIBILITY
+void *__libcpp_alloc(std::size_t len)
+{
+        return ::malloc(len);
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+int __libcpp_alloc_align(void **memptr, std::size_t alignment, std::size_t size)
+{
+    return ::posix_memalign(memptr, alignment, size);
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_free(void *memptr)
+{
+    ::free(memptr);
+}
+
+_LIBCPP_END_NAMESPACE_STD

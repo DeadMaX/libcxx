@@ -1,0 +1,68 @@
+// -*- C++ -*-
+
+#include <cstddef>
+#include <cstdint>
+
+/* function based on
+ * https://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
+ * https://graphics.stanford.edu/~seander/bithacks.html#ValueInWord
+ *
+ * TODO: Add SSE optimized version
+ */
+inline _LIBCPP_INLINE_VISIBILITY
+char *__libcpp_strchr(const char *str, int ch)
+{
+    auto p = reinterpret_cast<const unsigned char *>(str);
+    unsigned char c = ch;
+    while (reinterpret_cast<std::uintptr_t>(p) % sizeof(std::uintmax_t) != 0)
+    {
+        if (*p == '\0')
+            return nullptr;
+        if (*p == c)
+            return  const_cast<char *>(reinterpret_cast<const char *>(p));
+        ++p;
+    }
+    /* folowing line produce numbers like 0x010101... */
+    static constexpr std::uintmax_t zero_mask = (std::numeric_limits<std::uintmax_t>::max() / std::numeric_limits<unsigned char>::max());
+    /* folowing line produce numbers like 0x808080... */
+    static constexpr std::uintmax_t check_mask = zero_mask * 0x80;
+    /* folowing line produce repeat the character on every byte */
+    std::uintmax_t value_mask = zero_mask * c;
+    for (auto q = reinterpret_cast<const std::uintmax_t *>(p);
+            ;
+            ++q)
+    {
+        std::uintmax_t v = *q;
+        std::uintmax_t has_zero = v - zero_mask & ~v & check_mask;
+        v ^= value_mask;
+        std::uintmax_t has_value = v - zero_mask & ~v & check_mask;
+        if (has_zero
+                || has_value)
+        {
+            p = reinterpret_cast<const unsigned char *>(q);
+            for (std::size_t i = 0; i < sizeof(std::uintmax_t); ++i)
+            {
+                if (p[i] == '\0')
+                    return nullptr;
+                if (p[i] == c)
+                    return  const_cast<char *>(reinterpret_cast<const char *>(&p[i]));
+            }
+        }
+    }
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+char* __libcpp_strrchr(const char* str, int ch)
+{
+        char *found = nullptr;
+        for (char *next = __libcpp_strchr(str, ch);
+               next;
+               found = next, next = __libcpp_strchr(next + 1, ch))
+             /* searching */;
+        return found;
+}
+
+extern "C" char* strstr(const char*, const char*);
+
+inline _LIBCPP_INLINE_VISIBILITY
+char* __libcpp_strstr(const char* __s1, const char* __s2) {return (char*)strstr(__s1, __s2);}
