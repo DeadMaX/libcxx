@@ -8,8 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_ALLOC_SUPPORT
-#define _LIBCPP_ALLOC_SUPPORT
+#ifndef _LIBCPP_LIMITS_SUPPORT
+#define _LIBCPP_LIMITS_SUPPORT
 
 #include <__config>
 
@@ -25,34 +25,19 @@
   #endif
 #endif
 
-#if defined(_LIBCPP_HAS_ALLOC_API_EXTERNAL) && \
-    __libcpp_has_include(<__external_alloc>)
-#include <__external_alloc>
+#if defined(_LIBCPP_HAS_STDLIB_API_EXTERNAL) && \
+    __libcpp_has_include(<__external_limits>)
+#include <__external_limits>
 #else
 
-#include <stdlib.h>
+#include <limits.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-inline _LIBCPP_INLINE_VISIBILITY
-void *__libcpp_alloc(size_t len)
-{
-        return ::malloc(len);
-}
+// inline _LIBCPP_INLINE_VISIBILITY
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_alloc_align(void **memptr, size_t alignment, size_t size)
-{
-    return ::posix_memalign(memptr, alignment, size);
-}
-
-inline _LIBCPP_INLINE_VISIBILITY
-void __libcpp_free(void *memptr)
-{
-    ::free(memptr);
-}
 _LIBCPP_END_NAMESPACE_STD
 
 #endif
 
-#endif // _LIBCPP_ALLOC_SUPPORT
+#endif // _LIBCPP_LIMITS_SUPPORT

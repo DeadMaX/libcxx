@@ -58,7 +58,7 @@ size_t strlen(const char* s);
 #pragma GCC system_header
 #endif
 
-#include <__string_support>
+#include_next <string.h>
 
 // MSVCRT, GNU libc and its derivates may already have the correct prototype in
 // <string.h>. This macro can be defined by users if their C library provides
@@ -71,33 +71,29 @@ size_t strlen(const char* s);
 #if defined(__cplusplus) && !defined(_LIBCPP_STRING_H_HAS_CONST_OVERLOADS) && defined(_LIBCPP_PREFERRED_OVERLOAD)
 extern "C++" {
 inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-const char* strchr(const char* __s, int __c) {return __libcpp_strchr(__s, __c);}
+const char* strchr(const char* __s, int __c) {return std::__libcpp_strchr(__s, __c);}
 inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-      char* strchr(      char* __s, int __c) {return __libcpp_strchr(__s, __c);}
-
-inline _LIBCPP_INLINE_VISIBILITY
-char* __libcpp_strpbrk(const char* __s1, const char* __s2) {return (char*)strpbrk(__s1, __s2);}
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-const char* strpbrk(const char* __s1, const char* __s2) {return __libcpp_strpbrk(__s1, __s2);}
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-      char* strpbrk(      char* __s1, const char* __s2) {return __libcpp_strpbrk(__s1, __s2);}
+      char* strchr(      char* __s, int __c) {return std::__libcpp_strchr(__s, __c);}
 
 inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-const char* strrchr(const char* __s, int __c) {return __libcpp_strrchr(__s, __c);}
+const char* strpbrk(const char* __s1, const char* __s2) {return std::__libcpp_strpbrk(__s1, __s2);}
 inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-      char* strrchr(      char* __s, int __c) {return __libcpp_strrchr(__s, __c);}
-
-inline _LIBCPP_INLINE_VISIBILITY
-void* __libcpp_memchr(const void* __s, int __c, std::size_t __n) {return (void*)memchr(__s, __c, __n);}
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-const void* memchr(const void* __s, int __c, std::size_t __n) {return __libcpp_memchr(__s, __c, __n);}
-inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-      void* memchr(      void* __s, int __c, std::size_t __n) {return __libcpp_memchr(__s, __c, __n);}
+      char* strpbrk(      char* __s1, const char* __s2) {return std::__libcpp_strpbrk(__s1, __s2);}
 
 inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-const char* strstr(const char* __s1, const char* __s2) {return __libcpp_strstr(__s1, __s2);}
+const char* strrchr(const char* __s, int __c) {return std::__libcpp_strrchr(__s, __c);}
 inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
-      char* strstr(      char* __s1, const char* __s2) {return __libcpp_strstr(__s1, __s2);}
+      char* strrchr(      char* __s, int __c) {return std::__libcpp_strrchr(__s, __c);}
+
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
+const void* memchr(const void* __s, int __c, std::size_t __n) {return std::__libcpp_memchr(__s, __c, __n);}
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
+      void* memchr(      void* __s, int __c, std::size_t __n) {return std::__libcpp_memchr(__s, __c, __n);}
+
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
+const char* strstr(const char* __s1, const char* __s2) {return std::__libcpp_strstr(__s1, __s2);}
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
+      char* strstr(      char* __s1, const char* __s2) {return std::__libcpp_strstr(__s1, __s2);}
 }
 #endif
 

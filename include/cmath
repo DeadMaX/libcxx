@@ -302,9 +302,7 @@ long double    truncl(long double x);
 */
 
 #include <__config>
-#ifndef _LIBCXX_DISABLE_C_LINKAGE
-#include <math.h>
-#endif
+#include <__math_support>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -312,6 +310,7 @@ long double    truncl(long double x);
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 using ::signbit;
 using ::fpclassify;
 using ::isfinite;
@@ -613,6 +612,9 @@ __libcpp_isfinite(_A1 __lcpp_x) _NOEXCEPT
 {
     return isfinite(__lcpp_x);
 }
+#else // _LIBCXX_DISABLE_C_LINKAGE
+
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 _LIBCPP_END_NAMESPACE_STD
 

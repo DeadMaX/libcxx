@@ -8,8 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_ALLOC_SUPPORT
-#define _LIBCPP_ALLOC_SUPPORT
+#ifndef _LIBCPP_STRING_SUPPORT
+#define _LIBCPP_STRING_SUPPORT
 
 #include <__config>
 
@@ -25,7 +25,7 @@
   #endif
 #endif
 
-#if defined(_LIBCPP_HAS_ALLOC_API_EXTERNAL) && \
+#if defined(_LIBCPP_HAS_STRING_API_EXTERNAL) && \
     __libcpp_has_include(<__external_string>)
 #include <__external_string>
 #else
@@ -42,8 +42,15 @@ char* __libcpp_strrchr(const char* __s, int __c) {return (char*)strrchr(__s, __c
 
 inline _LIBCPP_INLINE_VISIBILITY
 char* __libcpp_strstr(const char* __s1, const char* __s2) {return (char*)strstr(__s1, __s2);}
+
+inline _LIBCPP_INLINE_VISIBILITY
+char* __libcpp_strpbrk(const char* __s1, const char* __s2) {return (char*)strpbrk(__s1, __s2);}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void* __libcpp_memchr(const void* __s, int __c, std::size_t __n) {return (void*)memchr(__s, __c, __n);}
+
 _LIBCPP_END_NAMESPACE_STD
 
 #endif
 
-#endif // _LIBCPP_ALLOC_SUPPORT
+#endif // _LIBCPP_STRING_SUPPORT

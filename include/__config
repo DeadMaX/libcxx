@@ -366,7 +366,7 @@ namespace std {
 // Allow for build-time disabling of unsigned integer sanitization
 #if !defined(_LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK) && __has_attribute(no_sanitize)
 #define _LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK __attribute__((__no_sanitize__("unsigned-integer-overflow")))
-#endif 
+#endif
 
 #elif defined(__GNUC__)
 
@@ -838,10 +838,25 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 #  endif // _LIBCPP_HAS_THREAD_API
 # endif // _LIBCPP_HAS_NO_THREADS
 #endif // _LIBCXX_DISABLE_C_LINKAGE
-     
+
 // Allocation API
 #ifdef _LIBCXX_DISABLE_C_LINKAGE
 # define _LIBCPP_HAS_ALLOC_API_EXTERNAL
+#endif
+
+// String API
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+# define _LIBCPP_HAS_STRING_API_EXTERNAL
+#endif
+
+// Stdlib API
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+# define _LIBCPP_HAS_STDLIB_API_EXTERNAL
+#endif
+
+// Math API
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+# define _LIBCPP_HAS_MATH_API_EXTERNAL
 #endif
 
 #if defined(_LIBCPP_HAS_NO_THREADS) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)

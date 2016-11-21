@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 /* function based on
  * https://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
