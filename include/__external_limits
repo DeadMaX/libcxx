@@ -1,0 +1,3 @@
+// -*- C++ -*-
+
+#define CHAR_BIT 8

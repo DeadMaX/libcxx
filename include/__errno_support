@@ -8,8 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_LIMITS_SUPPORT
-#define _LIBCPP_LIMITS_SUPPORT
+#ifndef _LIBCPP_ERRNO_SUPPORT
+#define _LIBCPP_ERRNO_SUPPORT
 
 #include <__config>
 
@@ -25,12 +25,12 @@
   #endif
 #endif
 
-#if defined(_LIBCPP_HAS_STDLIB_API_EXTERNAL) && \
-    __libcpp_has_include(<__external_limits>)
-#include <__external_limits>
+#if defined(_LIBCPP_HAS_ERRNO_API_EXTERNAL) && \
+    __libcpp_has_include(<__external_errno>)
+#include <__external_errno>
 #else
 
-#include_next <limits.h>
+#include_next <errno.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
@@ -40,4 +40,4 @@ _LIBCPP_END_NAMESPACE_STD
 
 #endif
 
-#endif // _LIBCPP_LIMITS_SUPPORT
+#endif // _LIBCPP_ERRNO_SUPPORT

@@ -4,6 +4,46 @@
 #include <cstdint>
 #include <limits>
 
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+/* function based on
+ * https://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
+ *
+ * TODO: Add SSE optimized version
+ */
+inline _LIBCPP_INLINE_VISIBILITY
+size_t __libcpp_strlen(const char *str)
+{
+    auto p = reinterpret_cast<const unsigned char *>(str);
+    while (reinterpret_cast<uintptr_t>(p) % sizeof(uintmax_t) != 0)
+    {
+        if (*p == '\0')
+            return reinterpret_cast<uintptr_t>(p) - reinterpret_cast<uintptr_t>(str);
+        ++p;
+    }
+    /* folowing line produce numbers like 0x010101... */
+    static constexpr uintmax_t zero_mask =
+			(numeric_limits<uintmax_t>::max() / numeric_limits<unsigned char>::max());
+    /* folowing line produce numbers like 0x808080... */
+    static constexpr uintmax_t check_mask = zero_mask * 0x80;
+	for (auto q = reinterpret_cast<const uintmax_t *>(p);
+            ;
+            ++q)
+    {
+        uintmax_t v = *q;
+        uintmax_t has_zero = v - zero_mask & ~v & check_mask;
+        if (has_zero)
+        {
+            p = reinterpret_cast<const unsigned char *>(q);
+            for (size_t i = 0; i < sizeof(uintmax_t); ++i)
+            {
+                if (p[i] == '\0')
+                    return reinterpret_cast<uintptr_t>(p) - reinterpret_cast<uintptr_t>(str) + i;
+            }
+        }
+    }
+}
+
 /* function based on
  * https://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
  * https://graphics.stanford.edu/~seander/bithacks.html#ValueInWord
@@ -15,7 +55,7 @@ char *__libcpp_strchr(const char *str, int ch)
 {
     auto p = reinterpret_cast<const unsigned char *>(str);
     unsigned char c = ch;
-    while (reinterpret_cast<std::uintptr_t>(p) % sizeof(std::uintmax_t) != 0)
+    while (reinterpret_cast<uintptr_t>(p) % sizeof(uintmax_t) != 0)
     {
         if (*p == '\0')
             return nullptr;
@@ -24,24 +64,25 @@ char *__libcpp_strchr(const char *str, int ch)
         ++p;
     }
     /* folowing line produce numbers like 0x010101... */
-    static constexpr std::uintmax_t zero_mask = (std::numeric_limits<std::uintmax_t>::max() / std::numeric_limits<unsigned char>::max());
+    static constexpr uintmax_t zero_mask =
+			(numeric_limits<uintmax_t>::max() / numeric_limits<unsigned char>::max());
     /* folowing line produce numbers like 0x808080... */
-    static constexpr std::uintmax_t check_mask = zero_mask * 0x80;
+    static constexpr uintmax_t check_mask = zero_mask * 0x80;
     /* folowing line produce repeat the character on every byte */
-    std::uintmax_t value_mask = zero_mask * c;
-    for (auto q = reinterpret_cast<const std::uintmax_t *>(p);
+    uintmax_t value_mask = zero_mask * c;
+    for (auto q = reinterpret_cast<const uintmax_t *>(p);
             ;
             ++q)
     {
-        std::uintmax_t v = *q;
-        std::uintmax_t has_zero = v - zero_mask & ~v & check_mask;
+        uintmax_t v = *q;
+        uintmax_t has_zero = v - zero_mask & ~v & check_mask;
         v ^= value_mask;
-        std::uintmax_t has_value = v - zero_mask & ~v & check_mask;
+        uintmax_t has_value = v - zero_mask & ~v & check_mask;
         if (has_zero
                 || has_value)
         {
             p = reinterpret_cast<const unsigned char *>(q);
-            for (std::size_t i = 0; i < sizeof(std::uintmax_t); ++i)
+            for (size_t i = 0; i < sizeof(uintmax_t); ++i)
             {
                 if (p[i] == '\0')
                     return nullptr;
@@ -63,7 +104,232 @@ char* __libcpp_strrchr(const char* str, int ch)
         return found;
 }
 
-extern "C" char* strstr(const char*, const char*);
+inline _LIBCPP_INLINE_VISIBILITY
+int __libcpp_memcmp(const void *s1, const void *s2, size_t n)
+{
+	if (!n)
+		return 0;
+
+	auto p1 = reinterpret_cast<const unsigned char *>(s1);
+	auto p2 = reinterpret_cast<const unsigned char *>(s2);
+
+	do
+	{
+		if (*p1++ != *p2++)
+			return (*--p1 - *--p2);
+	} while (--n != 0);
+
+	return (0);
+}
 
 inline _LIBCPP_INLINE_VISIBILITY
-char* __libcpp_strstr(const char* __s1, const char* __s2) {return (char*)strstr(__s1, __s2);}
+int __libcpp_strncmp(const char *__s1, const char *__s2, size_t __n)
+{
+	auto s1 = reinterpret_cast<const unsigned char *>(__s1);
+	auto s2 = reinterpret_cast<const unsigned char *>(__s2);
+	if (__n == 0)
+		return (0);
+	do {
+		if (*s1 != *s2++)
+			return (*s1 - *(s2 - 1));
+		if (*s1++ == '\0')
+			break;
+	} while (--__n != 0);
+	return (0);
+}
+
+
+inline _LIBCPP_INLINE_VISIBILITY
+char* __libcpp_strstr(const char* __s1, const char* __s2)
+{
+	char c, sc;
+	size_t len;
+
+	if ((c = *__s2++) == '\0')
+		return const_cast<char *>(__s2);
+
+	len = __libcpp_strlen(__s2);
+	do {
+		do {
+			if ((sc = *__s1++) == '\0')
+				return nullptr;
+		} while (sc != c);
+	} while (__libcpp_strncmp(__s1, __s2, len) != 0);
+	--__s2;
+	return const_cast<char *>(__s2);
+}
+
+/* function based on
+ * https://graphics.stanford.edu/~seander/bithacks.html#ValueInWord
+ *
+ * TODO: Add SSE optimized version
+ */
+inline _LIBCPP_INLINE_VISIBILITY
+void *__libcpp_memchr(const void *str, int ch, size_t len)
+{
+	if (len == 0)
+		return nullptr;
+
+    auto p = reinterpret_cast<const unsigned char *>(str);
+    unsigned char c = ch;
+    while (reinterpret_cast<uintptr_t>(p) % sizeof(uintmax_t) != 0 && len > 0)
+    {
+        if (*p == '\0')
+            return nullptr;
+        if (*p == c)
+            return  const_cast<void *>(reinterpret_cast<const void *>(p));
+        ++p;
+        --len;
+    }
+    if (len == 0)
+		return nullptr;
+
+    /* folowing line produce numbers like 0x010101... */
+    static constexpr uintmax_t zero_mask =
+			(numeric_limits<uintmax_t>::max() / numeric_limits<unsigned char>::max());
+    /* folowing line produce numbers like 0x808080... */
+    static constexpr uintmax_t check_mask = zero_mask * 0x80;
+    /* folowing line produce repeat the character on every byte */
+    uintmax_t value_mask = zero_mask * c;
+    auto q = reinterpret_cast<const uintmax_t *>(p);
+    for (;
+         len >= sizeof(uintmax_t);
+         ++q, len -= sizeof(uintmax_t))
+    {
+        uintmax_t v = *q ^ value_mask;
+        uintmax_t has_value = v - zero_mask & ~v & check_mask;
+        if (has_value)
+        {
+            p = reinterpret_cast<const unsigned char *>(q);
+            for (size_t i = 0; i < sizeof(uintmax_t); ++i)
+            {
+                if (p[i] == c)
+                    return  const_cast<void *>(reinterpret_cast<const void *>(&p[i]));
+            }
+        }
+    }
+    p = reinterpret_cast<const unsigned char *>(q);
+    while (len > 0)
+    {
+        if (*p == c)
+            return  const_cast<void *>(reinterpret_cast<const void *>(p));
+        ++p;
+        --len;
+    }
+	return nullptr;
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void *__libcpp_memcpy(void *dst, const void *src, size_t len)
+{
+	auto res = dst;
+	/* realign pointer if possible */
+	auto src0 = reinterpret_cast<uintptr_t>(src);
+	auto dst0 = reinterpret_cast<uintptr_t>(dst);
+	auto align = src0 % sizeof(uintmax_t);
+	if (align
+		&& align == dst0 % sizeof(uintmax_t))
+	{
+		auto src1 = reinterpret_cast<const unsigned char *>(src);
+		auto dst1 = reinterpret_cast<unsigned char *>(dst);
+		len -= sizeof(uintmax_t) - align;
+		while (align++ < sizeof(uintmax_t))
+			*dst1++ = *src1++;
+		src = reinterpret_cast<const void *>(src1);
+		dst = reinterpret_cast<void *>(dst1);
+	}
+
+	/* copy words */
+	if (len > 0)
+	{
+		auto src1 = reinterpret_cast<const uintmax_t *>(src);
+		auto dst1 = reinterpret_cast<uintmax_t *>(dst);
+		while (len >= sizeof(uintmax_t))
+		{
+			*dst1++ = *src1++;
+			len -= sizeof(uintmax_t);
+		}
+	}
+
+	/* copy remainder */
+	if (len > 0)
+	{
+		auto src1 = reinterpret_cast<const unsigned char *>(src);
+		auto dst1 = reinterpret_cast<unsigned char *>(dst);
+
+		while (len--)
+		{
+			*dst1++ = *src1++;
+		}
+	}
+	return res;
+}
+
+
+inline _LIBCPP_INLINE_VISIBILITY
+void *__libcpp_memmove(void *dst, const void *src, size_t len)
+{
+	if (len == 0 || dst == src)
+		return dst;
+
+	if (dst < src)
+	{
+		/*
+		 * Copy forward.
+		 */
+		return __libcpp_memcpy(dst, src, len);
+	} else {
+		/*
+		 * Copy backwards.
+		 */
+		auto res = dst;
+		auto src0 = reinterpret_cast<uintptr_t>(src) + len;
+		auto dst0 = reinterpret_cast<uintptr_t>(dst) + len;
+		auto align = src0 % sizeof(uintmax_t);
+		if (align
+			&& align == dst0 % sizeof(uintmax_t))
+		{
+			auto src1 = reinterpret_cast<const unsigned char *>(src);
+			auto dst1 = reinterpret_cast<unsigned char *>(dst);
+			len -= align;
+			while (align-- > 0)
+				*--dst1 = *--src1;
+			src = reinterpret_cast<const void *>(src1);
+			dst = reinterpret_cast<void *>(dst1);
+		}
+		else
+		{
+			src = reinterpret_cast<const void *>(src0);
+			dst = reinterpret_cast<void *>(dst0);
+		}
+
+		/* copy words */
+		if (len > 0)
+		{
+			auto src1 = reinterpret_cast<const uintmax_t *>(src);
+			auto dst1 = reinterpret_cast<uintmax_t *>(dst);
+			while (len >= sizeof(uintmax_t))
+			{
+				*--dst1 = *--src1;
+				len -= sizeof(uintmax_t);
+			}
+		}
+
+		/* copy remainder */
+		if (len > 0)
+		{
+			auto src1 = reinterpret_cast<const unsigned char *>(src);
+			auto dst1 = reinterpret_cast<unsigned char *>(dst);
+
+			while (len--)
+			{
+				*--dst1 = *--src1;
+			}
+		}
+
+		return res;
+	}
+}
+
+_LIBCPP_END_NAMESPACE_STD
+

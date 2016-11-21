@@ -520,7 +520,7 @@ class _LIBCPP_TYPE_VIS_ONLY duration
         typedef ratio<__mul<__n1, __d2, !value>::value,
                       __mul<__n2, __d1, !value>::value> type;
     };
-    
+
 public:
     typedef _Rep rep;
     typedef _Period period;
@@ -1054,8 +1054,10 @@ public:
     static _LIBCPP_CONSTEXPR_AFTER_CXX11 const bool is_steady = false;
 
     static time_point now() _NOEXCEPT;
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
     static time_t     to_time_t  (const time_point& __t) _NOEXCEPT;
     static time_point from_time_t(time_t __t) _NOEXCEPT;
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 };
 
 #ifndef _LIBCPP_HAS_NO_MONOTONIC_CLOCK
@@ -1081,7 +1083,7 @@ typedef system_clock high_resolution_clock;
 #if _LIBCPP_STD_VER > 11
 // Suffixes for duration literals [time.duration.literals]
 inline namespace literals
-{ 
+{
   inline namespace chrono_literals
   {
 
@@ -1138,7 +1140,7 @@ inline namespace literals
     {
         return chrono::duration<long double, micro> (__us);
     }
-    
+
 
     constexpr chrono::nanoseconds operator"" ns(unsigned long long __ns)
     {

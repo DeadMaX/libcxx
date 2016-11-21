@@ -839,24 +839,21 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 # endif // _LIBCPP_HAS_NO_THREADS
 #endif // _LIBCXX_DISABLE_C_LINKAGE
 
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
 // Allocation API
-#ifdef _LIBCXX_DISABLE_C_LINKAGE
 # define _LIBCPP_HAS_ALLOC_API_EXTERNAL
-#endif
-
 // String API
-#ifdef _LIBCXX_DISABLE_C_LINKAGE
 # define _LIBCPP_HAS_STRING_API_EXTERNAL
-#endif
-
 // Stdlib API
-#ifdef _LIBCXX_DISABLE_C_LINKAGE
 # define _LIBCPP_HAS_STDLIB_API_EXTERNAL
-#endif
-
+// Stdio API
+# define _LIBCPP_HAS_STDIO_API_EXTERNAL
 // Math API
-#ifdef _LIBCXX_DISABLE_C_LINKAGE
 # define _LIBCPP_HAS_MATH_API_EXTERNAL
+// Time API
+# define _LIBCPP_HAS_TIME_API_EXTERNAL
+// Errno API
+# define _LIBCPP_HAS_ERRNO_API_EXTERNAL
 #endif
 
 #if defined(_LIBCPP_HAS_NO_THREADS) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)
