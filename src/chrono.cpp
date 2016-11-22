@@ -10,19 +10,7 @@
 #include "chrono"
 #include "cerrno"        // errno
 #include "system_error"  // __throw_system_error
-#include <time.h>        // clock_gettime, CLOCK_MONOTONIC and CLOCK_REALTIME
-
-#if !defined(CLOCK_REALTIME)
-#include <sys/time.h>        // for gettimeofday and timeval
-#endif
-
-#if !defined(_LIBCPP_HAS_NO_MONOTONIC_CLOCK) && !defined(CLOCK_MONOTONIC)
-#if __APPLE__
-#include <mach/mach_time.h>  // mach_absolute_time, mach_timebase_info_data_t
-#else
-#error "Monotonic clock not implemented"
-#endif
-#endif
+#include <__time_support>// clock_gettime, CLOCK_MONOTONIC and CLOCK_REALTIME
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

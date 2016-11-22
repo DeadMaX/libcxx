@@ -30,7 +30,7 @@
 #include <__external_alloc>
 #else
 
-#include_next <stdlib.h>
+#include <stdlib.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

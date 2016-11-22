@@ -51,8 +51,7 @@ wctrans_t wctrans(const char* property);
 */
 
 #include <__config>
-#include <cctype>
-#include <wctype.h>
+#include <__wctype_support>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -60,6 +59,7 @@ wctrans_t wctrans(const char* property);
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 using ::wint_t;
 using ::wctrans_t;
 using ::wctype_t;
@@ -81,6 +81,7 @@ using ::towlower;
 using ::towupper;
 using ::towctrans;
 using ::wctrans;
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 _LIBCPP_END_NAMESPACE_STD
 

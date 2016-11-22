@@ -8,8 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_STDLIB_SUPPORT
-#define _LIBCPP_STDLIB_SUPPORT
+#ifndef _LIBCPP_WCTYPE_SUPPORT
+#define _LIBCPP_WCTYPE_SUPPORT
 
 #include <__config>
 
@@ -25,19 +25,20 @@
   #endif
 #endif
 
-#if defined(_LIBCPP_HAS_STDLIB_API_EXTERNAL) && \
-    __libcpp_has_include(<__external_stdlib>)
-#include <__external_stdlib>
+#if defined(_LIBCPP_HAS_WCTYPE_API_EXTERNAL) && \
+    __libcpp_has_include(<__external_wctype>)
+#include <__external_wctype>
 #else
 
-#include <stdlib.h>
+#include <cctype>
+#include <wctype.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-// inline _LIBCPP_INLINE_VISIBILITY
+//inline _LIBCPP_INLINE_VISIBILITY
 
 _LIBCPP_END_NAMESPACE_STD
 
 #endif
 
-#endif // _LIBCPP_STDLIB_SUPPORT
+#endif // _LIBCPP_CTYPE_SUPPORT

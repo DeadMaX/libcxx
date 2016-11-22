@@ -6,6 +6,10 @@
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
+using uint32 = int32_t;
+using wint_t = int32_t;
+
+#if 0
 /* function based on
  * https://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
  *
@@ -330,6 +334,7 @@ void *__libcpp_memmove(void *dst, const void *src, size_t len)
 		return res;
 	}
 }
+#endif
 
 _LIBCPP_END_NAMESPACE_STD
 

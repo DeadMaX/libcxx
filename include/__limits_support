@@ -30,7 +30,7 @@
 #include <__external_limits>
 #else
 
-#include_next <limits.h>
+#include <limits.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

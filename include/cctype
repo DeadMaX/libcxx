@@ -36,7 +36,7 @@ int toupper(int c);
 */
 
 #include <__config>
-#include <ctype.h>
+#include <__ctype_support>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -100,7 +100,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 #undef toupper
 #endif
 
-
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 using ::isalnum;
 using ::isalpha;
 using ::isblank;
@@ -115,6 +115,7 @@ using ::isupper;
 using ::isxdigit;
 using ::tolower;
 using ::toupper;
+#endif
 
 _LIBCPP_END_NAMESPACE_STD
 

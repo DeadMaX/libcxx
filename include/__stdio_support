@@ -30,7 +30,7 @@
 #include <__external_stdio>
 #else
 
-#include_next <stdio.h>
+#include <stdio.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

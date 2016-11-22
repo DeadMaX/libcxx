@@ -30,7 +30,7 @@
 #include <__external_math>
 #else
 
-#include_next <math.h>
+#include <math.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

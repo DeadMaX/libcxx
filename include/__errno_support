@@ -30,7 +30,7 @@
 #include <__external_errno>
 #else
 
-#include_next <errno.h>
+#include <errno.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
