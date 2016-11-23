@@ -220,9 +220,11 @@ void
 unique_lock<_Mutex>::lock()
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "unique_lock::lock: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+							 "unique_lock::lock: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "unique_lock::lock: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+							 "unique_lock::lock: already locked");
     __m_->lock();
     __owns_ = true;
 }
@@ -232,9 +234,11 @@ bool
 unique_lock<_Mutex>::try_lock()
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "unique_lock::try_lock: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+							 "unique_lock::try_lock: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "unique_lock::try_lock: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+							 "unique_lock::try_lock: already locked");
     __owns_ = __m_->try_lock();
     return __owns_;
 }
@@ -245,9 +249,11 @@ bool
 unique_lock<_Mutex>::try_lock_for(const chrono::duration<_Rep, _Period>& __d)
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "unique_lock::try_lock_for: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+							 "unique_lock::try_lock_for: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "unique_lock::try_lock_for: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+							 "unique_lock::try_lock_for: already locked");
     __owns_ = __m_->try_lock_for(__d);
     return __owns_;
 }
@@ -258,9 +264,11 @@ bool
 unique_lock<_Mutex>::try_lock_until(const chrono::time_point<_Clock, _Duration>& __t)
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "unique_lock::try_lock_until: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+							 "unique_lock::try_lock_until: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "unique_lock::try_lock_until: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+							 "unique_lock::try_lock_until: already locked");
     __owns_ = __m_->try_lock_until(__t);
     return __owns_;
 }
@@ -270,7 +278,8 @@ void
 unique_lock<_Mutex>::unlock()
 {
     if (!__owns_)
-        __throw_system_error(EPERM, "unique_lock::unlock: not locked");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+							 "unique_lock::unlock: not locked");
     __m_->unlock();
     __owns_ = false;
 }

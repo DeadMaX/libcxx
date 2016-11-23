@@ -1,0 +1,44 @@
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCPP_ASSERT_SUPPORT
+#define _LIBCPP_ASSERT_SUPPORT
+
+#include <__config>
+
+#ifndef _LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER
+#pragma GCC system_header
+#endif
+
+#ifndef __libcpp_has_include
+  #ifndef __has_include
+    #define __libcpp_has_include(x) 0
+  #else
+    #define __libcpp_has_include(x) __has_include(x)
+  #endif
+#endif
+
+#if defined(_LIBCPP_HAS_ASSERT_API_EXTERNAL) && \
+    __libcpp_has_include(<__external_assert>)
+#include <__external_assert>
+#else
+
+#include <assert.h>
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+// inline _LIBCPP_INLINE_VISIBILITY
+#define __libcpp_assert(x) assert(x)
+
+_LIBCPP_END_NAMESPACE_STD
+
+#endif
+
+#endif // _LIBCPP_ASSERT_SUPPORT

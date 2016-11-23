@@ -67,7 +67,8 @@ int __libcpp_condvar_broadcast(__libcpp_condvar_t* __cv);
 _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_condvar_wait(__libcpp_condvar_t* __cv, __libcpp_mutex_t* __m);
 _LIBCPP_THREAD_ABI_VISIBILITY
-int __libcpp_condvar_timedwait(__libcpp_condvar_t* __cv, __libcpp_mutex_t* __m, timespec* __ts);
+int __libcpp_condvar_timedwait(__libcpp_condvar_t* __cv, __libcpp_mutex_t* __m,
+		chrono::time_point<chrono::system_clock, chrono::nanoseconds> __tp);
 _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_condvar_destroy(__libcpp_condvar_t* __cv);
 
@@ -166,9 +167,28 @@ int __libcpp_condvar_wait(__libcpp_condvar_t* __cv, __libcpp_mutex_t* __m)
     return pthread_cond_wait(__cv, __m);
 }
 
-int __libcpp_condvar_timedwait(__libcpp_condvar_t* __cv, __libcpp_mutex_t* __m, timespec* __ts)
+int __libcpp_condvar_timedwait(__libcpp_condvar_t* __cv, __libcpp_mutex_t* __m,
+	chrono::time_point<chrono::system_clock, chrono::nanoseconds> __tp)
 {
-    return pthread_cond_timedwait(__cv, __m, __ts);
+    chrono::nanoseconds d = __tp.time_since_epoch();
+    if (d > chrono::nanoseconds(0x59682F000000E941))
+        d = chrono::nanoseconds(0x59682F000000E941);
+    timespec __ts;
+    chrono::seconds s = chrono::duration_cast<chrono::seconds>(d);
+    typedef decltype(__ts.tv_sec) ts_sec;
+    _LIBCPP_CONSTEXPR ts_sec ts_sec_max = numeric_limits<ts_sec>::max();
+    if (s.count() < ts_sec_max)
+    {
+        __ts.tv_sec = static_cast<ts_sec>(s.count());
+        __ts.tv_nsec = static_cast<decltype(__ts.tv_nsec)>((d - s).count());
+    }
+    else
+    {
+        __ts.tv_sec = ts_sec_max;
+        __ts.tv_nsec = giga::num - 1;
+    }
+
+    return pthread_cond_timedwait(__cv, __m, &__ts);
 }
 
 int __libcpp_condvar_destroy(__libcpp_condvar_t* __cv)

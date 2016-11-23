@@ -842,6 +842,8 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 #ifdef _LIBCXX_DISABLE_C_LINKAGE
 // Allocation API
 # define _LIBCPP_HAS_ALLOC_API_EXTERNAL
+// Assertion API
+# define _LIBCPP_HAS_ASSERT_API_EXTERNAL
 // String API
 # define _LIBCPP_HAS_STRING_API_EXTERNAL
 // Stdlib API
@@ -858,6 +860,8 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 # define _LIBCPP_HAS_CTYPE_API_EXTERNAL
 // Wctype API
 # define _LIBCPP_HAS_WCTYPE_API_EXTERNAL
+// Locale API
+# define _LIBCPP_HAS_LOCALE_API_EXTERNAL
 #endif
 
 #if defined(_LIBCPP_HAS_NO_THREADS) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)

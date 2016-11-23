@@ -18,7 +18,7 @@ Macros:
 */
 
 #include <__config>
-#include <assert.h>
+#include <__assert_support>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header

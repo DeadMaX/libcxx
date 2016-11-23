@@ -14,6 +14,7 @@
 #include "algorithm"
 #include "__hash_table"
 #include "mutex"
+#include "iostream"
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
@@ -55,17 +56,17 @@ __i_node::~__i_node()
     if (__next_)
     {
         __next_->~__i_node();
-        free(__next_);
+        ::operator delete(__next_);
     }
 }
 
 __c_node::~__c_node()
 {
-    free(beg_);
+    ::operator delete(beg_);
     if (__next_)
     {
         __next_->~__c_node();
-        free(__next_);
+        ::operator delete(__next_);
     }
 }
 
@@ -88,10 +89,10 @@ __libcpp_db::~__libcpp_db()
             if (*p != nullptr)
             {
                 (*p)->~__c_node();
-                free(*p);
+               ::operator delete(*p);
             }
         }
-        free(__cbeg_);
+        ::operator delete(__cbeg_);
     }
     if (__ibeg_)
     {
@@ -100,10 +101,10 @@ __libcpp_db::~__libcpp_db()
             if (*p != nullptr)
             {
                 (*p)->~__i_node();
-                free(*p);
+                ::operator delete(*p);
             }
         }
-        free(__ibeg_);
+        ::operator delete(__ibeg_);
     }
 }
 
@@ -166,7 +167,7 @@ __libcpp_db::__insert_c(void* __c)
                 q = r;
             }
         }
-        free(__cbeg_);
+        ::operator delete(__cbeg_);
         __cbeg_ = cbeg;
         __cend_ = __cbeg_ + nc;
     }
@@ -211,7 +212,7 @@ __libcpp_db::__erase_i(void* __i)
             --__isz_;
             if (c != nullptr)
                 c->__remove(p);
-            free(p);
+            ::operator delete(p);
         }
     }
 }
@@ -331,8 +332,8 @@ __libcpp_db::__erase_c(void* __c)
             --p->end_;
             (*p->end_)->__c_ = nullptr;
         }
-        free(p->beg_);
-        free(p);
+        ::operator delete(p->beg_);
+        ::operator delete(p);
         --__csz_;
     }
 }
@@ -473,7 +474,7 @@ __c_node::__add(__i_node* i)
 
         if (nc > 1)
             memcpy(beg, beg_, nc/2*sizeof(__i_node*));
-        free(beg_);
+        ::operator delete(beg_);
         beg_ = beg;
         end_ = beg_ + nc/2;
         cap_ = beg_ + nc;
@@ -506,7 +507,7 @@ __libcpp_db::__insert_iterator(void* __i)
                 q = r;
             }
         }
-        free(__ibeg_);
+        ::operator delete(__ibeg_);
         __ibeg_ = ibeg;
         __iend_ = __ibeg_ + nc;
     }
@@ -551,5 +552,13 @@ __c_node::__remove(__i_node* p)
     if (--end_ != r)
         memmove(r, r+1, static_cast<size_t>(end_ - r)*sizeof(__i_node*));
 }
+
+#if _LIBCPP_DEBUG_LEVEL >= 1
+_LIBCPP_HIDDEN
+void __libcpp_print_error(const char *msg)
+{
+	cerr<<msg;
+}
+#endif
 
 _LIBCPP_END_NAMESPACE_STD

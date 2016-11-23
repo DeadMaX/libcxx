@@ -18,11 +18,27 @@
 #endif
 
 #if _LIBCPP_DEBUG_LEVEL >= 1
-#   include <cstdlib>
-#   include <cstdio>
-#   include <cstddef>
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+extern "C" _LIBCPP_NORETURN void abort();
+#endif
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+_LIBCPP_INLINE_VISIBILITY
+void __libcpp_print_error(const char *);
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+using ::abort;
+#else
+_LIBCPP_NORETURN
+void abort();
+#endif
+
+_LIBCPP_END_NAMESPACE_STD
+
 #   ifndef _LIBCPP_ASSERT
-#      define _LIBCPP_ASSERT(x, m) ((x) ? (void)0 : (_VSTD::fprintf(stderr, "%s\n", m), _VSTD::abort()))
+#      define _LIBCPP_ASSERT(x, m) ((x) ? (void)0 : (_VSTD::__libcpp_print_error(m "\n"), _VSTD::abort()))
 #   endif
 #endif
 
@@ -44,6 +60,7 @@
 #endif
 
 #if _LIBCPP_DEBUG_LEVEL >= 2
+#include <cstddef>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

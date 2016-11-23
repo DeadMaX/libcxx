@@ -1,0 +1,83 @@
+// -*- C++ -*-
+
+#include <functional>
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+using __libcpp_mutex_t = int;
+using __libcpp_condvar_t = int;
+using __libcpp_tls_key = int;
+using __libcpp_thread_id = int;
+using __libcpp_thread_t = int;
+#define _LIBCPP_MUTEX_INITIALIZER 0
+#define _LIBCPP_CONDVAR_INITIALIZER 0
+
+inline _LIBCPP_INLINE_VISIBILITY
+__libcpp_thread_id __libcpp_thread_get_current_id()
+{
+	return 0;
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+__libcpp_thread_id __libcpp_thread_get_id(const __libcpp_thread_t *__a)
+{
+	return 0;
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+bool __libcpp_thread_id_equal(const __libcpp_thread_id& __a, const __libcpp_thread_id &__b)
+{
+	return std::equal_to<__libcpp_thread_id>{}(__a, __b);
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+bool __libcpp_thread_id_less(const __libcpp_thread_id& __a, const __libcpp_thread_id &__b)
+{
+	return std::less<__libcpp_thread_id>{}(__a, __b);
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_thread_yield()
+{
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void *__libcpp_tls_get(const __libcpp_tls_key &__key)
+{
+	return nullptr;
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_tls_set(const __libcpp_tls_key &__key, void *__data)
+{
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_condvar_destroy(__libcpp_condvar_t *)
+{
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_condvar_signal(__libcpp_condvar_t *)
+{
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_condvar_broadcast(__libcpp_condvar_t *)
+{
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+int __libcpp_condvar_wait(__libcpp_condvar_t *, __libcpp_mutex_t *)
+{
+	return 0;
+}
+
+inline _LIBCPP_INLINE_VISIBILITY
+int __libcpp_condvar_timedwait(__libcpp_condvar_t *, __libcpp_mutex_t *,
+							chrono::time_point<chrono::system_clock, chrono::nanoseconds>tp)
+{
+	return 0;
+}
+
+_LIBCPP_END_NAMESPACE_STD
