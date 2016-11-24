@@ -30,14 +30,21 @@
 #include <__external_assert>
 #else
 
+#if defined(_LIBCPP_HAS_ASSERT_API_EXTERNAL)
+#define _LIBCPP_ASSERT_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_ASSERT_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 #include <assert.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-// inline _LIBCPP_INLINE_VISIBILITY
-#define __libcpp_assert(x) assert(x)
-
 _LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 

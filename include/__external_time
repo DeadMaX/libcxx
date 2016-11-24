@@ -1,19 +1,18 @@
 // -*- C++ -*-
 
-_LIBCPP_BEGIN_NAMESPACE_STD
-
 #define CLOCK_MONOTONIC
+
+_LIBCPP_BEGIN_NAMESPACE_STD
 
 namespace chrono
 {
 
-template <typename _Timepoint>
+template <class _Timepoint>
+_LIBCPP_TIME_ABI_VISIBILITY
 _Timepoint __libcpp_get_current_time()
-{
-//	using _Clock = typename _Timepoint::clock;
-	using _Duration = typename _Timepoint::duration;
 
-	return _Timepoint(duration_cast<_Duration>(seconds(0)));
+{
+	return _Timepoint(seconds(0));
 }
 
 }

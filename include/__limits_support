@@ -25,19 +25,27 @@
   #endif
 #endif
 
-#if defined(_LIBCPP_HAS_STDLIB_API_EXTERNAL) && \
+#if defined(_LIBCPP_HAS_LIMITS_API_EXTERNAL) && \
     __libcpp_has_include(<__external_limits>)
 #include <__external_limits>
 #else
+
+#if defined(_LIBCPP_HAS_LIMITS_API_EXTERNAL)
+#define _LIBCPP_LIMITS_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_LIMITS_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 
 #include <limits.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-// inline _LIBCPP_INLINE_VISIBILITY
-
 _LIBCPP_END_NAMESPACE_STD
 
-#endif
+#endif // _LIBCXX_DISABLE_C_LINKAGE
+
+#endif // ! __external_limits
 
 #endif // _LIBCPP_LIMITS_SUPPORT

@@ -30,6 +30,14 @@
 #include <__external_ctime>
 #else
 
+#if defined(_LIBCPP_HAS_TIME_API_EXTERNAL)
+#define _LIBCPP_TIME_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_TIME_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 #include <time.h>
 #include <errno.h>
 
@@ -47,9 +55,9 @@
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-// inline _LIBCPP_INLINE_VISIBILITY
-
 _LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 

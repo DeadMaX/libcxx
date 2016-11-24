@@ -30,6 +30,14 @@
 #include <__external_math>
 #else
 
+#if defined(_LIBCPP_HAS_MATH_API_EXTERNAL)
+#define _LIBCPP_MATH_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_MATH_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 #include <math.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
@@ -37,6 +45,8 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 // inline _LIBCPP_INLINE_VISIBILITY
 
 _LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 

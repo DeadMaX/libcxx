@@ -862,6 +862,8 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 # define _LIBCPP_HAS_WCTYPE_API_EXTERNAL
 // Locale API
 # define _LIBCPP_HAS_LOCALE_API_EXTERNAL
+// Limits API
+#define _LIBCPP_HAS_LIMITS_API_EXTERNAL
 #endif
 
 #if defined(_LIBCPP_HAS_NO_THREADS) && defined(_LIBCPP_HAS_THREAD_API_PTHREAD)

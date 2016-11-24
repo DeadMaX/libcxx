@@ -30,15 +30,23 @@
 #include <__external_wctype>
 #else
 
+#if defined(_LIBCPP_HAS_WCTYPE_API_EXTERNAL)
+#define _LIBCPP_WCTYPE_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_WCTYPE_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 #include <cctype>
 #include <wctype.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-//inline _LIBCPP_INLINE_VISIBILITY
-
 _LIBCPP_END_NAMESPACE_STD
 
 #endif
 
-#endif // _LIBCPP_CTYPE_SUPPORT
+#endif
+
+#endif // _LIBCPP_WCTYPE_SUPPORT

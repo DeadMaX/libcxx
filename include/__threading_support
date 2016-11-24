@@ -31,8 +31,6 @@
     __libcpp_has_include(<__external_threading>)
 #include <__external_threading>
 #else
-#include <pthread.h>
-#include <sched.h>
 
 #if defined(_LIBCPP_HAS_THREAD_API_EXTERNAL)
 #define _LIBCPP_THREAD_ABI_VISIBILITY _LIBCPP_FUNC_VIS
@@ -40,12 +38,44 @@
 #define _LIBCPP_THREAD_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
 #endif
 
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+#include <pthread.h>
+#include <sched.h>
+#endif
+
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-// Mutex
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 typedef pthread_mutex_t __libcpp_mutex_t;
 #define _LIBCPP_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
 
+typedef pthread_cond_t __libcpp_condvar_t;
+#define _LIBCPP_CONDVAR_INITIALIZER PTHREAD_COND_INITIALIZER
+
+typedef pthread_t __libcpp_thread_id;
+
+typedef pthread_t __libcpp_thread_t;
+
+typedef pthread_key_t __libcpp_tls_key;
+
+#else
+
+typedef void * __libcpp_mutex_t;
+#define _LIBCPP_MUTEX_INITIALIZER nullptr
+
+typedef void * __libcpp_condvar_t;
+#define _LIBCPP_CONDVAR_INITIALIZER nullptr
+
+typedef void * __libcpp_thread_id;
+
+typedef void * __libcpp_thread_t;
+
+typedef void * __libcpp_tls_key;
+
+#endif
+
+// Mutex
 _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_recursive_mutex_init(__libcpp_mutex_t* __m);
 _LIBCPP_THREAD_ABI_VISIBILITY
@@ -58,8 +88,6 @@ _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_mutex_destroy(__libcpp_mutex_t* __m);
 
 // Condition variable
-typedef pthread_cond_t __libcpp_condvar_t;
-#define _LIBCPP_CONDVAR_INITIALIZER PTHREAD_COND_INITIALIZER
 _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_condvar_signal(__libcpp_condvar_t* __cv);
 _LIBCPP_THREAD_ABI_VISIBILITY
@@ -73,14 +101,12 @@ _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_condvar_destroy(__libcpp_condvar_t* __cv);
 
 // Thread id
-typedef pthread_t __libcpp_thread_id;
 _LIBCPP_THREAD_ABI_VISIBILITY
 bool __libcpp_thread_id_equal(__libcpp_thread_id t1, __libcpp_thread_id t2);
 _LIBCPP_THREAD_ABI_VISIBILITY
 bool __libcpp_thread_id_less(__libcpp_thread_id t1, __libcpp_thread_id t2);
 
 // Thread
-typedef pthread_t __libcpp_thread_t;
 _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_thread_create(__libcpp_thread_t* __t, void* (*__func)(void*), void* __arg);
 _LIBCPP_THREAD_ABI_VISIBILITY
@@ -95,7 +121,6 @@ _LIBCPP_THREAD_ABI_VISIBILITY
 void __libcpp_thread_yield();
 
 // Thread local storage
-typedef pthread_key_t __libcpp_tls_key;
 _LIBCPP_THREAD_ABI_VISIBILITY
 int __libcpp_tls_create(__libcpp_tls_key* __key, void (*__at_exit)(void*));
 _LIBCPP_THREAD_ABI_VISIBILITY

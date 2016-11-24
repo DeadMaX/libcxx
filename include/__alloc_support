@@ -30,28 +30,51 @@
 #include <__external_alloc>
 #else
 
+#if defined(_LIBCPP_HAS_ALLOC_API_EXTERNAL)
+#define _LIBCPP_ALLOC_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_ALLOC_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#include <cstddef>
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+_LIBCPP_ALLOC_ABI_VISIBILITY
+void *__libcpp_alloc(size_t len);
+
+_LIBCPP_ALLOC_ABI_VISIBILITY
+int __libcpp_alloc_align(void **memptr, size_t alignment, size_t size);
+
+_LIBCPP_ALLOC_ABI_VISIBILITY
+void __libcpp_free(void *memptr);
+
+_LIBCPP_END_NAMESPACE_STD
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 #include <stdlib.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-inline _LIBCPP_INLINE_VISIBILITY
 void *__libcpp_alloc(size_t len)
 {
         return ::malloc(len);
 }
 
-inline _LIBCPP_INLINE_VISIBILITY
 int __libcpp_alloc_align(void **memptr, size_t alignment, size_t size)
 {
     return ::posix_memalign(memptr, alignment, size);
 }
 
-inline _LIBCPP_INLINE_VISIBILITY
 void __libcpp_free(void *memptr)
 {
     ::free(memptr);
 }
+
 _LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 

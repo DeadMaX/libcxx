@@ -55,6 +55,7 @@ template <> struct char_traits<wchar_t>;
 #include <algorithm>  // for search and min
 #include <cstdio>     // For EOF.
 #include <memory>     // for __murmur2_or_cityhash
+#include <cwchar>     // for wchar_t and wint_t
 
 #include <__undef_min_max>
 
@@ -104,7 +105,7 @@ struct _LIBCPP_TYPE_VIS_ONLY char_traits
     static inline _LIBCPP_CONSTEXPR bool      eq_int_type(int_type __c1, int_type __c2) _NOEXCEPT
         {return __c1 == __c2;}
     static inline _LIBCPP_CONSTEXPR int_type  eof() _NOEXCEPT
-        {return int_type(EOF);}
+        {return int_type(__libcpp_get_eof<char_type>());}
 };
 
 template <class _CharT>
@@ -239,8 +240,88 @@ struct _LIBCPP_TYPE_VIS_ONLY char_traits<char>
     static inline _LIBCPP_CONSTEXPR bool eq_int_type(int_type __c1, int_type __c2) _NOEXCEPT
         {return __c1 == __c2;}
     static inline _LIBCPP_CONSTEXPR int_type  eof() _NOEXCEPT
-        {return int_type(EOF);}
+        {return int_type(__libcpp_get_eof<char_type>());}
 };
+
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+inline
+int
+char_traits<char>::compare(const char_type* __s1, const char_type* __s2, size_t __n) _NOEXCEPT
+{
+    for (; __n; --__n, ++__s1, ++__s2)
+    {
+        if (lt(*__s1, *__s2))
+            return -1;
+        if (lt(*__s2, *__s1))
+            return 1;
+    }
+    return 0;
+}
+
+inline
+size_t
+char_traits<char>::length(const char_type* __s) _NOEXCEPT
+{
+    size_t __len = 0;
+    for (; !eq(*__s, char_type(0)); ++__s)
+        ++__len;
+    return __len;
+}
+
+inline
+const char*
+char_traits<char>::find(const char_type* __s, size_t __n, const char_type& __a) _NOEXCEPT
+{
+    for (; __n; --__n)
+    {
+        if (eq(*__s, __a))
+            return __s;
+        ++__s;
+    }
+    return 0;
+}
+
+inline
+char*
+char_traits<char>::move(char_type* __s1, const char_type* __s2, size_t __n) _NOEXCEPT
+{
+    char_type* __r = __s1;
+    if (__s1 < __s2)
+    {
+        for (; __n; --__n, ++__s1, ++__s2)
+            assign(*__s1, *__s2);
+    }
+    else if (__s2 < __s1)
+    {
+        __s1 += __n;
+        __s2 += __n;
+        for (; __n; --__n)
+            assign(*--__s1, *--__s2);
+    }
+    return __r;
+}
+
+inline
+char*
+char_traits<char>::copy(char_type* __s1, const char_type* __s2, size_t __n) _NOEXCEPT
+{
+    _LIBCPP_ASSERT(__s2 < __s1 || __s2 >= __s1+__n, "char_traits::copy overlapped range");
+    char_type* __r = __s1;
+    for (; __n; --__n, ++__s1, ++__s2)
+        assign(*__s1, *__s2);
+    return __r;
+}
+
+inline
+char*
+char_traits<char>::assign(char_type* __s, size_t __n, char_type __a) _NOEXCEPT
+{
+    char_type* __r = __s;
+    for (; __n; --__n, ++__s)
+        assign(*__s, __a);
+    return __r;
+}
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 // char_traits<wchar_t>
 
@@ -248,7 +329,11 @@ template <>
 struct _LIBCPP_TYPE_VIS_ONLY char_traits<wchar_t>
 {
     typedef wchar_t   char_type;
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
     typedef wint_t    int_type;
+#else
+	typedef wchar_t   int_type;
+#endif
     typedef streamoff off_type;
     typedef streampos pos_type;
     typedef mbstate_t state_type;
@@ -295,8 +380,88 @@ struct _LIBCPP_TYPE_VIS_ONLY char_traits<wchar_t>
     static inline _LIBCPP_CONSTEXPR bool eq_int_type(int_type __c1, int_type __c2) _NOEXCEPT
         {return __c1 == __c2;}
     static inline _LIBCPP_CONSTEXPR int_type eof() _NOEXCEPT
-        {return int_type(WEOF);}
+        {return int_type(__libcpp_get_eof<char_type>());}
 };
+
+#ifdef _LIBCXX_DISABLE_C_LINKAGE
+inline
+int
+char_traits<wchar_t>::compare(const char_type* __s1, const char_type* __s2, size_t __n) _NOEXCEPT
+{
+    for (; __n; --__n, ++__s1, ++__s2)
+    {
+        if (lt(*__s1, *__s2))
+            return -1;
+        if (lt(*__s2, *__s1))
+            return 1;
+    }
+    return 0;
+}
+
+inline
+size_t
+char_traits<wchar_t>::length(const char_type* __s) _NOEXCEPT
+{
+    size_t __len = 0;
+    for (; !eq(*__s, char_type(0)); ++__s)
+        ++__len;
+    return __len;
+}
+
+inline
+const wchar_t*
+char_traits<wchar_t>::find(const char_type* __s, size_t __n, const char_type& __a) _NOEXCEPT
+{
+    for (; __n; --__n)
+    {
+        if (eq(*__s, __a))
+            return __s;
+        ++__s;
+    }
+    return 0;
+}
+
+inline
+wchar_t*
+char_traits<wchar_t>::move(char_type* __s1, const char_type* __s2, size_t __n) _NOEXCEPT
+{
+    char_type* __r = __s1;
+    if (__s1 < __s2)
+    {
+        for (; __n; --__n, ++__s1, ++__s2)
+            assign(*__s1, *__s2);
+    }
+    else if (__s2 < __s1)
+    {
+        __s1 += __n;
+        __s2 += __n;
+        for (; __n; --__n)
+            assign(*--__s1, *--__s2);
+    }
+    return __r;
+}
+
+inline
+wchar_t*
+char_traits<wchar_t>::copy(char_type* __s1, const char_type* __s2, size_t __n) _NOEXCEPT
+{
+    _LIBCPP_ASSERT(__s2 < __s1 || __s2 >= __s1+__n, "char_traits::copy overlapped range");
+    char_type* __r = __s1;
+    for (; __n; --__n, ++__s1, ++__s2)
+        assign(*__s1, *__s2);
+    return __r;
+}
+
+inline
+wchar_t*
+char_traits<wchar_t>::assign(char_type* __s, size_t __n, char_type __a) _NOEXCEPT
+{
+    char_type* __r = __s;
+    for (; __n; --__n, ++__s)
+        assign(*__s, __a);
+    return __r;
+}
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 #ifndef _LIBCPP_HAS_NO_UNICODE_CHARS
 

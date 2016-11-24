@@ -30,7 +30,28 @@
 #include <__external_time>
 #else
 
+#if defined(_LIBCPP_HAS_TIME_API_EXTERNAL)
+#define _LIBCPP_TIME_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_TIME_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
 #include <__ctime_support>
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+namespace chrono
+{
+
+template <class _Timepoint>
+_LIBCPP_TIME_ABI_VISIBILITY
+_Timepoint __libcpp_get_current_time();
+
+}
+
+_LIBCPP_END_NAMESPACE_STD
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
@@ -89,7 +110,7 @@ init_steady_clock()
 #endif // __APPLE__
 
 template <class _Timepoint>
-inline _LIBCPP_INLINE_VISIBILITY
+_LIBCPP_TIME_ABI_VISIBILITY
 _Timepoint __libcpp_get_current_time()
 {
 	using _Clock = typename _Timepoint::clock;
@@ -126,8 +147,9 @@ _Timepoint __libcpp_get_current_time()
 
 }
 
-
 _LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 

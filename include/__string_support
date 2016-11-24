@@ -30,60 +30,132 @@
 #include <__external_string>
 #else
 
-#include <string.h>
-#include <wchar.h>
+#if defined(_LIBCPP_HAS_STRING_API_EXTERNAL)
+#define _LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_STRING_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-inline _LIBCPP_INLINE_VISIBILITY
-char* __libcpp_strchr(const char* __s, int __c) {return (char*)strchr(__s, __c);}
+_LIBCPP_STRING_ABI_VISIBILITY
+char* __libcpp_strchr(const char* __s, int __c);
 
-inline _LIBCPP_INLINE_VISIBILITY
-char* __libcpp_strrchr(const char* __s, int __c) {return (char*)strrchr(__s, __c);}
+_LIBCPP_STRING_ABI_VISIBILITY
+char* __libcpp_strrchr(const char* __s, int __c);
 
-inline _LIBCPP_INLINE_VISIBILITY
-char* __libcpp_strstr(const char* __s1, const char* __s2) {return (char*)strstr(__s1, __s2);}
+_LIBCPP_STRING_ABI_VISIBILITY
+char* __libcpp_strstr(const char* __s1, const char* __s2);
 
-inline _LIBCPP_INLINE_VISIBILITY
-char* __libcpp_strpbrk(const char* __s1, const char* __s2) {return (char*)strpbrk(__s1, __s2);}
+_LIBCPP_STRING_ABI_VISIBILITY
+char* __libcpp_strpbrk(const char* __s1, const char* __s2);
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_strlen(const char *__s1) {return strlen(__s1);}
+_LIBCPP_STRING_ABI_VISIBILITY
+int __libcpp_strlen(const char *__s1);
 
-inline _LIBCPP_INLINE_VISIBILITY
-void* __libcpp_memset(void* __s, int __c, size_t __n) {return (void*)memset(__s, __c, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+void* __libcpp_memset(void* __s, int __c, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-void* __libcpp_memchr(const void* __s, int __c, size_t __n) {return (void*)memchr(__s, __c, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+void* __libcpp_memchr(const void* __s, int __c, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_memcmp(const void *__s1, const void *__s2, size_t __n) {return memcmp(__s1, __s2, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+int __libcpp_memcmp(const void *__s1, const void *__s2, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-void* __libcpp_memmove(void *__s1, const void *__s2, size_t __n) {return memmove(__s1, __s2, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+void* __libcpp_memmove(void *__s1, const void *__s2, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-void* __libcpp_memcpy(void *__s1, const void *__s2, size_t __n) {return memcpy(__s1, __s2, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+void* __libcpp_memcpy(void *__s1, const void *__s2, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_wmemcmp(const wchar_t *__s1, const wchar_t *__s2, size_t __n) {return wmemcmp(__s1, __s2, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+int __libcpp_wmemcmp(const wchar_t *__s1, const wchar_t *__s2, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-int __libcpp_wcslen(const wchar_t *__s1) {return wcslen(__s1);}
+_LIBCPP_STRING_ABI_VISIBILITY
+int __libcpp_wcslen(const wchar_t *__s1);
 
-inline _LIBCPP_INLINE_VISIBILITY
-wchar_t* __libcpp_wmemchr(const wchar_t* __s, wchar_t __c, size_t __n) {return (wchar_t*)wmemchr(__s, __c, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+wchar_t* __libcpp_wmemchr(const wchar_t* __s, wchar_t __c, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-wchar_t* __libcpp_wmemmove(wchar_t *__s1, const wchar_t *__s2, size_t __n) {return wmemmove(__s1, __s2, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+wchar_t* __libcpp_wmemmove(wchar_t *__s1, const wchar_t *__s2, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-wchar_t* __libcpp_wmemcpy(wchar_t *__s1, const wchar_t *__s2, size_t __n) {return wmemcpy(__s1, __s2, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+wchar_t* __libcpp_wmemcpy(wchar_t *__s1, const wchar_t *__s2, size_t __n);
 
-inline _LIBCPP_INLINE_VISIBILITY
-wchar_t* __libcpp_wmemset(wchar_t* __s, wchar_t __c, size_t __n) {return wmemset(__s, __c, __n);}
+_LIBCPP_STRING_ABI_VISIBILITY
+wchar_t* __libcpp_wmemset(wchar_t* __s, wchar_t __c, size_t __n);
+
+template <typename _CharT>
+_LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_CONSTEXPR
+_CharT __libcpp_get_eof();
 
 _LIBCPP_END_NAMESPACE_STD
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
+#include <cstdio>		// For EOF
+#include <string.h>
+#include <wchar.h>		// For WEOF
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+char* __libcpp_strchr(const char* __s, int __c) {return (char*)strchr(__s, __c);}
+
+char* __libcpp_strrchr(const char* __s, int __c) {return (char*)strrchr(__s, __c);}
+
+char* __libcpp_strstr(const char* __s1, const char* __s2) {return (char*)strstr(__s1, __s2);}
+
+char* __libcpp_strpbrk(const char* __s1, const char* __s2) {return (char*)strpbrk(__s1, __s2);}
+
+int __libcpp_strlen(const char *__s1) {return strlen(__s1);}
+
+void* __libcpp_memset(void* __s, int __c, size_t __n) {return (void*)memset(__s, __c, __n);}
+
+void* __libcpp_memchr(const void* __s, int __c, size_t __n) {return (void*)memchr(__s, __c, __n);}
+
+int __libcpp_memcmp(const void *__s1, const void *__s2, size_t __n) {return memcmp(__s1, __s2, __n);}
+
+void* __libcpp_memmove(void *__s1, const void *__s2, size_t __n) {return memmove(__s1, __s2, __n);}
+
+void* __libcpp_memcpy(void *__s1, const void *__s2, size_t __n) {return memcpy(__s1, __s2, __n);}
+
+int __libcpp_wmemcmp(const wchar_t *__s1, const wchar_t *__s2, size_t __n) {return wmemcmp(__s1, __s2, __n);}
+
+int __libcpp_wcslen(const wchar_t *__s1) {return wcslen(__s1);}
+
+wchar_t* __libcpp_wmemchr(const wchar_t* __s, wchar_t __c, size_t __n) {return (wchar_t*)wmemchr(__s, __c, __n);}
+
+wchar_t* __libcpp_wmemmove(wchar_t *__s1, const wchar_t *__s2, size_t __n) {return wmemmove(__s1, __s2, __n);}
+
+wchar_t* __libcpp_wmemcpy(wchar_t *__s1, const wchar_t *__s2, size_t __n) {return wmemcpy(__s1, __s2, __n);}
+
+wchar_t* __libcpp_wmemset(wchar_t* __s, wchar_t __c, size_t __n) {return wmemset(__s, __c, __n);}
+
+template <typename _CharT>
+_LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_CONSTEXPR
+_CharT __libcpp_get_eof()
+{
+	return _CharT(EOF);
+}
+
+template <>
+_LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_CONSTEXPR
+char __libcpp_get_eof<char>()
+{
+	return char(EOF);
+}
+
+template <>
+_LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_CONSTEXPR
+wchar_t __libcpp_get_eof<wchar_t>()
+{
+	return char(WEOF);
+}
+
+_LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 

@@ -25,19 +25,27 @@
   #endif
 #endif
 
-#if defined(_LIBCPP_HAS_WCTYPE_API_EXTERNAL) && \
+#if defined(_LIBCPP_HAS_WCHAR_API_EXTERNAL) && \
     __libcpp_has_include(<__external_wchar>)
 #include <__external_wchar>
 #else
+
+#if defined(_LIBCPP_HAS_WCHAR_API_EXTERNAL)
+#define _LIBCPP_WCHAR_ABI_VISIBILITY _LIBCPP_FUNC_VIS
+#else
+#define _LIBCPP_WCHAR_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
+#endif
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
 
 #include <cwctype>
 #include <wchar.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-//inline _LIBCPP_INLINE_VISIBILITY
-
 _LIBCPP_END_NAMESPACE_STD
+
+#endif
 
 #endif
 
