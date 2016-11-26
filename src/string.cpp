@@ -16,7 +16,6 @@
 #ifdef _LIBCPP_MSVCRT
 #include "support/win32/support.h"
 #endif // _LIBCPP_MSVCRT
-#include <stdio.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

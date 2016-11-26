@@ -431,9 +431,11 @@ void
 shared_lock<_Mutex>::lock()
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "shared_lock::lock: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+                             "shared_lock::lock: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "shared_lock::lock: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+                             "shared_lock::lock: already locked");
     __m_->lock_shared();
     __owns_ = true;
 }
@@ -443,9 +445,11 @@ bool
 shared_lock<_Mutex>::try_lock()
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "shared_lock::try_lock: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+                             "shared_lock::try_lock: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "shared_lock::try_lock: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+                             "shared_lock::try_lock: already locked");
     __owns_ = __m_->try_lock_shared();
     return __owns_;
 }
@@ -456,9 +460,11 @@ bool
 shared_lock<_Mutex>::try_lock_for(const chrono::duration<_Rep, _Period>& __d)
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "shared_lock::try_lock_for: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+                             "shared_lock::try_lock_for: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "shared_lock::try_lock_for: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+                             "shared_lock::try_lock_for: already locked");
     __owns_ = __m_->try_lock_shared_for(__d);
     return __owns_;
 }
@@ -469,9 +475,11 @@ bool
 shared_lock<_Mutex>::try_lock_until(const chrono::time_point<_Clock, _Duration>& __t)
 {
     if (__m_ == nullptr)
-        __throw_system_error(EPERM, "shared_lock::try_lock_until: references null mutex");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+                             "shared_lock::try_lock_until: references null mutex");
     if (__owns_)
-        __throw_system_error(EDEADLK, "shared_lock::try_lock_until: already locked");
+        __throw_system_error(error_condition{errc::resource_deadlock_would_occur}.value(),
+                             "shared_lock::try_lock_until: already locked");
     __owns_ = __m_->try_lock_shared_until(__t);
     return __owns_;
 }
@@ -481,7 +489,8 @@ void
 shared_lock<_Mutex>::unlock()
 {
     if (!__owns_)
-        __throw_system_error(EPERM, "shared_lock::unlock: not locked");
+        __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
+                             "shared_lock::unlock: not locked");
     __m_->unlock_shared();
     __owns_ = false;
 }

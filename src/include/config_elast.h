@@ -11,9 +11,9 @@
 #define _LIBCPP_CONFIG_ELAST
 
 #if defined(_WIN32)
-#include <stdlib.h>
+#include <__stdlib_support>
 #else
-#include <errno.h>
+#include <__errno_support>
 #endif
 
 #if defined(ELAST)

@@ -42,6 +42,9 @@
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
+typedef _VSTD::remove_pointer<__libcpp_locale_t>::type __locale_struct;
+typedef _VSTD::unique_ptr<__locale_struct, decltype(&freelocale)> __locale_unique_ptr;
+
 #ifdef __cloc_defined
 locale_t __cloc() {
   // In theory this could create a race condition. In practice

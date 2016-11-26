@@ -11,8 +11,6 @@
 
 #include "ios"
 
-#include <stdlib.h>
-
 #include "__locale"
 #include "algorithm"
 #include "include/config_elast.h"

@@ -259,7 +259,7 @@ template <>
 class _LIBCPP_TYPE_VIS collate_byname<char>
     : public collate<char>
 {
-    locale_t __l;
+    __libcpp_locale_t __l;
 public:
     typedef char char_type;
     typedef basic_string<char_type> string_type;
@@ -278,7 +278,7 @@ template <>
 class _LIBCPP_TYPE_VIS collate_byname<wchar_t>
     : public collate<wchar_t>
 {
-    locale_t __l;
+    __libcpp_locale_t __l;
 public:
     typedef wchar_t char_type;
     typedef basic_string<char_type> string_type;
@@ -522,14 +522,18 @@ public:
     _LIBCPP_ALWAYS_INLINE
     bool is(mask __m, char_type __c) const
     {
-        return isascii(__c) ? (__tab_[static_cast<int>(__c)] & __m) !=0 : false;
+        size_t __int = char_traits<char_type>::to_int_type(__c);
+        return __int < table_size ? (__tab_[__int] & __m) !=0 : false;
     }
 
     _LIBCPP_ALWAYS_INLINE
     const char_type* is(const char_type* __low, const char_type* __high, mask* __vec) const
     {
         for (; __low != __high; ++__low, ++__vec)
-            *__vec = isascii(*__low) ? __tab_[static_cast<int>(*__low)] : 0;
+        {
+            size_t __int = char_traits<char_type>::to_int_type(*__low);
+            *__vec = __int < table_size ? __tab_[__int] : 0;
+        }
         return __low;
     }
 
@@ -537,8 +541,11 @@ public:
     const char_type* scan_is (mask __m, const char_type* __low, const char_type* __high) const
     {
         for (; __low != __high; ++__low)
-            if (isascii(*__low) && (__tab_[static_cast<int>(*__low)] & __m))
+        {
+            size_t __int = char_traits<char_type>::to_int_type(*__low);
+            if (__int < table_size && (__tab_[__int] & __m))
                 break;
+        }
         return __low;
     }
 
@@ -546,8 +553,11 @@ public:
     const char_type* scan_not(mask __m, const char_type* __low, const char_type* __high) const
     {
         for (; __low != __high; ++__low)
-            if (!(isascii(*__low) && (__tab_[static_cast<int>(*__low)] & __m)))
+        {
+            size_t __int = char_traits<char_type>::to_int_type(*__low);
+            if (!(__int < table_size && (__tab_[__int] & __m)))
                 break;
+        }
         return __low;
     }
 
@@ -637,7 +647,7 @@ template <>
 class _LIBCPP_TYPE_VIS ctype_byname<char>
     : public ctype<char>
 {
-    locale_t __l;
+    __libcpp_locale_t __l;
 
 public:
     explicit ctype_byname(const char*, size_t = 0);
@@ -655,7 +665,7 @@ template <>
 class _LIBCPP_TYPE_VIS ctype_byname<wchar_t>
     : public ctype<wchar_t>
 {
-    locale_t __l;
+    __libcpp_locale_t __l;
 
 public:
     explicit ctype_byname(const char*, size_t = 0);
@@ -887,7 +897,7 @@ class _LIBCPP_TYPE_VIS codecvt<wchar_t, char, mbstate_t>
     : public locale::facet,
       public codecvt_base
 {
-    locale_t __l;
+    __libcpp_locale_t __l;
 public:
     typedef wchar_t   intern_type;
     typedef char      extern_type;

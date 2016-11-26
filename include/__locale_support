@@ -78,15 +78,33 @@
    // Get the C locale object
    _LIBCPP_FUNC_VIS locale_t __cloc();
 #define __cloc_defined
-#endif
+#endif   
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-// inline _LIBCPP_INLINE_VISIBILITY
+using __libcpp_locale_t = ::locale_t;
 
 _LIBCPP_END_NAMESPACE_STD
 
-#endif
+#else // _LIBCXX_DISABLE_C_LINKAGE
+
+# define LC_COLLATE_MASK    (1<<0)
+# define LC_CTYPE_MASK      (1<<1)
+# define LC_MONETARY_MASK   (1<<2)
+# define LC_NUMERIC_MASK    (1<<3)
+# define LC_TIME_MASK       (1<<4)
+# define LC_MESSAGES_MASK   (1<<5)
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+class __libcpp_locale_t
+{
+    
+};
+
+_LIBCPP_END_NAMESPACE_STD
+
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 #endif
 
