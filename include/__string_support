@@ -150,10 +150,19 @@ template <>
 _LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_CONSTEXPR
 wchar_t __libcpp_get_eof<wchar_t>()
 {
-	return char(WEOF);
+	return wchar_t(WEOF);
 }
 
 _LIBCPP_END_NAMESPACE_STD
+
+#else // _LIBCXX_DISABLE_C_LINKAGE
+
+template <typename _CharT>
+_LIBCPP_STRING_ABI_VISIBILITY _LIBCPP_CONSTEXPR
+_CharT __libcpp_get_eof()
+{
+	return _CharT(-1);
+}
 
 #endif
 

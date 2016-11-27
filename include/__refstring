@@ -68,7 +68,7 @@ using namespace __refstring_imp;
 
 inline
 __libcpp_refstring::__libcpp_refstring(const char* msg) {
-    std::size_t len = strlen(msg);
+    std::size_t len = std::char_traits<char>::length(msg);
     _Rep_base* rep = static_cast<_Rep_base *>(::operator new(sizeof(*rep) + len + 1));
     rep->len = len;
     rep->cap = len;

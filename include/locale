@@ -668,23 +668,20 @@ num_get<_CharT, _InputIterator>::id;
 template <class _Tp>
 _Tp
 __num_get_signed_integral(const char* __a, const char* __a_end,
-                          ios_base::iostate& __err, int __base)
+                          ios_base::iostate& __err, int __base, __libcpp_locale_t &__locale)
 {
     if (__a != __a_end)
     {
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
-        char *__p2;
-        long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
-        if (__current_errno == 0)
-            errno = __save_errno;
+        errc __error;
+
+        const char *__p2;
+        long long __ll = __libcpp_get_signed_intergral(__a, &__p2, __base, __locale, __error);
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
             return 0;
         }
-        else if (__current_errno == ERANGE         ||
+        else if (__error == errc::result_out_of_range   ||
                  __ll < numeric_limits<_Tp>::min() ||
                  numeric_limits<_Tp>::max() < __ll)
         {

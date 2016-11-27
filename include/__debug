@@ -18,10 +18,7 @@
 #endif
 
 #if _LIBCPP_DEBUG_LEVEL >= 1
-
-#ifndef _LIBCXX_DISABLE_C_LINKAGE
-extern "C" _LIBCPP_NORETURN void abort();
-#endif
+#include <__stdlib_support>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
