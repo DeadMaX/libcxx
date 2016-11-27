@@ -45,7 +45,19 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 __libcpp_locale_t __libcpp_get_current_locale();
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base, __libcpp_locale_t &__locale, __libcpp_errno_keeper& __errno_keeper);
+long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base, __libcpp_locale_t &&__locale, errc &__error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char **__err, int __base, __libcpp_locale_t &&__locale, errc &__error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+float __libcpp_get_float(const char* __a, const char** __p2, __libcpp_locale_t &&__locale, errc &__error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+double __libcpp_get_double(const char* __a, const char** __p2, __libcpp_locale_t &&__locale, errc &__error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+long double __libcpp_get_long_double(const char* __a, const char** __p2, __libcpp_locale_t &&__locale, errc &__error);
 
 _LIBCPP_END_NAMESPACE_STD
 
@@ -107,10 +119,59 @@ __libcpp_locale_t __libcpp_get_current_locale()
     return __libcpp_locale_t{_LIBCPP_GET_C_LOCALE};
 }
 
-long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base, __libcpp_locale_t &__locale, errc &__error)
+long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base, __libcpp_locale_t &&__locale, errc &__error)
 {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        long long value = ::strtoll_l(__str, const_cast<char **>(__err), __base, __locale.__get_locale());
+    long long value = ::strtoll_l(__str, const_cast<char **>(__err), __base, __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __error = errc::result_out_of_range;
+    
+    return value;
+}
+
+unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char **__err, int __base, __libcpp_locale_t &&__locale, errc &__error)
+{
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    unsigned long long value = ::strtoull_l(__str, const_cast<char **>(__err), __base, __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __error = errc::result_out_of_range;
+    
+    return value;
+}
+
+float __libcpp_get_float(const char* __a, const char** __p2, __libcpp_locale_t &&__locale, errc &__error) {
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    float value = strtof_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __error = errc::result_out_of_range;
+    
+    return value;
+}
+
+double __libcpp_get_double(const char* __a, const char** __p2, __libcpp_locale_t &&__locale, errc &__error) {
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    double value = strtod_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __error = errc::result_out_of_range;
+    
+    return value;
+}
+
+long double __libcpp_get_long_double(const char* __a, const char** __p2, __libcpp_locale_t &&__locale, errc &__error) {
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    long double value = strtold_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;

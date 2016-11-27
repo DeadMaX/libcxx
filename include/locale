@@ -360,8 +360,8 @@ template <class _CharT>
 struct __num_get
     : protected __num_get_base
 {
-    static string __stage2_int_prep(ios_base& __iob, _CharT* __atoms, _CharT& __thousands_sep);
-    static string __stage2_float_prep(ios_base& __iob, _CharT* __atoms, _CharT& __decimal_point,
+    static string __stage2_int_prep(locale& __loc, _CharT* __atoms, _CharT& __thousands_sep);
+    static string __stage2_float_prep(locale& __loc, _CharT* __atoms, _CharT& __decimal_point,
                                       _CharT& __thousands_sep);
     static int __stage2_int_loop(_CharT __ct, int __base, char* __a, char*& __a_end,
                   unsigned& __dc, _CharT __thousands_sep, const string& __grouping,
@@ -375,9 +375,8 @@ struct __num_get
 
 template <class _CharT>
 string
-__num_get<_CharT>::__stage2_int_prep(ios_base& __iob, _CharT* __atoms, _CharT& __thousands_sep)
+__num_get<_CharT>::__stage2_int_prep(locale& __loc, _CharT* __atoms, _CharT& __thousands_sep)
 {
-    locale __loc = __iob.getloc();
     use_facet<ctype<_CharT> >(__loc).widen(__src, __src + 26, __atoms);
     const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
     __thousands_sep = __np.thousands_sep();
@@ -386,10 +385,9 @@ __num_get<_CharT>::__stage2_int_prep(ios_base& __iob, _CharT* __atoms, _CharT& _
 
 template <class _CharT>
 string
-__num_get<_CharT>::__stage2_float_prep(ios_base& __iob, _CharT* __atoms, _CharT& __decimal_point,
+__num_get<_CharT>::__stage2_float_prep(locale& __loc, _CharT* __atoms, _CharT& __decimal_point,
                     _CharT& __thousands_sep)
 {
-    locale __loc = __iob.getloc();
     use_facet<ctype<_CharT> >(__loc).widen(__src, __src + 32, __atoms);
     const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
     __decimal_point = __np.decimal_point();
@@ -668,14 +666,14 @@ num_get<_CharT, _InputIterator>::id;
 template <class _Tp>
 _Tp
 __num_get_signed_integral(const char* __a, const char* __a_end,
-                          ios_base::iostate& __err, int __base, __libcpp_locale_t &__locale)
+                          ios_base::iostate& __err, int __base, locale &__loc)
 {
     if (__a != __a_end)
     {
         errc __error;
 
         const char *__p2;
-        long long __ll = __libcpp_get_signed_intergral(__a, &__p2, __base, __locale, __error);
+        long long __ll = __libcpp_get_signed_intergral(__a, &__p2, __base, __loc.native_handle(), __error);
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
@@ -700,7 +698,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
 template <class _Tp>
 _Tp
 __num_get_unsigned_integral(const char* __a, const char* __a_end,
-                            ios_base::iostate& __err, int __base)
+                            ios_base::iostate& __err, int __base, locale &__loc)
 {
     if (__a != __a_end)
     {
@@ -709,19 +707,15 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
             __err = ios_base::failbit;
             return 0;
         }
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
-        char *__p2;
-        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
-        if (__current_errno == 0)
-            errno = __save_errno;
+        errc __error;
+        const char *__p2;
+        unsigned long long __ll = __libcpp_get_unsigned_intergral(__a, &__p2, __base, __loc.native_handle(), __error);
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
             return 0;
         }
-        else if (__current_errno == ERANGE ||
+        else if (__error == errc::result_out_of_range ||
                  numeric_limits<_Tp>::max() < __ll)
         {
             __err = ios_base::failbit;
@@ -735,45 +729,41 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
 
 template <class _Tp>
 _LIBCPP_INLINE_VISIBILITY
-_Tp __do_strtod(const char* __a, char** __p2);
+_Tp __do_strtod(const char* __a, const char** __p2, locale &__loc, errc &__error);
 
 template <>
 inline _LIBCPP_INLINE_VISIBILITY
-float __do_strtod<float>(const char* __a, char** __p2) {
-    return strtof_l(__a, __p2, _LIBCPP_GET_C_LOCALE);
+float __do_strtod<float>(const char* __a, const char** __p2, locale &__loc, errc &__error) {
+    return __libcpp_get_float(__a, __p2, __loc.native_handle(), __error);
 }
 
 template <>
 inline _LIBCPP_INLINE_VISIBILITY
-double __do_strtod<double>(const char* __a, char** __p2) {
-    return strtod_l(__a, __p2, _LIBCPP_GET_C_LOCALE);
+double __do_strtod<double>(const char* __a, const char** __p2, locale &__loc, errc &__error) {
+    return __libcpp_get_double(__a, __p2, __loc.native_handle(), __error);
 }
 
 template <>
 inline _LIBCPP_INLINE_VISIBILITY
-long double __do_strtod<long double>(const char* __a, char** __p2) {
-    return strtold_l(__a, __p2, _LIBCPP_GET_C_LOCALE);
+long double __do_strtod<long double>(const char* __a, const char** __p2, locale &__loc, errc &__error) {
+    return __libcpp_get_long_double(__a, __p2, __loc.native_handle(), __error);
 }
 
 template <class _Tp>
 _Tp
-__num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
+__num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err, locale &__loc)
 {
     if (__a != __a_end)
     {
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
-        char *__p2;
-        _Tp __ld = __do_strtod<_Tp>(__a, &__p2);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
-        if (__current_errno == 0)
-            errno = __save_errno;
+        errc __error;
+        const char *__p2;
+        _Tp __ld = __do_strtod<_Tp>(__a, &__p2, __loc, __error);
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
             return 0;
         }
-        else if (__current_errno == ERANGE)
+        else if (__error == errc::result_out_of_range)
             __err = ios_base::failbit;
         return __ld;
     }
@@ -827,12 +817,13 @@ num_get<_CharT, _InputIterator>::__do_get_signed(iter_type __b, iter_type __e,
                                         ios_base::iostate& __err,
                                         _Signed& __v) const
 {
+    locale __loc = __iob.getloc();
     // Stage 1
     int __base = this->__get_base(__iob);
     // Stage 2
     char_type __atoms[26];
     char_type __thousands_sep;
-    string __grouping = this->__stage2_int_prep(__iob, __atoms, __thousands_sep);
+    string __grouping = this->__stage2_int_prep(__loc, __atoms, __thousands_sep);
     string __buf;
     __buf.resize(__buf.capacity());
     char* __a = &__buf[0];
@@ -858,7 +849,7 @@ num_get<_CharT, _InputIterator>::__do_get_signed(iter_type __b, iter_type __e,
     if (__grouping.size() != 0 && __g_end-__g < __num_get_base::__num_get_buf_sz)
         *__g_end++ = __dc;
     // Stage 3
-    __v = __num_get_signed_integral<_Signed>(__a, __a_end, __err, __base);
+    __v = __num_get_signed_integral<_Signed>(__a, __a_end, __err, __base, __loc);
     // Digit grouping checked
     __check_grouping(__grouping, __g, __g_end, __err);
     // EOF checked
@@ -877,12 +868,13 @@ num_get<_CharT, _InputIterator>::__do_get_unsigned(iter_type __b, iter_type __e,
                                         ios_base::iostate& __err,
                                         _Unsigned& __v) const
 {
+    locale __loc = __iob.getloc();
     // Stage 1
     int __base = this->__get_base(__iob);
     // Stage 2
     char_type __atoms[26];
     char_type __thousands_sep;
-    string __grouping = this->__stage2_int_prep(__iob, __atoms, __thousands_sep);
+    string __grouping = this->__stage2_int_prep(__loc, __atoms, __thousands_sep);
     string __buf;
     __buf.resize(__buf.capacity());
     char* __a = &__buf[0];
@@ -908,7 +900,7 @@ num_get<_CharT, _InputIterator>::__do_get_unsigned(iter_type __b, iter_type __e,
     if (__grouping.size() != 0 && __g_end-__g < __num_get_base::__num_get_buf_sz)
         *__g_end++ = __dc;
     // Stage 3
-    __v = __num_get_unsigned_integral<_Unsigned>(__a, __a_end, __err, __base);
+    __v = __num_get_unsigned_integral<_Unsigned>(__a, __a_end, __err, __base, __loc);
     // Digit grouping checked
     __check_grouping(__grouping, __g, __g_end, __err);
     // EOF checked
@@ -927,12 +919,13 @@ num_get<_CharT, _InputIterator>::__do_get_floating_point(iter_type __b, iter_typ
                                         ios_base::iostate& __err,
                                         _Fp& __v) const
 {
+    locale __loc = __iob.getloc();
     // Stage 1, nothing to do
     // Stage 2
     char_type __atoms[32];
     char_type __decimal_point;
     char_type __thousands_sep;
-    string __grouping = this->__stage2_float_prep(__iob, __atoms,
+    string __grouping = this->__stage2_float_prep(__loc, __atoms,
                                                   __decimal_point,
                                                   __thousands_sep);
     string __buf;
@@ -963,7 +956,7 @@ num_get<_CharT, _InputIterator>::__do_get_floating_point(iter_type __b, iter_typ
     if (__grouping.size() != 0 && __in_units && __g_end-__g < __num_get_base::__num_get_buf_sz)
         *__g_end++ = __dc;
     // Stage 3
-    __v = __num_get_float<_Fp>(__a, __a_end, __err);
+    __v = __num_get_float<_Fp>(__a, __a_end, __err, __loc);
     // Digit grouping checked
     __check_grouping(__grouping, __g, __g_end, __err);
     // EOF checked
