@@ -26,16 +26,9 @@
 #include "cstring"
 #include "cwctype"
 #include "__sso_allocator"
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-#include "support/win32/locale_win32.h"
-#elif !defined(__BIONIC__)
-#include <langinfo.h>
-#endif
-#include <stdlib.h>
-#include <stdio.h>
 
 // On Linux, wint_t and wchar_t have different signed-ness, and this causes
-// lots of noise in the build log, but no bugs that I know of. 
+// lots of noise in the build log, but no bugs that I know of.
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #endif
@@ -121,6 +114,35 @@ _LIBCPP_NORETURN static void __throw_runtime_error(const string &msg)
 }
 
 }
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
+__libcpp_locale_t::__libcpp_locale_t()
+: __new_locale(false)
+, __locale(_LIBCPP_GET_C_LOCALE)
+{
+	if (__locale == nullptr)
+		__throw_runtime_error("__libcpp_locale_t::__libcpp_locale_t"
+							  " unable to get C locale");
+}
+
+
+__libcpp_locale_t::__libcpp_locale_t(int __mask, const char *__name)
+: __new_locale(true)
+, __locale(newlocale(__mask, __name, nullptr))
+{
+	if (__locale == nullptr)
+		__throw_runtime_error("__libcpp_locale_t::__libcpp_locale_t"
+							  " failed to construct for " + string(__name));
+}
+
+__libcpp_locale_t::~__libcpp_locale_t()
+{
+	if (__new_locale)
+		freelocale(__locale);
+}
+
+#endif
 
 #if defined(_AIX)
 // Set priority to INT_MIN + 256 + 150
@@ -657,25 +679,18 @@ locale::id::__init()
 
 collate_byname<char>::collate_byname(const char* n, size_t refs)
     : collate<char>(refs),
-      __l(newlocale(LC_ALL_MASK, n, 0))
+      __l(LC_ALL_MASK, n)
 {
-    if (__l == 0)
-        __throw_runtime_error("collate_byname<char>::collate_byname"
-                            " failed to construct for " + string(n));
 }
 
 collate_byname<char>::collate_byname(const string& name, size_t refs)
     : collate<char>(refs),
-      __l(newlocale(LC_ALL_MASK, name.c_str(), 0))
+      __l(LC_ALL_MASK, name.c_str())
 {
-    if (__l == 0)
-        __throw_runtime_error("collate_byname<char>::collate_byname"
-                            " failed to construct for " + name);
 }
 
 collate_byname<char>::~collate_byname()
 {
-    freelocale(__l);
 }
 
 int
@@ -684,7 +699,7 @@ collate_byname<char>::do_compare(const char_type* __lo1, const char_type* __hi1,
 {
     string_type lhs(__lo1, __hi1);
     string_type rhs(__lo2, __hi2);
-    int r = strcoll_l(lhs.c_str(), rhs.c_str(), __l);
+    int r = __libcpp_do_compare(lhs.c_str(), rhs.c_str(), __l);
     if (r < 0)
         return -1;
     if (r > 0)
@@ -696,8 +711,8 @@ collate_byname<char>::string_type
 collate_byname<char>::do_transform(const char_type* lo, const char_type* hi) const
 {
     const string_type in(lo, hi);
-    string_type out(strxfrm_l(0, in.c_str(), 0, __l), char());
-    strxfrm_l(const_cast<char*>(out.c_str()), in.c_str(), out.size()+1, __l);
+    string_type out(__libcpp_do_transform(nullptr, in.c_str(), 0, __l), char());
+    __libcpp_do_transform(const_cast<char*>(out.c_str()), in.c_str(), out.size()+1, __l);
     return out;
 }
 
@@ -705,25 +720,18 @@ collate_byname<char>::do_transform(const char_type* lo, const char_type* hi) con
 
 collate_byname<wchar_t>::collate_byname(const char* n, size_t refs)
     : collate<wchar_t>(refs),
-      __l(newlocale(LC_ALL_MASK, n, 0))
+      __l(LC_ALL_MASK, n)
 {
-    if (__l == 0)
-        __throw_runtime_error("collate_byname<wchar_t>::collate_byname(size_t refs)"
-                            " failed to construct for " + string(n));
 }
 
 collate_byname<wchar_t>::collate_byname(const string& name, size_t refs)
     : collate<wchar_t>(refs),
-      __l(newlocale(LC_ALL_MASK, name.c_str(), 0))
+      __l(LC_ALL_MASK, name.c_str())
 {
-    if (__l == 0)
-        __throw_runtime_error("collate_byname<wchar_t>::collate_byname(size_t refs)"
-                            " failed to construct for " + name);
 }
 
 collate_byname<wchar_t>::~collate_byname()
 {
-    freelocale(__l);
 }
 
 int
@@ -732,7 +740,7 @@ collate_byname<wchar_t>::do_compare(const char_type* __lo1, const char_type* __h
 {
     string_type lhs(__lo1, __hi1);
     string_type rhs(__lo2, __hi2);
-    int r = wcscoll_l(lhs.c_str(), rhs.c_str(), __l);
+    int r = __libcpp_do_compare(lhs.c_str(), rhs.c_str(), __l);
     if (r < 0)
         return -1;
     if (r > 0)
@@ -744,8 +752,8 @@ collate_byname<wchar_t>::string_type
 collate_byname<wchar_t>::do_transform(const char_type* lo, const char_type* hi) const
 {
     const string_type in(lo, hi);
-    string_type out(wcsxfrm_l(0, in.c_str(), 0, __l), wchar_t());
-    wcsxfrm_l(const_cast<wchar_t*>(out.c_str()), in.c_str(), out.size()+1, __l);
+    string_type out(__libcpp_do_transform(nullptr, in.c_str(), 0, __l), wchar_t());
+    __libcpp_do_transform(const_cast<wchar_t*>(out.c_str()), in.c_str(), out.size()+1, __l);
     return out;
 }
 
@@ -763,7 +771,7 @@ const ctype_base::mask ctype_base::xdigit;
 const ctype_base::mask ctype_base::blank;
 const ctype_base::mask ctype_base::alnum;
 const ctype_base::mask ctype_base::graph;
-    
+
 locale::id ctype<wchar_t>::id;
 
 ctype<wchar_t>::~ctype()
@@ -1175,52 +1183,45 @@ ctype<char>::__classic_upper_table() _NOEXCEPT
 
 ctype_byname<char>::ctype_byname(const char* name, size_t refs)
     : ctype<char>(0, false, refs),
-      __l(newlocale(LC_ALL_MASK, name, 0))
+      __l(LC_ALL_MASK, name)
 {
-    if (__l == 0)
-        __throw_runtime_error("ctype_byname<char>::ctype_byname"
-                            " failed to construct for " + string(name));
 }
 
 ctype_byname<char>::ctype_byname(const string& name, size_t refs)
     : ctype<char>(0, false, refs),
-      __l(newlocale(LC_ALL_MASK, name.c_str(), 0))
+      __l(LC_ALL_MASK, name.c_str())
 {
-    if (__l == 0)
-        __throw_runtime_error("ctype_byname<char>::ctype_byname"
-                            " failed to construct for " + name);
 }
 
 ctype_byname<char>::~ctype_byname()
 {
-    freelocale(__l);
 }
 
 char
 ctype_byname<char>::do_toupper(char_type c) const
 {
-    return static_cast<char>(toupper_l(static_cast<unsigned char>(c), __l));
+    return __libcpp_do_toupper(c, __l);
 }
 
 const char*
 ctype_byname<char>::do_toupper(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
-        *low = static_cast<char>(toupper_l(static_cast<unsigned char>(*low), __l));
+        *low = __libcpp_do_toupper(*low, __l);
     return low;
 }
 
 char
 ctype_byname<char>::do_tolower(char_type c) const
 {
-    return static_cast<char>(tolower_l(static_cast<unsigned char>(c), __l));
+    return __libcpp_do_tolower(c, __l);
 }
 
 const char*
 ctype_byname<char>::do_tolower(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
-        *low = static_cast<char>(tolower_l(static_cast<unsigned char>(*low), __l));
+        *low = __libcpp_do_tolower(*low, __l);
     return low;
 }
 
@@ -1228,25 +1229,18 @@ ctype_byname<char>::do_tolower(char_type* low, const char_type* high) const
 
 ctype_byname<wchar_t>::ctype_byname(const char* name, size_t refs)
     : ctype<wchar_t>(refs),
-      __l(newlocale(LC_ALL_MASK, name, 0))
+      __l(LC_ALL_MASK, name)
 {
-    if (__l == 0)
-        __throw_runtime_error("ctype_byname<wchar_t>::ctype_byname"
-                            " failed to construct for " + string(name));
 }
 
 ctype_byname<wchar_t>::ctype_byname(const string& name, size_t refs)
     : ctype<wchar_t>(refs),
-      __l(newlocale(LC_ALL_MASK, name.c_str(), 0))
+      __l(LC_ALL_MASK, name.c_str())
 {
-    if (__l == 0)
-        __throw_runtime_error("ctype_byname<wchar_t>::ctype_byname"
-                            " failed to construct for " + name);
 }
 
 ctype_byname<wchar_t>::~ctype_byname()
 {
-    freelocale(__l);
 }
 
 bool
@@ -1369,28 +1363,28 @@ ctype_byname<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type
 wchar_t
 ctype_byname<wchar_t>::do_toupper(char_type c) const
 {
-    return towupper_l(c, __l);
+    return __libcpp_do_toupper(c, __l);
 }
 
 const wchar_t*
 ctype_byname<wchar_t>::do_toupper(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
-        *low = towupper_l(*low, __l);
+        *low = __libcpp_do_toupper(*low, __l);
     return low;
 }
 
 wchar_t
 ctype_byname<wchar_t>::do_tolower(char_type c) const
 {
-    return towlower_l(c, __l);
+    return __libcpp_do_tolower(c, __l);
 }
 
 const wchar_t*
 ctype_byname<wchar_t>::do_tolower(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
-        *low = towlower_l(*low, __l);
+        *low = __libcpp_do_tolower(*low, __l);
     return low;
 }
 
@@ -1493,23 +1487,18 @@ locale::id codecvt<wchar_t, char, mbstate_t>::id;
 
 codecvt<wchar_t, char, mbstate_t>::codecvt(size_t refs)
     : locale::facet(refs),
-      __l(_LIBCPP_GET_C_LOCALE)
+      __l()
 {
 }
 
 codecvt<wchar_t, char, mbstate_t>::codecvt(const char* nm, size_t refs)
     : locale::facet(refs),
-      __l(newlocale(LC_ALL_MASK, nm, 0))
+      __l(LC_ALL_MASK, nm)
 {
-    if (__l == 0)
-        __throw_runtime_error("codecvt_byname<wchar_t, char, mbstate_t>::codecvt_byname"
-                            " failed to construct for " + string(nm));
 }
 
 codecvt<wchar_t, char, mbstate_t>::~codecvt()
 {
-    if (__l != _LIBCPP_GET_C_LOCALE)
-        freelocale(__l);
 }
 
 codecvt<wchar_t, char, mbstate_t>::result
@@ -4694,7 +4683,7 @@ __time_get_c_storage<wchar_t>::__r() const
 // time_get_byname
 
 __time_get::__time_get(const char* nm)
-    : __loc_(newlocale(LC_ALL_MASK, nm, 0))
+    : __loc_(LC_ALL_MASK, nm)
 {
     if (__loc_ == 0)
         __throw_runtime_error("time_get_byname"
@@ -4702,7 +4691,7 @@ __time_get::__time_get(const char* nm)
 }
 
 __time_get::__time_get(const string& nm)
-    : __loc_(newlocale(LC_ALL_MASK, nm.c_str(), 0))
+    : __loc_(LC_ALL_MASK, nm.c_str())
 {
     if (__loc_ == 0)
         __throw_runtime_error("time_get_byname"
@@ -4711,7 +4700,6 @@ __time_get::__time_get(const string& nm)
 
 __time_get::~__time_get()
 {
-    freelocale(__loc_);
 }
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -5350,25 +5338,17 @@ __time_get_storage<wchar_t>::__do_date_order() const
 // time_put
 
 __time_put::__time_put(const char* nm)
-    : __loc_(newlocale(LC_ALL_MASK, nm, 0))
+    : __loc_(LC_ALL_MASK, nm)
 {
-    if (__loc_ == 0)
-        __throw_runtime_error("time_put_byname"
-                            " failed to construct for " + string(nm));
 }
 
 __time_put::__time_put(const string& nm)
-    : __loc_(newlocale(LC_ALL_MASK, nm.c_str(), 0))
+    : __loc_(LC_ALL_MASK, nm.c_str())
 {
-    if (__loc_ == 0)
-        __throw_runtime_error("time_put_byname"
-                            " failed to construct for " + nm);
 }
 
 __time_put::~__time_put()
 {
-    if (__loc_ != _LIBCPP_GET_C_LOCALE)
-        freelocale(__loc_);
 }
 
 void

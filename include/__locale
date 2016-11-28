@@ -44,7 +44,7 @@ public:
     // types:
     class _LIBCPP_TYPE_VIS facet;
     class _LIBCPP_TYPE_VIS id;
-    
+
     typedef __libcpp_locale_t native_handle_type;
 
     typedef int category;
@@ -82,7 +82,7 @@ public:
     template <class _CharT, class _Traits, class _Allocator>
       bool operator()(const basic_string<_CharT, _Traits, _Allocator>&,
                       const basic_string<_CharT, _Traits, _Allocator>&) const;
-                      
+
     // native handle
     native_handle_type native_handle();
 
