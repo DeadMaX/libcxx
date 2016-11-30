@@ -35,9 +35,6 @@
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-typedef _VSTD::remove_pointer<__libcpp_locale_t>::type __locale_struct;
-typedef _VSTD::unique_ptr<__locale_struct, decltype(&freelocale)> __locale_unique_ptr;
-
 #ifdef __cloc_defined
 locale_t __cloc() {
   // In theory this could create a race condition. In practice
@@ -120,6 +117,9 @@ _LIBCPP_NORETURN static void __throw_runtime_error(const string &msg)
 __libcpp_locale_t::__libcpp_locale_t()
 : __new_locale(false)
 , __locale(_LIBCPP_GET_C_LOCALE)
+, __lconv(nullptr)
+, __w_decimal_point(L'\0')
+, __w_thousands_sep(L'\0')
 {
 	if (__locale == nullptr)
 		__throw_runtime_error("__libcpp_locale_t::__libcpp_locale_t"
@@ -130,6 +130,9 @@ __libcpp_locale_t::__libcpp_locale_t()
 __libcpp_locale_t::__libcpp_locale_t(int __mask, const char *__name)
 : __new_locale(true)
 , __locale(newlocale(__mask, __name, nullptr))
+, __lconv(nullptr)
+, __w_decimal_point(L'\0')
+, __w_thousands_sep(L'\0')
 {
 	if (__locale == nullptr)
 		__throw_runtime_error("__libcpp_locale_t::__libcpp_locale_t"
@@ -140,6 +143,107 @@ __libcpp_locale_t::~__libcpp_locale_t()
 {
 	if (__new_locale)
 		freelocale(__locale);
+}
+
+void __libcpp_locale_t::__init_lconv()
+{
+	if (!__lconv)
+	{
+		__lconv = localeconv_l(__locale);
+		if (__lconv)
+		{
+			int nb_char = __libcpp_mbtowc_l(&__w_decimal_point, __lconv->decimal_point, strlen(__lconv->decimal_point),
+										__locale);
+			if (nb_char <= 0 || __lconv->decimal_point[nb_char] != '\0')
+				__w_decimal_point = L'\0';
+
+			nb_char = __libcpp_mbtowc_l(&__w_thousands_sep, __lconv->thousands_sep, strlen(__lconv->thousands_sep),
+									__locale);
+			if (nb_char <= 0 || __lconv->thousands_sep[nb_char] != '\0')
+				__w_thousands_sep = L'\0';
+		}
+	}
+}
+
+char __libcpp_locale_t::__get_decimal_point()
+{
+	__init_lconv();
+	if (!__lconv)
+		return '\0';
+	return *__lconv->decimal_point;
+}
+
+char __libcpp_locale_t::__get_thousands_sep()
+{
+	__init_lconv();
+	if (!__lconv)
+		return '\0';
+	return *__lconv->thousands_sep;
+}
+
+const char *__libcpp_locale_t::__get_grouping()
+{
+	__init_lconv();
+	if (!__lconv)
+		return "";
+	return __lconv->grouping;
+}
+
+wchar_t __libcpp_locale_t::__getw_decimal_point()
+{
+	__init_lconv();
+	return __w_decimal_point;
+}
+
+wchar_t __libcpp_locale_t::__getw_thousands_sep()
+{
+	__init_lconv();
+	if (!__lconv)
+		return '\0';
+	return __w_thousands_sep;
+}
+
+template <typename _Mask>
+_Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale)
+{
+	_Mask __m = 0;
+	if (iswascii(__c))
+		__m = static_cast<_Mask>(ctype<char>::classic_table()[__c]);
+	else
+	{
+		locale_t __l = __locale.__get_locale();
+		__m = 0;
+		char_traits<wchar_t>::int_type ch = char_traits<wchar_t>::to_int_type(__c);
+		if (iswspace_l(ch, __l))
+			__m |= ctype<wchar_t>::space;
+#ifndef _LIBCPP_CTYPE_MASK_IS_COMPOSITE_PRINT
+		if (iswprint_l(ch, __l))
+			__m |= ctype<wchar_t>::print;
+#endif
+		if (iswcntrl_l(ch, __l))
+			__m |= ctype<wchar_t>::cntrl;
+		if (iswupper_l(ch, __l))
+			__m |= ctype<wchar_t>::upper;
+		if (iswlower_l(ch, __l))
+			__m |= ctype<wchar_t>::lower;
+#ifndef _LIBCPP_CTYPE_MASK_IS_COMPOSITE_ALPHA
+		if (iswalpha_l(ch, __l))
+			__m |= ctype<wchar_t>::alpha;
+#endif
+		if (iswdigit_l(ch, __l))
+			__m |= ctype<wchar_t>::digit;
+		if (iswpunct_l(ch, __l))
+			__m |= ctype<wchar_t>::punct;
+#ifndef _LIBCPP_CTYPE_MASK_IS_COMPOSITE_XDIGIT
+		if (iswxdigit_l(ch, __l))
+			__m |= ctype<wchar_t>::xdigit;
+#endif
+#if !defined(__sun__)
+		if (iswblank_l(ch, __l))
+			__m |= ctype<wchar_t>::blank;
+#endif
+	}
+	return __m;
 }
 
 #endif
@@ -1246,23 +1350,7 @@ ctype_byname<wchar_t>::~ctype_byname()
 bool
 ctype_byname<wchar_t>::do_is(mask m, char_type c) const
 {
-#ifdef _LIBCPP_WCTYPE_IS_MASK
-    return static_cast<bool>(iswctype_l(c, m, __l));
-#else
-    bool result = false;
-    wint_t ch = static_cast<wint_t>(c);
-    if ((m & space) == space) result |= (iswspace_l(ch, __l) != 0);
-    if ((m & print) == print) result |= (iswprint_l(ch, __l) != 0);
-    if ((m & cntrl) == cntrl) result |= (iswcntrl_l(ch, __l) != 0);
-    if ((m & upper) == upper) result |= (iswupper_l(ch, __l) != 0);
-    if ((m & lower) == lower) result |= (iswlower_l(ch, __l) != 0);
-    if ((m & alpha) == alpha) result |= (iswalpha_l(ch, __l) != 0);
-    if ((m & digit) == digit) result |= (iswdigit_l(ch, __l) != 0);
-    if ((m & punct) == punct) result |= (iswpunct_l(ch, __l) != 0);
-    if ((m & xdigit) == xdigit) result |= (iswxdigit_l(ch, __l) != 0);
-    if ((m & blank) == blank) result |= (iswblank_l(ch, __l) != 0);
-    return result;
-#endif
+	return __libcpp_is_wctype(c, m, __l);
 }
 
 const wchar_t*
@@ -1270,41 +1358,7 @@ ctype_byname<wchar_t>::do_is(const char_type* low, const char_type* high, mask* 
 {
     for (; low != high; ++low, ++vec)
     {
-        if (isascii(*low))
-            *vec = static_cast<mask>(ctype<char>::classic_table()[*low]);
-        else
-        {
-            *vec = 0;
-            wint_t ch = static_cast<wint_t>(*low);
-            if (iswspace_l(ch, __l))
-                *vec |= space;
-#ifndef _LIBCPP_CTYPE_MASK_IS_COMPOSITE_PRINT
-            if (iswprint_l(ch, __l))
-                *vec |= print;
-#endif
-            if (iswcntrl_l(ch, __l))
-                *vec |= cntrl;
-            if (iswupper_l(ch, __l))
-                *vec |= upper;
-            if (iswlower_l(ch, __l))
-                *vec |= lower;
-#ifndef _LIBCPP_CTYPE_MASK_IS_COMPOSITE_ALPHA
-            if (iswalpha_l(ch, __l))
-                *vec |= alpha;
-#endif
-            if (iswdigit_l(ch, __l))
-                *vec |= digit;
-            if (iswpunct_l(ch, __l))
-                *vec |= punct;
-#ifndef _LIBCPP_CTYPE_MASK_IS_COMPOSITE_XDIGIT
-            if (iswxdigit_l(ch, __l))
-                *vec |= xdigit;
-#endif
-#if !defined(__sun__)
-            if (iswblank_l(ch, __l))
-                *vec |= blank;
-#endif
-        }
+		*vec = __libcpp_get_wtype<mask>(*low, __l);
     }
     return low;
 }
@@ -1315,7 +1369,7 @@ ctype_byname<wchar_t>::do_scan_is(mask m, const char_type* low, const char_type*
     for (; low != high; ++low)
     {
 #ifdef _LIBCPP_WCTYPE_IS_MASK
-        if (iswctype_l(*low, m, __l))
+        if (__libcpp_is_wctype(*low, m, __l))
             break;
 #else
         wint_t ch = static_cast<wint_t>(*low);
@@ -1340,7 +1394,7 @@ ctype_byname<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type
     for (; low != high; ++low)
     {
 #ifdef _LIBCPP_WCTYPE_IS_MASK
-        if (!iswctype_l(*low, m, __l))
+        if (!__libcpp_is_wctype(*low, m, __l))
             break;
 #else
         wint_t ch = static_cast<wint_t>(*low);
@@ -1517,14 +1571,14 @@ codecvt<wchar_t, char, mbstate_t>::do_out(state_type& st,
     {
         // save state in case it is needed to recover to_nxt on error
         mbstate_t save_state = st;
-        size_t n = __libcpp_wcsnrtombs_l(to, &frm_nxt, static_cast<size_t>(fend-frm),
-                                     static_cast<size_t>(to_end-to), &st, __l);
+        size_t n = __libcpp_wcsnrtombs_l(to, frm_nxt, static_cast<size_t>(fend-frm),
+                                     static_cast<size_t>(to_end-to), st, __l);
         if (n == size_t(-1))
         {
             // need to recover to_nxt
             for (to_nxt = to; frm != frm_nxt; ++frm)
             {
-                n = __libcpp_wcrtomb_l(to_nxt, *frm, &save_state, __l);
+                n = __libcpp_wcrtomb_l(to_nxt, *frm, save_state, __l);
                 if (n == size_t(-1))
                     break;
                 to_nxt += n;
@@ -1541,7 +1595,7 @@ codecvt<wchar_t, char, mbstate_t>::do_out(state_type& st,
         {
             // Try to write the terminating null
             extern_type tmp[MB_LEN_MAX];
-            n = __libcpp_wcrtomb_l(tmp, intern_type(), &st, __l);
+            n = __libcpp_wcrtomb_l(tmp, intern_type(), st, __l);
             if (n == size_t(-1))  // on error
                 return error;
             if (n > static_cast<size_t>(to_end-to_nxt))  // is there room?
@@ -1574,15 +1628,15 @@ codecvt<wchar_t, char, mbstate_t>::do_in(state_type& st,
     {
         // save state in case it is needed to recover to_nxt on error
         mbstate_t save_state = st;
-        size_t n = __libcpp_mbsnrtowcs_l(to, &frm_nxt, static_cast<size_t>(fend-frm),
-                                     static_cast<size_t>(to_end-to), &st, __l);
+        size_t n = __libcpp_mbsnrtowcs_l(to, frm_nxt, static_cast<size_t>(fend-frm),
+                                     static_cast<size_t>(to_end-to), st, __l);
         if (n == size_t(-1))
         {
             // need to recover to_nxt
             for (to_nxt = to; frm != frm_nxt; ++to_nxt)
             {
                 n = __libcpp_mbrtowc_l(to_nxt, frm, static_cast<size_t>(fend-frm),
-                                   &save_state, __l);
+                                   save_state, __l);
                 switch (n)
                 {
                 case 0:
@@ -1610,7 +1664,7 @@ codecvt<wchar_t, char, mbstate_t>::do_in(state_type& st,
         if (fend != frm_end)  // set up next null terminated sequence
         {
             // Try to write the terminating null
-            n = __libcpp_mbrtowc_l(to_nxt, frm_nxt, 1, &st, __l);
+            n = __libcpp_mbrtowc_l(to_nxt, frm_nxt, 1, st, __l);
             if (n != 0)  // on error
                 return error;
             ++to_nxt;
@@ -1630,7 +1684,7 @@ codecvt<wchar_t, char, mbstate_t>::do_unshift(state_type& st,
 {
     to_nxt = to;
     extern_type tmp[MB_LEN_MAX];
-    size_t n = __libcpp_wcrtomb_l(tmp, intern_type(), &st, __l);
+    size_t n = __libcpp_wcrtomb_l(tmp, intern_type(), st, __l);
     if (n == size_t(-1) || n == 0)  // on error
         return error;
     --n;
@@ -1648,7 +1702,7 @@ codecvt<wchar_t, char, mbstate_t>::do_encoding() const  _NOEXCEPT
         return -1;
 
     // stateless encoding
-    if (__l == 0 || __libcpp_mb_cur_max_l(__l) == 1)  // there are no known constant length encodings
+    if (__libcpp_mb_cur_max_l(__l) == 1)  // there are no known constant length encodings
         return 1;                // which take more than 1 char to form a wchar_t
     return 0;
 }
@@ -1666,7 +1720,7 @@ codecvt<wchar_t, char, mbstate_t>::do_length(state_type& st,
     int nbytes = 0;
     for (size_t nwchar_t = 0; nwchar_t < mx && frm != frm_end; ++nwchar_t)
     {
-        size_t n = __libcpp_mbrlen_l(frm, static_cast<size_t>(frm_end-frm), &st, __l);
+        size_t n = __libcpp_mbrlen_l(frm, static_cast<size_t>(frm_end-frm), st, __l);
         switch (n)
         {
         case 0:
@@ -1688,7 +1742,7 @@ codecvt<wchar_t, char, mbstate_t>::do_length(state_type& st,
 int
 codecvt<wchar_t, char, mbstate_t>::do_max_length() const  _NOEXCEPT
 {
-    return __l == 0 ? 1 : static_cast<int>(__libcpp_mb_cur_max_l(__l));
+    return static_cast<int>(__libcpp_mb_cur_max_l(__l));
 }
 
 //                                     Valid UTF ranges
@@ -4240,17 +4294,11 @@ numpunct_byname<char>::__init(const char* nm)
 {
     if (strcmp(nm, "C") != 0)
     {
-        __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
-        if (loc == nullptr)
-            __throw_runtime_error("numpunct_byname<char>::numpunct_byname"
-                                " failed to construct for " + string(nm));
+        __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-        lconv* lc = __libcpp_localeconv_l(loc.get());
-        if (*lc->decimal_point)
-            __decimal_point_ = *lc->decimal_point;
-        if (*lc->thousands_sep)
-            __thousands_sep_ = *lc->thousands_sep;
-        __grouping_ = lc->grouping;
+        __decimal_point_ = loc.__get_decimal_point();
+        __thousands_sep_ = loc.__get_thousands_sep();
+        __grouping_ = loc.__get_grouping();
         // localization for truename and falsename is not available
     }
 }
@@ -4278,17 +4326,11 @@ numpunct_byname<wchar_t>::__init(const char* nm)
 {
     if (strcmp(nm, "C") != 0)
     {
-        __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
-        if (loc == nullptr)
-            __throw_runtime_error("numpunct_byname<char>::numpunct_byname"
-                                " failed to construct for " + string(nm));
+        __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-        lconv* lc = __libcpp_localeconv_l(loc.get());
-        if (*lc->decimal_point)
-            __decimal_point_ = *lc->decimal_point;
-        if (*lc->thousands_sep)
-            __thousands_sep_ = *lc->thousands_sep;
-        __grouping_ = lc->grouping;
+        __decimal_point_ = loc.__getw_decimal_point();
+        __thousands_sep_ = loc.__getw_thousands_sep();
+        __grouping_ = loc.__get_grouping();
         // locallization for truename and falsename is not available
     }
 }
@@ -4685,17 +4727,11 @@ __time_get_c_storage<wchar_t>::__r() const
 __time_get::__time_get(const char* nm)
     : __loc_(LC_ALL_MASK, nm)
 {
-    if (__loc_ == 0)
-        __throw_runtime_error("time_get_byname"
-                            " failed to construct for " + string(nm));
 }
 
 __time_get::__time_get(const string& nm)
     : __loc_(LC_ALL_MASK, nm.c_str())
 {
-    if (__loc_ == 0)
-        __throw_runtime_error("time_get_byname"
-                            " failed to construct for " + nm);
 }
 
 __time_get::~__time_get()
@@ -4726,7 +4762,7 @@ __time_get_storage<char>::__analyze(char fmt, const ctype<char>& ct)
     char f[3] = {0};
     f[0] = '%';
     f[1] = fmt;
-    size_t n = strftime_l(buf, countof(buf), f, &t, __loc_);
+    size_t n = __libcpp_strftime(buf, countof(buf), f, &t, __loc_);
     char* bb = buf;
     char* be = buf + n;
     string result;
@@ -4874,12 +4910,12 @@ __time_get_storage<wchar_t>::__analyze(char fmt, const ctype<wchar_t>& ct)
     char f[3] = {0};
     f[0] = '%';
     f[1] = fmt;
-    strftime_l(buf, countof(buf), f, &t, __loc_);
+    __libcpp_strftime(buf, countof(buf), f, &t, __loc_);
     wchar_t wbuf[100];
     wchar_t* wbb = wbuf;
     mbstate_t mb = {0};
     const char* bb = buf;
-    size_t j = __libcpp_mbsrtowcs_l( wbb, &bb, countof(wbuf), &mb, __loc_);
+    size_t j = __libcpp_mbsrtowcs_l( wbb, bb, countof(wbuf), mb, __loc_);
     if (j == size_t(-1))
         __throw_runtime_error("locale not supported");
     wchar_t* wbe = wbb + j;
@@ -5016,26 +5052,26 @@ __time_get_storage<char>::init(const ctype<char>& ct)
     for (int i = 0; i < 7; ++i)
     {
         t.tm_wday = i;
-        strftime_l(buf, countof(buf), "%A", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%A", &t, __loc_);
         __weeks_[i] = buf;
-        strftime_l(buf, countof(buf), "%a", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%a", &t, __loc_);
         __weeks_[i+7] = buf;
     }
     // __months_
     for (int i = 0; i < 12; ++i)
     {
         t.tm_mon = i;
-        strftime_l(buf, countof(buf), "%B", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%B", &t, __loc_);
         __months_[i] = buf;
-        strftime_l(buf, countof(buf), "%b", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%b", &t, __loc_);
         __months_[i+12] = buf;
     }
     // __am_pm_
     t.tm_hour = 1;
-    strftime_l(buf, countof(buf), "%p", &t, __loc_);
+    __libcpp_strftime(buf, countof(buf), "%p", &t, __loc_);
     __am_pm_[0] = buf;
     t.tm_hour = 13;
-    strftime_l(buf, countof(buf), "%p", &t, __loc_);
+    __libcpp_strftime(buf, countof(buf), "%p", &t, __loc_);
     __am_pm_[1] = buf;
     __c_ = __analyze('c', ct);
     __r_ = __analyze('r', ct);
@@ -5056,18 +5092,18 @@ __time_get_storage<wchar_t>::init(const ctype<wchar_t>& ct)
     for (int i = 0; i < 7; ++i)
     {
         t.tm_wday = i;
-        strftime_l(buf, countof(buf), "%A", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%A", &t, __loc_);
         mb = mbstate_t();
         const char* bb = buf;
-        size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, __loc_);
+        size_t j = __libcpp_mbsrtowcs_l(wbuf, bb, countof(wbuf), mb, __loc_);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
         __weeks_[i].assign(wbuf, wbe);
-        strftime_l(buf, countof(buf), "%a", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%a", &t, __loc_);
         mb = mbstate_t();
         bb = buf;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, __loc_);
+        j = __libcpp_mbsrtowcs_l(wbuf, bb, countof(wbuf), mb, __loc_);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
@@ -5077,18 +5113,18 @@ __time_get_storage<wchar_t>::init(const ctype<wchar_t>& ct)
     for (int i = 0; i < 12; ++i)
     {
         t.tm_mon = i;
-        strftime_l(buf, countof(buf), "%B", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%B", &t, __loc_);
         mb = mbstate_t();
         const char* bb = buf;
-        size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, __loc_);
+        size_t j = __libcpp_mbsrtowcs_l(wbuf, bb, countof(wbuf), mb, __loc_);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
         __months_[i].assign(wbuf, wbe);
-        strftime_l(buf, countof(buf), "%b", &t, __loc_);
+        __libcpp_strftime(buf, countof(buf), "%b", &t, __loc_);
         mb = mbstate_t();
         bb = buf;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, __loc_);
+        j = __libcpp_mbsrtowcs_l(wbuf, bb, countof(wbuf), mb, __loc_);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
@@ -5096,19 +5132,19 @@ __time_get_storage<wchar_t>::init(const ctype<wchar_t>& ct)
     }
     // __am_pm_
     t.tm_hour = 1;
-    strftime_l(buf, countof(buf), "%p", &t, __loc_);
+    __libcpp_strftime(buf, countof(buf), "%p", &t, __loc_);
     mb = mbstate_t();
     const char* bb = buf;
-    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, __loc_);
+    size_t j = __libcpp_mbsrtowcs_l(wbuf, bb, countof(wbuf), mb, __loc_);
     if (j == size_t(-1))
         __throw_runtime_error("locale not supported");
     wbe = wbuf + j;
     __am_pm_[0].assign(wbuf, wbe);
     t.tm_hour = 13;
-    strftime_l(buf, countof(buf), "%p", &t, __loc_);
+    __libcpp_strftime(buf, countof(buf), "%p", &t, __loc_);
     mb = mbstate_t();
     bb = buf;
-    j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, __loc_);
+    j = __libcpp_mbsrtowcs_l(wbuf, bb, countof(wbuf), mb, __loc_);
     if (j == size_t(-1))
         __throw_runtime_error("locale not supported");
     wbe = wbuf + j;
@@ -5358,7 +5394,7 @@ __time_put::__do_put(char* __nb, char*& __ne, const tm* __tm,
     char fmt[] = {'%', __fmt, __mod, 0};
     if (__mod != 0)
         swap(fmt[1], fmt[2]);
-    size_t n = strftime_l(__nb, countof(__nb, __ne), fmt, __tm, __loc_);
+    size_t n = __libcpp_strftime(__nb, countof(__nb, __ne), fmt, __tm, __loc_);
     __ne = __nb + n;
 }
 
@@ -5371,7 +5407,7 @@ __time_put::__do_put(wchar_t* __wb, wchar_t*& __we, const tm* __tm,
     __do_put(__nar, __ne, __tm, __fmt, __mod);
     mbstate_t mb = {0};
     const char* __nb = __nar;
-    size_t j = __libcpp_mbsrtowcs_l(__wb, &__nb, countof(__wb, __we), &mb, __loc_);
+    size_t j = __libcpp_mbsrtowcs_l(__wb, __nb, countof(__wb, __we), mb, __loc_);
     if (j == size_t(-1))
         __throw_runtime_error("locale not supported");
     __we = __wb + j;
@@ -5756,12 +5792,9 @@ void
 moneypunct_byname<char, false>::init(const char* nm)
 {
     typedef moneypunct<char, false> base;
-    __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
-    if (loc == nullptr)
-        __throw_runtime_error("moneypunct_byname"
-                            " failed to construct for " + string(nm));
+    __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-    lconv* lc = __libcpp_localeconv_l(loc.get());
+    lconv* lc = __libcpp_localeconv_l(loc);
     if (*lc->mon_decimal_point)
         __decimal_point_ = *lc->mon_decimal_point;
     else
@@ -5799,12 +5832,9 @@ void
 moneypunct_byname<char, true>::init(const char* nm)
 {
     typedef moneypunct<char, true> base;
-    __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
-    if (loc == nullptr)
-        __throw_runtime_error("moneypunct_byname"
-                            " failed to construct for " + string(nm));
+    __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-    lconv* lc = __libcpp_localeconv_l(loc.get());
+    lconv* lc = __libcpp_localeconv_l(loc);
     if (*lc->mon_decimal_point)
         __decimal_point_ = *lc->mon_decimal_point;
     else
@@ -5859,11 +5889,8 @@ void
 moneypunct_byname<wchar_t, false>::init(const char* nm)
 {
     typedef moneypunct<wchar_t, false> base;
-    __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
-    if (loc == nullptr)
-        __throw_runtime_error("moneypunct_byname"
-                            " failed to construct for " + string(nm));
-    lconv* lc = __libcpp_localeconv_l(loc.get());
+    __libcpp_locale_t loc(LC_ALL_MASK, nm);
+    lconv* lc = __libcpp_localeconv_l(loc);
     if (*lc->mon_decimal_point)
         __decimal_point_ = static_cast<wchar_t>(*lc->mon_decimal_point);
     else
@@ -5876,7 +5903,7 @@ moneypunct_byname<wchar_t, false>::init(const char* nm)
     wchar_t wbuf[100];
     mbstate_t mb = {0};
     const char* bb = lc->currency_symbol;
-    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc.get());
+    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
     if (j == size_t(-1))
         __throw_runtime_error("locale not supported");
     wchar_t* wbe = wbuf + j;
@@ -5891,7 +5918,7 @@ moneypunct_byname<wchar_t, false>::init(const char* nm)
     {
         mb = mbstate_t();
         bb = lc->positive_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc.get());
+        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
@@ -5903,7 +5930,7 @@ moneypunct_byname<wchar_t, false>::init(const char* nm)
     {
         mb = mbstate_t();
         bb = lc->negative_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc.get());
+        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
@@ -5924,12 +5951,9 @@ void
 moneypunct_byname<wchar_t, true>::init(const char* nm)
 {
     typedef moneypunct<wchar_t, true> base;
-    __locale_unique_ptr loc(newlocale(LC_ALL_MASK, nm, 0), freelocale);
-    if (loc == nullptr)
-        __throw_runtime_error("moneypunct_byname"
-                            " failed to construct for " + string(nm));
+    __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-    lconv* lc = __libcpp_localeconv_l(loc.get());
+    lconv* lc = __libcpp_localeconv_l(loc);
     if (*lc->mon_decimal_point)
         __decimal_point_ = static_cast<wchar_t>(*lc->mon_decimal_point);
     else
@@ -5942,7 +5966,7 @@ moneypunct_byname<wchar_t, true>::init(const char* nm)
     wchar_t wbuf[100];
     mbstate_t mb = {0};
     const char* bb = lc->int_curr_symbol;
-    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc.get());
+    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
     if (j == size_t(-1))
         __throw_runtime_error("locale not supported");
     wchar_t* wbe = wbuf + j;
@@ -5961,7 +5985,7 @@ moneypunct_byname<wchar_t, true>::init(const char* nm)
     {
         mb = mbstate_t();
         bb = lc->positive_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc.get());
+        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;
@@ -5977,7 +6001,7 @@ moneypunct_byname<wchar_t, true>::init(const char* nm)
     {
         mb = mbstate_t();
         bb = lc->negative_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc.get());
+        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
         if (j == size_t(-1))
             __throw_runtime_error("locale not supported");
         wbe = wbuf + j;

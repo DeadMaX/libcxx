@@ -1004,7 +1004,7 @@ num_get<_CharT, _InputIterator>::do_get(iter_type __b, iter_type __e,
     }
     // Stage 3
     __buf.resize(__a_end - __a);
-    if (__libcpp_sscanf_l(__buf.c_str(), _LIBCPP_GET_C_LOCALE, "%p", &__v) != 1)
+    if (__libcpp_sscanf_l(__buf.c_str(), __libcpp_locale_t{}.__get_locale(), "%p", &__v) != 1)
         __err = ios_base::failbit;
     // EOF checked
     if (__b == __e)
@@ -2267,7 +2267,7 @@ _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS time_get<wchar_t
 class _LIBCPP_TYPE_VIS __time_get
 {
 protected:
-    locale_t __loc_;
+    __libcpp_locale_t __loc_;
 
     __time_get(const char* __nm);
     __time_get(const string& __nm);
@@ -2349,9 +2349,9 @@ _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS time_get_byname<
 
 class _LIBCPP_TYPE_VIS __time_put
 {
-    locale_t __loc_;
+    __libcpp_locale_t __loc_;
 protected:
-    _LIBCPP_ALWAYS_INLINE __time_put() : __loc_(_LIBCPP_GET_C_LOCALE) {}
+    _LIBCPP_ALWAYS_INLINE __time_put() : __loc_() {}
     __time_put(const char* __nm);
     __time_put(const string& __nm);
     ~__time_put();

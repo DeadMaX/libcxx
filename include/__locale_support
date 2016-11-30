@@ -36,6 +36,8 @@
 #define _LIBCPP_LOCALE_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
 #endif
 
+#include <__ctime_support>
+
 _LIBCPP_BEGIN_NAMESPACE_STD
 
 class __libcpp_locale_t;
@@ -76,6 +78,72 @@ char __libcpp_do_toupper(char __c, const __libcpp_locale_t &__locale);
 _LIBCPP_LOCALE_ABI_VISIBILITY
 char __libcpp_do_tolower(char __c, const __libcpp_locale_t &__locale);
 
+_LIBCPP_LOCALE_ABI_VISIBILITY
+wchar_t __libcpp_do_toupper(wchar_t __c, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_strftime(char *__out, size_t __len, const char *__format, const tm* __d,
+						 const __libcpp_locale_t &__locale);
+
+template <typename _Mask>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+bool __libcpp_is_wctype(wchar_t __c, _Mask __m, const __libcpp_locale_t &__locale);
+
+template <typename _Mask>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+_Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale);
+
+#if 0
+
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+#include <__bsd_locale_defaults.h>
+#else
+#include <__bsd_locale_fallbacks.h>
+#endif
+
+#endif
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_mb_cur_max_l(const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+char_traits<wchar_t>::int_type __libcpp_btowc_l(char_traits<char>::int_type __c, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+char_traits<char>::int_type __libcpp_wctob_l(char_traits<wchar_t>::int_type, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_wcsnrtombs_l(char *__dst, const wchar_t *&__src, size_t __srclen, size_t __outlen, mbstate_t &__state,
+							 const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_wcrtomb_l(char *__dst, wchar_t __c, mbstate_t &__state, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_mbsnrtowcs_l(wchar_t *__dst, const char *&__src, size_t __srclen, size_t __outlen, mbstate_t &__state,
+							 const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_mbrtowc_l(wchar_t *__dst, const char *__src, size_t __srclen, mbstate_t &__state,
+						  const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_mbtowc_l(wchar_t*__dst, const char *__src, size_t __srclen, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_mbrlen_l(const char *__src, size_t __srclen, mbstate_t &__state, const __libcpp_locale_t &__locale);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *__src, size_t __dstlen, mbstate_t &__state,
+							const __libcpp_locale_t &__locale);
+
+#define __libcpp_snprintf_l(...)                            snprintf_l(__VA_ARGS__)
+#define __libcpp_asprintf_l(...)                            asprintf_l(__VA_ARGS__)
+#define __libcpp_sscanf_l(...)                              sscanf_l(__VA_ARGS__)
+
 _LIBCPP_END_NAMESPACE_STD
 
 #ifndef _LIBCXX_DISABLE_C_LINKAGE
@@ -104,21 +172,11 @@ _LIBCPP_END_NAMESPACE_STD
 # include <support/musl/xlocale.h>
 #endif // __GLIBC__ || __APPLE__ || __FreeBSD__ || __sun__ || __EMSCRIPTEN__ || __IBMCPP__
 
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-#include <__bsd_locale_defaults.h>
-#else
-#include <__bsd_locale_fallbacks.h>
-#endif
-
 #if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
 #include "support/win32/locale_win32.h"
 #elif !defined(__BIONIC__)
 #include <langinfo.h>
 #endif
-
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #  define _LIBCPP_GET_C_LOCALE 0
@@ -131,19 +189,33 @@ _LIBCPP_END_NAMESPACE_STD
 #define __cloc_defined
 #endif
 
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <vector>
+
 _LIBCPP_BEGIN_NAMESPACE_STD
 
 class __libcpp_locale_t
 {
 	bool __new_locale;
     locale_t __locale;
+    lconv *__lconv;
     __libcpp_locale_t (locale_t __locale);
+    wchar_t __w_decimal_point;
+    wchar_t __w_thousands_sep;
+    void __init_lconv();
 public:
 
 	__libcpp_locale_t ();
 	__libcpp_locale_t (int __mask, const char *__name);
 	~__libcpp_locale_t();
     locale_t __get_locale() const { return __locale; }
+    char __get_decimal_point();
+    char __get_thousands_sep();
+    const char *__get_grouping();
+    wchar_t __getw_decimal_point();
+    wchar_t __getw_thousands_sep();
 };
 
 long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base,
@@ -249,6 +321,34 @@ wchar_t __libcpp_do_toupper(wchar_t __c, const __libcpp_locale_t &__locale)
 wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale)
 {
 	return towlower_l(__c, __locale.__get_locale());
+}
+
+template <typename _Mask>
+bool __libcpp_is_wctype(wchar_t __c, _Mask __m, const __libcpp_locale_t &__locale)
+{
+#ifdef _LIBCPP_WCTYPE_IS_MASK
+    return static_cast<bool>(iswctype_l(__c, __m, __locale.__get_locale()));
+#else
+    bool result = false;
+    char_traits<wchar_t>::int_type ch = char_trait<wchar_t>::to_int_type(__c);
+    if ((__m & space) == space) result |= (iswspace_l(ch, __l) != 0);
+    if ((__m & print) == print) result |= (iswprint_l(ch, __l) != 0);
+    if ((__m & cntrl) == cntrl) result |= (iswcntrl_l(ch, __l) != 0);
+    if ((__m & upper) == upper) result |= (iswupper_l(ch, __l) != 0);
+    if ((__m & lower) == lower) result |= (iswlower_l(ch, __l) != 0);
+    if ((__m & alpha) == alpha) result |= (iswalpha_l(ch, __l) != 0);
+    if ((__m & digit) == digit) result |= (iswdigit_l(ch, __l) != 0);
+    if ((__m & punct) == punct) result |= (iswpunct_l(ch, __l) != 0);
+    if ((__m & xdigit) == xdigit) result |= (iswxdigit_l(ch, __l) != 0);
+    if ((__m & blank) == blank) result |= (iswblank_l(ch, __l) != 0);
+    return result;
+#endif
+}
+
+size_t __libcpp_strftime(char *__out, size_t __len, const char *__format, const tm* __d,
+						 const __libcpp_locale_t &__locale)
+{
+	return strftime_l(__out, __len, __format, __d, __locale.__get_locale());
 }
 
 _LIBCPP_END_NAMESPACE_STD

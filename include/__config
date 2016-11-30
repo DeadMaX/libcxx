@@ -897,7 +897,7 @@ extern "C" void __sanitizer_annotate_contiguous_container(
 #endif
 
 #if defined(__BIONIC__) || defined(__CloudABI__) ||                            \
-    defined(_LIBCPP_HAS_MUSL_LIBC)
+    defined(_LIBCPP_HAS_MUSL_LIBC) || defined(_LIBCXX_DISABLE_C_LINKAGE)
 #define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
 #endif
 
