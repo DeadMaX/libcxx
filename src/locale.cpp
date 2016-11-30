@@ -246,6 +246,13 @@ _Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale)
 	return __m;
 }
 
+template <typename _Flags>
+size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, _Flags __flags, long long __v)
+{
+    return 0;
+}
+
+
 #endif
 
 #if defined(_AIX)
@@ -4380,31 +4387,6 @@ __check_grouping(const string& __grouping, unsigned* __g, unsigned* __g_end,
                 __err = ios_base::failbit;
         }
     }
-}
-
-void
-__num_put_base::__format_int(char* __fmtp, const char* __len, bool __signd,
-                             ios_base::fmtflags __flags)
-{
-    if (__flags & ios_base::showpos)
-        *__fmtp++ = '+';
-    if (__flags & ios_base::showbase)
-        *__fmtp++ = '#';
-    while(*__len)
-        *__fmtp++ = *__len++;
-    if ((__flags & ios_base::basefield) == ios_base::oct)
-        *__fmtp = 'o';
-    else if ((__flags & ios_base::basefield) == ios_base::hex)
-    {
-        if (__flags & ios_base::uppercase)
-            *__fmtp = 'X';
-        else
-            *__fmtp = 'x';
-    }
-    else if (__signd)
-        *__fmtp = 'd';
-    else
-        *__fmtp = 'u';
 }
 
 bool

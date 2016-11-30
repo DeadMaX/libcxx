@@ -1004,7 +1004,7 @@ num_get<_CharT, _InputIterator>::do_get(iter_type __b, iter_type __e,
     }
     // Stage 3
     __buf.resize(__a_end - __a);
-    if (__libcpp_sscanf_l(__buf.c_str(), __libcpp_locale_t{}.__get_locale(), "%p", &__v) != 1)
+    if (!__libcpp_get_pointer(__buf.c_str(), __libcpp_locale_t(), __v))
         __err = ios_base::failbit;
     // EOF checked
     if (__b == __e)
@@ -1015,20 +1015,8 @@ num_get<_CharT, _InputIterator>::do_get(iter_type __b, iter_type __e,
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS num_get<char>)
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS num_get<wchar_t>)
 
-struct _LIBCPP_TYPE_VIS __num_put_base
-{
-protected:
-    static void __format_int(char* __fmt, const char* __len, bool __signd,
-                             ios_base::fmtflags __flags);
-    static bool __format_float(char* __fmt, const char* __len,
-                               ios_base::fmtflags __flags);
-    static char* __identify_padding(char* __nb, char* __ne,
-                                    const ios_base& __iob);
-};
-
 template <class _CharT>
 struct __num_put
-    : protected __num_put_base
 {
     static void __widen_and_group_int(char* __nb, char* __np, char* __ne,
                                       _CharT* __ob, _CharT*& __op, _CharT*& __oe,
@@ -1363,14 +1351,11 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
                                          char_type __fl, long __v) const
 {
     // Stage 1 - Get number in narrow char
-    char __fmt[6] = {'%', 0};
-    const char* __len = "l";
-    this->__format_int(__fmt+1, __len, true, __iob.flags());
     const unsigned __nbuf = (numeric_limits<long>::digits / 3)
                           + ((numeric_limits<long>::digits % 3) != 0)
                           + 2;
     char __nar[__nbuf];
-    int __nc = __libcpp_snprintf_l(__nar, sizeof(__nar), _LIBCPP_GET_C_LOCALE, __fmt, __v);
+    size_t __nc = __libcpp_put_signed_intergral<ios_base>(__nar, sizeof(__nar), __libcpp_locale_t(), __iob.flags(), __v);
     char* __ne = __nar + __nc;
     char* __np = this->__identify_padding(__nar, __ne, __iob);
     // Stage 2 - Widen __nar while adding thousands separators
@@ -1396,7 +1381,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
                           + ((numeric_limits<long long>::digits % 3) != 0)
                           + 2;
     char __nar[__nbuf];
-    int __nc = __libcpp_snprintf_l(__nar, sizeof(__nar), _LIBCPP_GET_C_LOCALE, __fmt, __v);
+    size_t __nc = __libcpp_put_signed_intergral<ios_base>(__nar, sizeof(__nar), __libcpp_locale_t(), __iob.flags(), __v);
     char* __ne = __nar + __nc;
     char* __np = this->__identify_padding(__nar, __ne, __iob);
     // Stage 2 - Widen __nar while adding thousands separators
@@ -1415,14 +1400,11 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
                                          char_type __fl, unsigned long __v) const
 {
     // Stage 1 - Get number in narrow char
-    char __fmt[6] = {'%', 0};
-    const char* __len = "l";
-    this->__format_int(__fmt+1, __len, false, __iob.flags());
     const unsigned __nbuf = (numeric_limits<unsigned long>::digits / 3)
                           + ((numeric_limits<unsigned long>::digits % 3) != 0)
                           + 1;
     char __nar[__nbuf];
-    int __nc = __libcpp_snprintf_l(__nar, sizeof(__nar), _LIBCPP_GET_C_LOCALE, __fmt, __v);
+    size_t __nc = __libcpp_put_unsigned_intergral<ios_base>(__nar, sizeof(__nar), __libcpp_locale_t(), __iob.flags(), __v);
     char* __ne = __nar + __nc;
     char* __np = this->__identify_padding(__nar, __ne, __iob);
     // Stage 2 - Widen __nar while adding thousands separators
@@ -1441,14 +1423,11 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
                                          char_type __fl, unsigned long long __v) const
 {
     // Stage 1 - Get number in narrow char
-    char __fmt[8] = {'%', 0};
-    const char* __len = "ll";
-    this->__format_int(__fmt+1, __len, false, __iob.flags());
     const unsigned __nbuf = (numeric_limits<unsigned long long>::digits / 3)
                           + ((numeric_limits<unsigned long long>::digits % 3) != 0)
                           + 1;
     char __nar[__nbuf];
-    int __nc = __libcpp_snprintf_l(__nar, sizeof(__nar), _LIBCPP_GET_C_LOCALE, __fmt, __v);
+    int __nc = __libcpp_put_unsigned_intergral<ios_base>(__nar, sizeof(__nar), __libcpp_locale_t(), __iob.flags(), __v);
     char* __ne = __nar + __nc;
     char* __np = this->__identify_padding(__nar, __ne, __iob);
     // Stage 2 - Widen __nar while adding thousands separators
