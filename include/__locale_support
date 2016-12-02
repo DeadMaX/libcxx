@@ -64,6 +64,10 @@ float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_loca
 _LIBCPP_LOCALE_ABI_VISIBILITY
 double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code);
 
+template<typename _IOS>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, double __v);
+
 _LIBCPP_LOCALE_ABI_VISIBILITY
 long double __libcpp_get_long_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale,
 									 errc &__error_code);
@@ -209,11 +213,18 @@ _LIBCPP_END_NAMESPACE_STD
 # include <support/musl/xlocale.h>
 #endif // __GLIBC__ || __APPLE__ || __FreeBSD__ || __sun__ || __EMSCRIPTEN__ || __IBMCPP__
 
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-#include "support/win32/locale_win32.h"
-#elif !defined(__BIONIC__)
+#if !defined(__BIONIC__)
 #include <langinfo.h>
 #endif
+
+#ifdef _LIBCPP_HAS_CATOPEN
+#include <nl_types.h>
+#endif
+
+#ifdef __APPLE__
+#include <Availability.h>
+#endif
+
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #  define _LIBCPP_GET_C_LOCALE 0
@@ -301,6 +312,58 @@ void __libcpp_format_int(char* __fmtp, const char* __len, bool __signd,
 }
 
 template <typename _IOS>
+inline _LIBCPP_INLINE_VISIBILITY
+bool __libcpp_format_float(char* __fmtp, const char* __len,
+                               typename _IOS::fmtflags __flags)
+{
+    bool specify_precision = true;
+    if (__flags & _IOS::showpos)
+        *__fmtp++ = '+';
+    if (__flags & _IOS::showpoint)
+        *__fmtp++ = '#';
+    typename _IOS::fmtflags floatfield = __flags & _IOS::floatfield;
+    bool uppercase = (__flags & _IOS::uppercase) != 0;
+    if (floatfield == (_IOS::fixed | _IOS::scientific))
+        specify_precision = false;
+    else
+    {
+        *__fmtp++ = '.';
+        *__fmtp++ = '*';
+    }
+    while(*__len)
+        *__fmtp++ = *__len++;
+    if (floatfield == _IOS::fixed)
+    {
+        if (uppercase)
+            *__fmtp = 'F';
+        else
+            *__fmtp = 'f';
+    }
+    else if (floatfield == _IOS::scientific)
+    {
+        if (uppercase)
+            *__fmtp = 'E';
+        else
+            *__fmtp = 'e';
+    }
+    else if (floatfield == (_IOS::fixed | _IOS::scientific))
+    {
+        if (uppercase)
+            *__fmtp = 'A';
+        else
+            *__fmtp = 'a';
+    }
+    else
+    {
+        if (uppercase)
+            *__fmtp = 'G';
+        else
+            *__fmtp = 'g';
+    }
+    return specify_precision;
+}
+
+template <typename _IOS>
 size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, long long __v)
 {
     char __fmt[8] = {'%', 0};
@@ -350,6 +413,21 @@ float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_loca
 
     return value;
 }
+
+template <typename _IOS>
+size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, double __v)
+{
+    char __fmt[8] = {'%', 0};
+    const char* __len = "";
+    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, false, __flags);
+    int __outlen;
+    if (__specify_precision)
+        __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);
+    else
+        __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    return __outlen;
+}
+
 
 double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;

@@ -192,21 +192,6 @@ template <class charT> class messages_byname;
 #endif
 #include <cstdlib>
 #include <ctime>
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-#include <support/win32/locale_win32.h>
-#elif defined(_NEWLIB_VERSION)
-// FIXME: replace all the uses of _NEWLIB_VERSION with __NEWLIB__ preceded by an
-// include of <sys/cdefs.h> once https://sourceware.org/ml/newlib-cvs/2014-q3/msg00038.html
-// has had a chance to bake for a bit
-#include <support/newlib/xlocale.h>
-#endif
-#ifdef _LIBCPP_HAS_CATOPEN
-#include <nl_types.h>
-#endif
-
-#ifdef __APPLE__
-#include <Availability.h>
-#endif
 
 #include <__undef_min_max>
 
@@ -1446,41 +1431,27 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
                                          char_type __fl, double __v) const
 {
     // Stage 1 - Get number in narrow char
-    char __fmt[8] = {'%', 0};
-    const char* __len = "";
-    bool __specify_precision = this->__format_float(__fmt+1, __len, __iob.flags());
-    const unsigned __nbuf = 30;
+    const size_t __nbuf = 30;
     char __nar[__nbuf];
     char* __nb = __nar;
-    int __nc;
-    if (__specify_precision)
-        __nc = __libcpp_snprintf_l(__nb, __nbuf, _LIBCPP_GET_C_LOCALE, __fmt,
-                                   (int)__iob.precision(), __v);
-    else
-        __nc = __libcpp_snprintf_l(__nb, __nbuf, _LIBCPP_GET_C_LOCALE, __fmt, __v);
-    unique_ptr<char, void(*)(void*)> __nbh(0, free);
-    if (__nc > static_cast<int>(__nbuf-1))
+    size_t __nc = __libcpp_put_double<ios_base>(__nb, __nbuf, __libcpp_locale_t(), __iob.flags(), (int)__iob.precision(), __v);
+    vector<char> __nbh;
+    if (__nc > (__nbuf-1))
     {
-        if (__specify_precision)
-            __nc = __libcpp_asprintf_l(&__nb, _LIBCPP_GET_C_LOCALE, __fmt, (int)__iob.precision(), __v);
-        else
-            __nc = __libcpp_asprintf_l(&__nb, _LIBCPP_GET_C_LOCALE, __fmt, __v);
-        if (__nb == 0)
-            __throw_bad_alloc();
-        __nbh.reset(__nb);
+        __nbh.resize(__nc + 1);
+        __nb = __nbh.data();
+        __nc = __libcpp_put_double<ios_base>(__nb, __nc + 1, __libcpp_locale_t(), __iob.flags(), (int)__iob.precision(), __v);
     }
     char* __ne = __nb + __nc;
     char* __np = this->__identify_padding(__nb, __ne, __iob);
     // Stage 2 - Widen __nar while adding thousands separators
     char_type __o[2*(__nbuf-1) - 1];
     char_type* __ob = __o;
-    unique_ptr<char_type, void(*)(void*)> __obh(0, free);
+    vector<char_type> __obh;
     if (__nb != __nar)
     {
-        __ob = (char_type*)malloc(2*static_cast<size_t>(__nc)*sizeof(char_type));
-        if (__ob == 0)
-            __throw_bad_alloc();
-        __obh.reset(__ob);
+        __obh.resize(2*__nc);
+        __ob = __obh.data();
     }
     char_type* __op;  // pad here
     char_type* __oe;  // end of output

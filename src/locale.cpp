@@ -4389,57 +4389,6 @@ __check_grouping(const string& __grouping, unsigned* __g, unsigned* __g_end,
     }
 }
 
-bool
-__num_put_base::__format_float(char* __fmtp, const char* __len,
-                               ios_base::fmtflags __flags)
-{
-    bool specify_precision = true;
-    if (__flags & ios_base::showpos)
-        *__fmtp++ = '+';
-    if (__flags & ios_base::showpoint)
-        *__fmtp++ = '#';
-    ios_base::fmtflags floatfield = __flags & ios_base::floatfield;
-    bool uppercase = (__flags & ios_base::uppercase) != 0;
-    if (floatfield == (ios_base::fixed | ios_base::scientific))
-        specify_precision = false;
-    else
-    {
-        *__fmtp++ = '.';
-        *__fmtp++ = '*';
-    }
-    while(*__len)
-        *__fmtp++ = *__len++;
-    if (floatfield == ios_base::fixed)
-    {
-        if (uppercase)
-            *__fmtp = 'F';
-        else
-            *__fmtp = 'f';
-    }
-    else if (floatfield == ios_base::scientific)
-    {
-        if (uppercase)
-            *__fmtp = 'E';
-        else
-            *__fmtp = 'e';
-    }
-    else if (floatfield == (ios_base::fixed | ios_base::scientific))
-    {
-        if (uppercase)
-            *__fmtp = 'A';
-        else
-            *__fmtp = 'a';
-    }
-    else
-    {
-        if (uppercase)
-            *__fmtp = 'G';
-        else
-            *__fmtp = 'g';
-    }
-    return specify_precision;
-}
-
 char*
 __num_put_base::__identify_padding(char* __nb, char* __ne,
                                    const ios_base& __iob)
