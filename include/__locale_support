@@ -59,6 +59,9 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_put_unsigned_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, unsigned long long __v);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_put_pointer(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, const void *__v);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
 float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -71,6 +74,12 @@ size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t
 _LIBCPP_LOCALE_ABI_VISIBILITY
 long double __libcpp_get_long_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale,
 									 errc &__error_code);
+template<typename _IOS>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, long double __v);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_put_money(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, long double __v);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 int __libcpp_do_compare(const char* __a, const char* __b, const __libcpp_locale_t &__locale);
@@ -401,6 +410,14 @@ size_t __libcpp_put_unsigned_intergral(char *__dst, size_t __dstlen, const __lib
     return __outlen;
 }
 
+size_t __libcpp_put_pointer(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, const void *__v)
+{
+    const char *__fmt = "%p";
+    int __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    if (__outlen < 0 || size_t(__outlen) >= __dstlen)
+        __throw_runtime_error("Unable to format pointer");
+    return __outlen;
+}
 
 float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
@@ -425,6 +442,8 @@ size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t
         __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);
     else
         __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    if (__outlen < 0)
+        __throw_runtime_error("Unable to format double");
     return __outlen;
 }
 
@@ -441,6 +460,22 @@ double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_lo
     return value;
 }
 
+template <typename _IOS>
+size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, long double __v)
+{
+    char __fmt[8] = {'%', 0};
+    const char* __len = "L";
+    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, false, __flags);
+    int __outlen;
+    if (__specify_precision)
+        __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);
+    else
+        __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    if (__outlen < 0)
+        __throw_runtime_error("Unable to format long double");
+    return __outlen;
+}
+
 long double __libcpp_get_long_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale,
 									 errc &__error_code) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
@@ -452,6 +487,16 @@ long double __libcpp_get_long_double(const char* __a, const char** __p2, const _
         __error_code = errc::result_out_of_range;
 
     return value;
+}
+
+size_t __libcpp_put_money(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, long double __v)
+{
+    const char *__fmt = "%.0Lf";
+    int __outlen;
+    __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    if (__outlen < 0)
+        __throw_runtime_error("Unable to format money");
+    return __outlen;
 }
 
 int __libcpp_do_compare(const char* __a, const char* __b, const __libcpp_locale_t &__locale)
