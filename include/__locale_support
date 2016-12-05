@@ -110,6 +110,9 @@ size_t __libcpp_strftime(char *__out, size_t __len, const char *__format, const 
                          const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
+bool __libcpp_iswascii(wchar_t __c);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
 int __libcpp_iswspace_l(wchar_t __c, const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -539,6 +542,15 @@ wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale)
 	return towlower_l(__c, __locale.__get_locale());
 }
 
+bool __libcpp_iswascii(wchar_t __c)
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+    return iswascii(__c);
+#else
+    return isascii(__c);
+#endif
+    
+}
 
 int __libcpp_iswspace_l(wchar_t __c, const __libcpp_locale_t &__locale)
 {

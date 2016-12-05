@@ -1009,6 +1009,8 @@ struct __num_put
     static void __widen_and_group_float(char* __nb, char* __np, char* __ne,
                                         _CharT* __ob, _CharT*& __op, _CharT*& __oe,
                                         const locale& __loc);
+    
+    static char* __identify_padding(char*, char*, const ios_base&);
 };
 
 template <class _CharT>
@@ -1134,6 +1136,31 @@ __num_put<_CharT>::__widen_and_group_float(char* __nb, char* __np, char* __ne,
     else
         __op = __ob + (__np - __nb);
 }
+
+template <class _CharT>
+char*
+__num_put<_CharT>::__identify_padding(char* __nb, char* __ne,
+                                   const ios_base& __iob)
+{
+    switch (__iob.flags() & ios_base::adjustfield)
+    {
+    case ios_base::internal:
+        if (__nb[0] == '-' || __nb[0] == '+')
+            return __nb+1;
+        if (__ne - __nb >= 2 && __nb[0] == '0'
+                            && (__nb[1] == 'x' || __nb[1] == 'X'))
+            return __nb+2;
+        break;
+    case ios_base::left:
+        return __ne;
+    case ios_base::right:
+    default:
+        break;
+    }
+    return __nb;
+}
+
+
 
 _LIBCPP_EXTERN_TEMPLATE2(struct _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS __num_put<char>)
 _LIBCPP_EXTERN_TEMPLATE2(struct _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS __num_put<wchar_t>)

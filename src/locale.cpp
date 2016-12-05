@@ -149,7 +149,14 @@ void __libcpp_locale_t::__init_lconv()
 {
 	if (!__lconv)
 	{
+#if _LIBCPP_LOCALE__L_EXTENSIONS
 		__lconv = localeconv_l(__locale);
+#else
+                {
+                    __locale_raii __locale_backup(uselocale(__locale));
+                    __lconv = localeconv();
+                }
+#endif // _LIBCPP_LOCALE__L_EXTENSIONS
 		if (__lconv)
 		{
 			int nb_char = __libcpp_mbtowc_l(&__w_decimal_point, __lconv->decimal_point, strlen(__lconv->decimal_point),
@@ -207,11 +214,11 @@ template <typename _Mask>
 _Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale)
 {
 	_Mask __m = 0;
-	if (iswascii(__c))
+	locale_t __l = __locale.__get_locale();
+        if (__libcpp_iswascii(__c))
 		__m = static_cast<_Mask>(ctype<char>::classic_table()[__c]);
 	else
 	{
-		locale_t __l = __locale.__get_locale();
 		__m = 0;
 		char_traits<wchar_t>::int_type ch = char_traits<wchar_t>::to_int_type(__c);
 		if (iswspace_l(ch, __l))
@@ -245,13 +252,6 @@ _Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale)
 	}
 	return __m;
 }
-
-template <typename _Flags>
-size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, _Flags __flags, long long __v)
-{
-    return 0;
-}
-
 
 #endif
 
@@ -892,7 +892,7 @@ ctype<wchar_t>::~ctype()
 bool
 ctype<wchar_t>::do_is(mask m, char_type c) const
 {
-    return isascii(c) ? (ctype<char>::classic_table()[c] & m) != 0 : false;
+    return __libcpp_iswascii(c) ? (ctype<char>::classic_table()[c] & m) != 0 : false;
 }
 
 const wchar_t*
@@ -1357,7 +1357,7 @@ ctype_byname<wchar_t>::~ctype_byname()
 bool
 ctype_byname<wchar_t>::do_is(mask m, char_type c) const
 {
-	return __libcpp_is_wctype(c, m, __l);
+	return __libcpp_is_wctype<mask, ctype_byname>(c, m, __l);
 }
 
 const wchar_t*
@@ -1380,16 +1380,16 @@ ctype_byname<wchar_t>::do_scan_is(mask m, const char_type* low, const char_type*
             break;
 #else
         wint_t ch = static_cast<wint_t>(*low);
-        if ((m & space) == space && iswspace_l(ch, __l)) break;
-        if ((m & print) == print && iswprint_l(ch, __l)) break;
-        if ((m & cntrl) == cntrl && iswcntrl_l(ch, __l)) break;
-        if ((m & upper) == upper && iswupper_l(ch, __l)) break;
-        if ((m & lower) == lower && iswlower_l(ch, __l)) break;
-        if ((m & alpha) == alpha && iswalpha_l(ch, __l)) break;
-        if ((m & digit) == digit && iswdigit_l(ch, __l)) break;
-        if ((m & punct) == punct && iswpunct_l(ch, __l)) break;
-        if ((m & xdigit) == xdigit && iswxdigit_l(ch, __l)) break;
-        if ((m & blank) == blank && iswblank_l(ch, __l)) break;
+        if ((m & space) == space && __libcpp_iswspace_l(ch, __l)) break;
+        if ((m & print) == print && __libcpp_iswprint_l(ch, __l)) break;
+        if ((m & cntrl) == cntrl && __libcpp_iswcntrl_l(ch, __l)) break;
+        if ((m & upper) == upper && __libcpp_iswupper_l(ch, __l)) break;
+        if ((m & lower) == lower && __libcpp_iswlower_l(ch, __l)) break;
+        if ((m & alpha) == alpha && __libcpp_iswalpha_l(ch, __l)) break;
+        if ((m & digit) == digit && __libcpp_iswdigit_l(ch, __l)) break;
+        if ((m & punct) == punct && __libcpp_iswpunct_l(ch, __l)) break;
+        if ((m & xdigit) == xdigit && __libcpp_iswxdigit_l(ch, __l)) break;
+        if ((m & blank) == blank && __libcpp_iswblank_l(ch, __l)) break;
 #endif
     }
     return low;
@@ -1405,16 +1405,16 @@ ctype_byname<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type
             break;
 #else
         wint_t ch = static_cast<wint_t>(*low);
-        if ((m & space) == space && iswspace_l(ch, __l)) continue;
-        if ((m & print) == print && iswprint_l(ch, __l)) continue;
-        if ((m & cntrl) == cntrl && iswcntrl_l(ch, __l)) continue;
-        if ((m & upper) == upper && iswupper_l(ch, __l)) continue;
-        if ((m & lower) == lower && iswlower_l(ch, __l)) continue;
-        if ((m & alpha) == alpha && iswalpha_l(ch, __l)) continue;
-        if ((m & digit) == digit && iswdigit_l(ch, __l)) continue;
-        if ((m & punct) == punct && iswpunct_l(ch, __l)) continue;
-        if ((m & xdigit) == xdigit && iswxdigit_l(ch, __l)) continue;
-        if ((m & blank) == blank && iswblank_l(ch, __l)) continue;
+        if ((m & space) == space && __libcpp_iswspace_l(ch, __l)) continue;
+        if ((m & print) == print && __libcpp_iswprint_l(ch, __l)) continue;
+        if ((m & cntrl) == cntrl && __libcpp_iswcntrl_l(ch, __l)) continue;
+        if ((m & upper) == upper && __libcpp_iswupper_l(ch, __l)) continue;
+        if ((m & lower) == lower && __libcpp_iswlower_l(ch, __l)) continue;
+        if ((m & alpha) == alpha && __libcpp_iswalpha_l(ch, __l)) continue;
+        if ((m & digit) == digit && __libcpp_iswdigit_l(ch, __l)) continue;
+        if ((m & punct) == punct && __libcpp_iswpunct_l(ch, __l)) continue;
+        if ((m & xdigit) == xdigit && __libcpp_iswxdigit_l(ch, __l)) continue;
+        if ((m & blank) == blank && __libcpp_iswblank_l(ch, __l)) continue;
         break;
 #endif
     }
@@ -4387,28 +4387,6 @@ __check_grouping(const string& __grouping, unsigned* __g, unsigned* __g_end,
                 __err = ios_base::failbit;
         }
     }
-}
-
-char*
-__num_put_base::__identify_padding(char* __nb, char* __ne,
-                                   const ios_base& __iob)
-{
-    switch (__iob.flags() & ios_base::adjustfield)
-    {
-    case ios_base::internal:
-        if (__nb[0] == '-' || __nb[0] == '+')
-            return __nb+1;
-        if (__ne - __nb >= 2 && __nb[0] == '0'
-                            && (__nb[1] == 'x' || __nb[1] == 'X'))
-            return __nb+2;
-        break;
-    case ios_base::left:
-        return __ne;
-    case ios_base::right:
-    default:
-        break;
-    }
-    return __nb;
 }
 
 // time_get
