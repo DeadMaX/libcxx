@@ -196,6 +196,50 @@ const char *__libcpp_locale_t::__get_grouping()
 	return __lconv->grouping;
 }
 
+const char *__libcpp_locale_t::__get_money_grouping()
+{
+	__init_lconv();
+	if (!__lconv)
+		return "";
+	return __lconv->mon_grouping;
+}
+
+const char *__libcpp_locale_t::__get_money_symbol()
+{
+	__init_lconv();
+	if (!__lconv)
+		return "";
+	return __lconv->currency_symbol;
+}
+
+int __libcpp_locale_t::__get_money_fract_digit()
+{
+	__init_lconv();
+	if (!__lconv)
+		return numeric_limits<char>::max();
+	return __lconv->frac_digits;
+}
+
+const char *__libcpp_locale_t::__get_money_positive_sign()
+{
+	__init_lconv();
+	if (!__lconv)
+		return "()";
+        if (__lconv->p_sign_posn == 0)
+                return "()";
+        return __lconv->positive_sign;
+}
+
+const char *__libcpp_locale_t::__get_money_negative_sign()
+{
+	__init_lconv();
+	if (!__lconv)
+		return "()";
+        if (__lconv->n_sign_posn == 0)
+                return "()";
+        return __lconv->negative_sign;
+}
+
 wchar_t __libcpp_locale_t::__getw_decimal_point()
 {
 	__init_lconv();
@@ -5328,7 +5372,7 @@ template <class charT>
 static
 void
 __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
-           bool intl, char cs_precedes, char sep_by_space, char sign_posn,
+           bool intl, bool cs_precedes, __libcpp_locale_t::__money_space_separation sep_by_space, __libcpp_locale_t::__money_sign_position sign_posn,
            charT space_char)
 {
     const char sign = static_cast<char>(money_base::sign);
@@ -5359,9 +5403,9 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
     //
     // Users who want to get this right should use ICU instead.
 
-    switch (cs_precedes)
+    if (!cs_precedes)
     {
-    case 0:  // value before curr_symbol
+        // value before curr_symbol
         if (symbol_contains_sep) {
             // Move the separator to before the symbol, to place it
             // between the value and symbol.
@@ -5370,20 +5414,20 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
         }
         switch (sign_posn)
         {
-        case 0:  // Parentheses surround the quantity and currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__parentheses:
             pat.field[0] = sign;
             pat.field[1] = value;
             pat.field[2] = none;  // Any space appears in the symbol.
             pat.field[3] = symbol;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 // This case may have changed between C99 and C11;
                 // assume the currency symbol matches the intention.
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 // The "sign" is two parentheses, so no space here either.
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 if (!symbol_contains_sep) {
                     // We insert the space into the symbol instead of
                     // setting pat.field[2]=space so that when
@@ -5391,20 +5435,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.insert(0, 1, space_char);
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 1:  // The sign string precedes the quantity and currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__before_all:
             pat.field[0] = sign;
             pat.field[3] = symbol;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = value;
                 pat.field[2] = none;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = value;
                 pat.field[2] = none;
                 if (!symbol_contains_sep) {
@@ -5414,7 +5456,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.insert(0, 1, space_char);
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = space;
                 pat.field[2] = value;
                 if (symbol_contains_sep) {
@@ -5423,20 +5465,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.erase(__curr_symbol_.begin());
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 2:  // The sign string succeeds the quantity and currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__after_all:
             pat.field[0] = value;
             pat.field[3] = sign;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = none;
                 pat.field[2] = symbol;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 if (!symbol_contains_sep) {
                     // We insert the space into the symbol instead of
                     // setting pat.field[1]=space so that when
@@ -5446,7 +5486,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                 pat.field[1] = none;
                 pat.field[2] = symbol;
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = symbol;
                 pat.field[2] = space;
                 if (symbol_contains_sep) {
@@ -5455,20 +5495,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.erase(__curr_symbol_.begin());
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 3:  // The sign string immediately precedes the currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__before_symbol:
             pat.field[0] = value;
             pat.field[3] = symbol;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = none;
                 pat.field[2] = sign;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = space;
                 pat.field[2] = sign;
                 if (symbol_contains_sep) {
@@ -5477,7 +5515,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.erase(__curr_symbol_.begin());
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = sign;
                 pat.field[2] = none;
                 if (!symbol_contains_sep) {
@@ -5487,20 +5525,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.insert(0, 1, space_char);
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 4:  // The sign string immediately succeeds the currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__after_symbol:
             pat.field[0] = value;
             pat.field[3] = sign;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = none;
                 pat.field[2] = symbol;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = none;
                 pat.field[2] = symbol;
                 if (!symbol_contains_sep) {
@@ -5510,7 +5546,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.insert(0, 1, space_char);
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = symbol;
                 pat.field[2] = space;
                 if (symbol_contains_sep) {
@@ -5519,31 +5555,29 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.erase(__curr_symbol_.begin());
                 }
                 return;
-            default:
-                break;
             }
             break;
-        default:
-            break;
         }
-        break;
-    case 1:  // curr_symbol before value
+    }
+    else
+    {
+        // curr_symbol before value
         switch (sign_posn)
         {
-        case 0:  // Parentheses surround the quantity and currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__parentheses:
             pat.field[0] = sign;
             pat.field[1] = symbol;
             pat.field[2] = none;  // Any space appears in the symbol.
             pat.field[3] = value;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 // This case may have changed between C99 and C11;
                 // assume the currency symbol matches the intention.
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 // The "sign" is two parentheses, so no space here either.
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 if (!symbol_contains_sep) {
                     // We insert the space into the symbol instead of
                     // setting pat.field[2]=space so that when
@@ -5551,20 +5585,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.insert(0, 1, space_char);
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 1:  // The sign string precedes the quantity and currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__before_all:
             pat.field[0] = sign;
             pat.field[3] = value;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = symbol;
                 pat.field[2] = none;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = symbol;
                 pat.field[2] = none;
                 if (!symbol_contains_sep) {
@@ -5574,7 +5606,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.push_back(space_char);
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = space;
                 pat.field[2] = symbol;
                 if (symbol_contains_sep) {
@@ -5583,20 +5615,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.pop_back();
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 2:  // The sign string succeeds the quantity and currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__after_all:
             pat.field[0] = symbol;
             pat.field[3] = sign;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = none;
                 pat.field[2] = value;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = none;
                 pat.field[2] = value;
                 if (!symbol_contains_sep) {
@@ -5606,7 +5636,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.push_back(space_char);
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = value;
                 pat.field[2] = space;
                 if (symbol_contains_sep) {
@@ -5615,20 +5645,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.pop_back();
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 3:  // The sign string immediately precedes the currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__before_symbol:
             pat.field[0] = sign;
             pat.field[3] = value;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = symbol;
                 pat.field[2] = none;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = symbol;
                 pat.field[2] = none;
                 if (!symbol_contains_sep) {
@@ -5638,7 +5666,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.push_back(space_char);
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = space;
                 pat.field[2] = symbol;
                 if (symbol_contains_sep) {
@@ -5647,20 +5675,18 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.pop_back();
                 }
                 return;
-            default:
-                break;
             }
             break;
-        case 4:  // The sign string immediately succeeds the currency symbol.
+        case __libcpp_locale_t::__money_sign_position::__after_symbol:
             pat.field[0] = symbol;
             pat.field[3] = value;
             switch (sep_by_space)
             {
-            case 0:  // No space separates the currency symbol and value.
+            case __libcpp_locale_t::__money_space_separation::__nothing:
                 pat.field[1] = sign;
                 pat.field[2] = none;
                 return;
-            case 1:  // Space between currency-and-sign or currency and value.
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = sign;
                 pat.field[2] = space;
                 if (symbol_contains_sep) {
@@ -5669,7 +5695,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.pop_back();
                 }
                 return;
-            case 2:  // Space between sign and currency or value.
+            case __libcpp_locale_t::__money_space_separation::__two_spaces:
                 pat.field[1] = none;
                 pat.field[2] = sign;
                 if (!symbol_contains_sep) {
@@ -5679,16 +5705,9 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                     __curr_symbol_.push_back(space_char);
                 }
                 return;
-           default:
-                break;
             }
             break;
-        default:
-            break;
         }
-        break;
-    default:
-        break;
     }
     pat.field[0] = symbol;
     pat.field[1] = sign;
@@ -5703,29 +5722,20 @@ moneypunct_byname<char, false>::init(const char* nm)
     typedef moneypunct<char, false> base;
     __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-    lconv* lc = __libcpp_localeconv_l(loc);
-    if (*lc->mon_decimal_point)
-        __decimal_point_ = *lc->mon_decimal_point;
-    else
+    __decimal_point_ = loc.__get_decimal_point();
+    if (!__decimal_point_)
         __decimal_point_ = base::do_decimal_point();
-    if (*lc->mon_thousands_sep)
-        __thousands_sep_ = *lc->mon_thousands_sep;
-    else
+    __thousands_sep_ = loc.__get_thousands_sep();
+    if (!__thousands_sep_)
         __thousands_sep_ = base::do_thousands_sep();
-    __grouping_ = lc->mon_grouping;
-    __curr_symbol_ = lc->currency_symbol;
-    if (lc->frac_digits != CHAR_MAX)
-        __frac_digits_ = lc->frac_digits;
-    else
+    __grouping_ = loc.__get_money_grouping();
+    __curr_symbol_ = loc.__get_money_symbol();
+    __frac_digits_ = loc.__get_money_fract_digit();
+    if (__frac_digits_ != numeric_limits<char>::max())
         __frac_digits_ = base::do_frac_digits();
-    if (lc->p_sign_posn == 0)
-        __positive_sign_ = "()";
-    else
-        __positive_sign_ = lc->positive_sign;
-    if (lc->n_sign_posn == 0)
-        __negative_sign_ = "()";
-    else
-        __negative_sign_ = lc->negative_sign;
+    __positive_sign_ = loc.__get_money_positive_sign();
+    __negative_sign_ = loc.__get_money_negative_sign();
+
     // Assume the positive and negative formats will want spaces in
     // the same places in curr_symbol since there's no way to
     // represent anything else.
