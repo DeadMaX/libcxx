@@ -150,24 +150,14 @@ template <typename _Mask>
 _LIBCPP_LOCALE_ABI_VISIBILITY
 _Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale);
 
-#if 0
-
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-#include <__bsd_locale_defaults.h>
-#else
-#include <__bsd_locale_fallbacks.h>
-#endif
-
-#endif
-
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_mb_cur_max_l(const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-char_traits<wchar_t>::int_type __libcpp_btowc_l(char_traits<char>::int_type __c, const __libcpp_locale_t &__locale);
+char_traits<wchar_t>::int_type __libcpp_btowc_l(char __c, const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-char_traits<char>::int_type __libcpp_wctob_l(char_traits<wchar_t>::int_type, const __libcpp_locale_t &__locale);
+char_traits<char>::int_type __libcpp_wctob_l(wchar_t, const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_wcsnrtombs_l(char *__dst, const wchar_t *&__src, size_t __srclen, size_t __outlen, mbstate_t &__state,
@@ -191,7 +181,7 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_mbrlen_l(const char *__src, size_t __srclen, mbstate_t &__state, const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *__src, size_t __dstlen, mbstate_t &__state,
+size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *&__src, size_t __dstlen, mbstate_t &__state,
 							const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -264,6 +254,9 @@ class __libcpp_locale_t
     __libcpp_locale_t (locale_t __locale);
     wchar_t __w_decimal_point;
     wchar_t __w_thousands_sep;
+    wchar_t __w_currency_symbol[100];
+    wchar_t __w_money_positive_sign[100];
+    wchar_t __w_money_negative_sign[100];
     void __init_lconv();
 public:
 
@@ -287,15 +280,24 @@ public:
 	~__libcpp_locale_t();
     locale_t __get_locale() const { return __locale; }
     char __get_decimal_point();
+    wchar_t __getw_decimal_point();
     char __get_thousands_sep();
+    wchar_t __getw_thousands_sep();
     const char *__get_grouping();
     const char *__get_money_grouping();
     const char *__get_money_symbol();
+    const wchar_t *__getw_money_symbol();
     int __get_money_fract_digit();
     const char *__get_money_positive_sign();
+    const wchar_t *__getw_money_positive_sign();
     const char *__get_money_negative_sign();
-    wchar_t __getw_decimal_point();
-    wchar_t __getw_thousands_sep();
+    const wchar_t *__getw_money_negative_sign();
+    bool __is_money_positive_sign_precedes();
+    bool __is_money_negative_sign_precedes();
+    __money_space_separation __get_money_positive_separation();
+    __money_space_separation __get_money_negative_separation();
+    __money_sign_position __get_money_positive_sign_position();
+    __money_sign_position __get_money_negative_sign_position();
 };
 
 #ifndef _LIBCPP_LOCALE__L_EXTENSIONS
@@ -402,7 +404,7 @@ size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcp
     const char* __len = "ll";
     __libcpp_format_int<_IOS>(__fmt+1, __len, true, __flags);
     int __outlen = snprintf(__dst, __dstlen, __fmt, __v);
-    if (__outlen < 0 || __outlen >= __dstlen)
+    if (__outlen < 0 || size_t(__outlen) >= __dstlen)
         __throw_runtime_error("Unable to format integer");
     return __outlen;
 }
@@ -428,7 +430,7 @@ size_t __libcpp_put_unsigned_intergral(char *__dst, size_t __dstlen, const __lib
     const char* __len = "ll";
     __libcpp_format_int<_IOS>(__fmt+1, __len, false, __flags);
     int __outlen = snprintf(__dst, __dstlen, __fmt, __v);
-    if (__outlen < 0 || __outlen >= __dstlen)
+    if (__outlen < 0 || size_t(__outlen) >= __dstlen)
         __throw_runtime_error("Unable to format integer");
     return __outlen;
 }
@@ -459,7 +461,7 @@ size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t
 {
     char __fmt[8] = {'%', 0};
     const char* __len = "";
-    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, false, __flags);
+    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, __flags);
     int __outlen;
     if (__specify_precision)
         __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);
@@ -488,7 +490,7 @@ size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_loc
 {
     char __fmt[8] = {'%', 0};
     const char* __len = "L";
-    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, false, __flags);
+    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, __flags);
     int __outlen;
     if (__specify_precision)
         __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);

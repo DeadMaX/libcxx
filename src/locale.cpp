@@ -124,6 +124,9 @@ __libcpp_locale_t::__libcpp_locale_t()
 	if (__locale == nullptr)
 		__throw_runtime_error("__libcpp_locale_t::__libcpp_locale_t"
 							  " unable to get C locale");
+        __w_currency_symbol[0] = L'\0';
+        __w_money_positive_sign[0] = L'\0';
+        __w_money_negative_sign[0] = L'\0';
 }
 
 
@@ -137,6 +140,9 @@ __libcpp_locale_t::__libcpp_locale_t(int __mask, const char *__name)
 	if (__locale == nullptr)
 		__throw_runtime_error("__libcpp_locale_t::__libcpp_locale_t"
 							  " failed to construct for " + string(__name));
+        __w_currency_symbol[0] = L'\0';
+        __w_money_positive_sign[0] = L'\0';
+        __w_money_negative_sign[0] = L'\0';
 }
 
 __libcpp_locale_t::~__libcpp_locale_t()
@@ -153,7 +159,7 @@ void __libcpp_locale_t::__init_lconv()
 		__lconv = localeconv_l(__locale);
 #else
                 {
-                    __locale_raii __locale_backup(uselocale(__locale));
+                    __locale_raii __locale_backup(uselocale(__locale), uselocale);
                     __lconv = localeconv();
                 }
 #endif // _LIBCPP_LOCALE__L_EXTENSIONS
@@ -168,7 +174,25 @@ void __libcpp_locale_t::__init_lconv()
 									__locale);
 			if (nb_char <= 0 || __lconv->thousands_sep[nb_char] != '\0')
 				__w_thousands_sep = L'\0';
-		}
+
+                        mbstate_t mb = mbstate_t();
+                        const char *bb = __lconv->currency_symbol;
+                        nb_char = __libcpp_mbsrtowcs_l(__w_currency_symbol, bb, sizeof(__w_currency_symbol), mb, __locale);
+                        if (nb_char < 0 || bb)
+                            __throw_runtime_error("locale not supported");
+                        
+                        mb = mbstate_t();
+                        bb = __lconv->positive_sign;
+                        nb_char = __libcpp_mbsrtowcs_l(__w_money_positive_sign, bb, sizeof(__w_money_positive_sign), mb, __locale);
+                        if (nb_char < 0 || bb)
+                            __throw_runtime_error("locale not supported");
+                        
+                        mb = mbstate_t();
+                        bb = __lconv->negative_sign;
+                        nb_char = __libcpp_mbsrtowcs_l(__w_money_negative_sign, bb, sizeof(__w_money_negative_sign), mb, __locale);
+                        if (nb_char < 0 || bb)
+                            __throw_runtime_error("locale not supported");
+                }
 	}
 }
 
@@ -180,12 +204,24 @@ char __libcpp_locale_t::__get_decimal_point()
 	return *__lconv->decimal_point;
 }
 
+wchar_t __libcpp_locale_t::__getw_decimal_point()
+{
+	__init_lconv();
+	return __w_decimal_point;
+}
+
 char __libcpp_locale_t::__get_thousands_sep()
 {
 	__init_lconv();
 	if (!__lconv)
 		return '\0';
 	return *__lconv->thousands_sep;
+}
+
+wchar_t __libcpp_locale_t::__getw_thousands_sep()
+{
+	__init_lconv();
+	return __w_thousands_sep;
 }
 
 const char *__libcpp_locale_t::__get_grouping()
@@ -212,6 +248,14 @@ const char *__libcpp_locale_t::__get_money_symbol()
 	return __lconv->currency_symbol;
 }
 
+const wchar_t *__libcpp_locale_t::__getw_money_symbol()
+{
+    __init_lconv();
+    if (!__lconv)
+        return L"";
+    return __w_currency_symbol;
+}
+
 int __libcpp_locale_t::__get_money_fract_digit()
 {
 	__init_lconv();
@@ -225,9 +269,15 @@ const char *__libcpp_locale_t::__get_money_positive_sign()
 	__init_lconv();
 	if (!__lconv)
 		return "()";
-        if (__lconv->p_sign_posn == 0)
+        if (__get_money_positive_sign_position() == __money_sign_position::__parentheses)
                 return "()";
         return __lconv->positive_sign;
+}
+
+const wchar_t *__libcpp_locale_t::__getw_money_positive_sign()
+{
+	__init_lconv();
+	return __w_money_positive_sign;
 }
 
 const char *__libcpp_locale_t::__get_money_negative_sign()
@@ -235,23 +285,124 @@ const char *__libcpp_locale_t::__get_money_negative_sign()
 	__init_lconv();
 	if (!__lconv)
 		return "()";
-        if (__lconv->n_sign_posn == 0)
+        if (__get_money_negative_sign_position() == __money_sign_position::__parentheses)
                 return "()";
         return __lconv->negative_sign;
 }
 
-wchar_t __libcpp_locale_t::__getw_decimal_point()
+const wchar_t *__libcpp_locale_t::__getw_money_negative_sign()
 {
 	__init_lconv();
-	return __w_decimal_point;
+	return __w_money_negative_sign;
 }
 
-wchar_t __libcpp_locale_t::__getw_thousands_sep()
+bool __libcpp_locale_t::__is_money_positive_sign_precedes()
 {
-	__init_lconv();
-	if (!__lconv)
-		return '\0';
-	return __w_thousands_sep;
+    __init_lconv();
+    if (!__lconv)
+        return false;
+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+    return __lconv->p_cs_precedes != 0;
+#else
+    return __lconv->int_p_cs_precedes != 0;
+#endif
+}
+
+bool __libcpp_locale_t::__is_money_negative_sign_precedes()
+{
+    __init_lconv();
+    if (!__lconv)
+        return false;
+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+    return __lconv->n_cs_precedes != 0;
+#else
+    return __lconv->int_n_cs_precedes != 0;
+#endif
+}
+
+__libcpp_locale_t::__money_space_separation __libcpp_locale_t::__get_money_positive_separation()
+{
+    __init_lconv();
+    if (!__lconv)
+        return __money_space_separation::__nothing;
+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+    switch (__lconv->p_sep_by_space)
+#else
+    switch (__lconv->int_p_sep_by_space)
+#endif
+    {
+        case 1:
+            return __money_space_separation::__one_space;
+        case 2:
+            return __money_space_separation::__two_spaces;
+    }
+    return __money_space_separation::__nothing;
+}
+
+__libcpp_locale_t::__money_space_separation __libcpp_locale_t::__get_money_negative_separation()
+{
+    __init_lconv();
+    if (!__lconv)
+        return __money_space_separation::__nothing;
+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+    switch (__lconv->n_sep_by_space)
+#else
+    switch (__lconv->int_n_sep_by_space)
+#endif
+    {
+        case 1:
+            return __money_space_separation::__one_space;
+        case 2:
+            return __money_space_separation::__two_spaces;
+    }
+    return __money_space_separation::__nothing;
+}
+
+__libcpp_locale_t::__money_sign_position __libcpp_locale_t::__get_money_positive_sign_position()
+{
+    __init_lconv();
+    if (!__lconv)
+        return __money_sign_position::__parentheses;
+
+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+    switch (__lconv->p_sign_posn)
+#else
+    switch (__lconv->int_p_sign_posn)
+#endif
+    {
+        case 1:
+            return __money_sign_position::__after_all;
+        case 2:
+            return __money_sign_position::__before_all;
+        case 3:
+            return __money_sign_position::__after_symbol;
+        case 4:
+            return __money_sign_position::__before_symbol;
+    }
+    return __money_sign_position::__parentheses;
+}
+__libcpp_locale_t::__money_sign_position __libcpp_locale_t::__get_money_negative_sign_position()
+{
+    __init_lconv();
+    if (!__lconv)
+        return __money_sign_position::__parentheses;
+
+#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
+    switch (__lconv->n_sign_posn)
+#else
+    switch (__lconv->int_n_sign_posn)
+#endif
+    {
+        case 1:
+            return __money_sign_position::__after_all;
+        case 2:
+            return __money_sign_position::__before_all;
+        case 3:
+            return __money_sign_position::__after_symbol;
+        case 4:
+            return __money_sign_position::__before_symbol;
+    }
+    return __money_sign_position::__parentheses;
 }
 
 template <typename _Mask>
@@ -5536,7 +5687,7 @@ __init_pat(money_base::pattern& pat, basic_string<charT>& __curr_symbol_,
                 pat.field[1] = none;
                 pat.field[2] = symbol;
                 return;
-            case __libcpp_locale_t::__money_space_separation::__nothing:
+            case __libcpp_locale_t::__money_space_separation::__one_space:
                 pat.field[1] = none;
                 pat.field[2] = symbol;
                 if (!symbol_contains_sep) {
@@ -5741,9 +5892,9 @@ moneypunct_byname<char, false>::init(const char* nm)
     // represent anything else.
     string_type __dummy_curr_symbol = __curr_symbol_;
     __init_pat(__pos_format_, __dummy_curr_symbol, false,
-               lc->p_cs_precedes, lc->p_sep_by_space, lc->p_sign_posn, ' ');
+               loc.__is_money_positive_sign_precedes(), loc.__get_money_positive_separation(), loc.__get_money_positive_sign_position(), ' ');
     __init_pat(__neg_format_, __curr_symbol_, false,
-               lc->n_cs_precedes, lc->n_sep_by_space, lc->n_sign_posn, ' ');
+               loc.__is_money_negative_sign_precedes(), loc.__get_money_negative_separation(), loc.__get_money_negative_sign_position(), ' ');
 }
 
 template<>
@@ -5753,54 +5904,28 @@ moneypunct_byname<char, true>::init(const char* nm)
     typedef moneypunct<char, true> base;
     __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-    lconv* lc = __libcpp_localeconv_l(loc);
-    if (*lc->mon_decimal_point)
-        __decimal_point_ = *lc->mon_decimal_point;
-    else
+    __decimal_point_ = loc.__get_decimal_point();
+    if (!__decimal_point_)
         __decimal_point_ = base::do_decimal_point();
-    if (*lc->mon_thousands_sep)
-        __thousands_sep_ = *lc->mon_thousands_sep;
-    else
+    __thousands_sep_ = loc.__get_thousands_sep();
+    if (!__thousands_sep_)
         __thousands_sep_ = base::do_thousands_sep();
-    __grouping_ = lc->mon_grouping;
-    __curr_symbol_ = lc->int_curr_symbol;
-    if (lc->int_frac_digits != CHAR_MAX)
-        __frac_digits_ = lc->int_frac_digits;
-    else
+    __grouping_ = loc.__get_money_grouping();
+    __curr_symbol_ = loc.__get_money_symbol();
+    __frac_digits_ = loc.__get_money_fract_digit();
+    if (__frac_digits_ != numeric_limits<char>::max())
         __frac_digits_ = base::do_frac_digits();
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-    if (lc->p_sign_posn == 0)
-#else // _LIBCPP_MSVCRT
-    if (lc->int_p_sign_posn == 0)
-#endif // !_LIBCPP_MSVCRT
-        __positive_sign_ = "()";
-    else
-        __positive_sign_ = lc->positive_sign;
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-    if(lc->n_sign_posn == 0)
-#else // _LIBCPP_MSVCRT
-    if (lc->int_n_sign_posn == 0)
-#endif // !_LIBCPP_MSVCRT
-        __negative_sign_ = "()";
-    else
-        __negative_sign_ = lc->negative_sign;
+    __positive_sign_ = loc.__get_money_positive_sign();
+    __negative_sign_ = loc.__get_money_negative_sign();
+
     // Assume the positive and negative formats will want spaces in
     // the same places in curr_symbol since there's no way to
     // represent anything else.
     string_type __dummy_curr_symbol = __curr_symbol_;
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-    __init_pat(__pos_format_, __dummy_curr_symbol, true,
-               lc->p_cs_precedes, lc->p_sep_by_space, lc->p_sign_posn, ' ');
-    __init_pat(__neg_format_, __curr_symbol_, true,
-               lc->n_cs_precedes, lc->n_sep_by_space, lc->n_sign_posn, ' ');
-#else // _LIBCPP_MSVCRT
-    __init_pat(__pos_format_, __dummy_curr_symbol, true,
-               lc->int_p_cs_precedes, lc->int_p_sep_by_space,
-               lc->int_p_sign_posn, ' ');
-    __init_pat(__neg_format_, __curr_symbol_, true,
-               lc->int_n_cs_precedes, lc->int_n_sep_by_space,
-               lc->int_n_sign_posn, ' ');
-#endif // !_LIBCPP_MSVCRT
+    __init_pat(__pos_format_, __dummy_curr_symbol, false,
+               loc.__is_money_positive_sign_precedes(), loc.__get_money_positive_separation(), loc.__get_money_positive_sign_position(), ' ');
+    __init_pat(__neg_format_, __curr_symbol_, false,
+               loc.__is_money_negative_sign_precedes(), loc.__get_money_negative_separation(), loc.__get_money_negative_sign_position(), ' ');
 }
 
 template<>
@@ -5809,60 +5934,29 @@ moneypunct_byname<wchar_t, false>::init(const char* nm)
 {
     typedef moneypunct<wchar_t, false> base;
     __libcpp_locale_t loc(LC_ALL_MASK, nm);
-    lconv* lc = __libcpp_localeconv_l(loc);
-    if (*lc->mon_decimal_point)
-        __decimal_point_ = static_cast<wchar_t>(*lc->mon_decimal_point);
-    else
+
+    __decimal_point_ = loc.__getw_decimal_point();
+    if (!__decimal_point_)
         __decimal_point_ = base::do_decimal_point();
-    if (*lc->mon_thousands_sep)
-        __thousands_sep_ = static_cast<wchar_t>(*lc->mon_thousands_sep);
-    else
+    __thousands_sep_ = loc.__getw_thousands_sep();
+    if (!__thousands_sep_)
         __thousands_sep_ = base::do_thousands_sep();
-    __grouping_ = lc->mon_grouping;
-    wchar_t wbuf[100];
-    mbstate_t mb = {0};
-    const char* bb = lc->currency_symbol;
-    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
-    if (j == size_t(-1))
-        __throw_runtime_error("locale not supported");
-    wchar_t* wbe = wbuf + j;
-    __curr_symbol_.assign(wbuf, wbe);
-    if (lc->frac_digits != CHAR_MAX)
-        __frac_digits_ = lc->frac_digits;
-    else
+    __grouping_ = loc.__get_money_grouping();
+    __curr_symbol_ = loc.__getw_money_symbol();
+    __frac_digits_ = loc.__get_money_fract_digit();
+    if (__frac_digits_ != numeric_limits<char>::max())
         __frac_digits_ = base::do_frac_digits();
-    if (lc->p_sign_posn == 0)
-        __positive_sign_ = L"()";
-    else
-    {
-        mb = mbstate_t();
-        bb = lc->positive_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
-        if (j == size_t(-1))
-            __throw_runtime_error("locale not supported");
-        wbe = wbuf + j;
-        __positive_sign_.assign(wbuf, wbe);
-    }
-    if (lc->n_sign_posn == 0)
-        __negative_sign_ = L"()";
-    else
-    {
-        mb = mbstate_t();
-        bb = lc->negative_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
-        if (j == size_t(-1))
-            __throw_runtime_error("locale not supported");
-        wbe = wbuf + j;
-        __negative_sign_.assign(wbuf, wbe);
-    }
+    __positive_sign_ = loc.__getw_money_positive_sign();
+    __negative_sign_ = loc.__getw_money_negative_sign();
+
     // Assume the positive and negative formats will want spaces in
     // the same places in curr_symbol since there's no way to
     // represent anything else.
     string_type __dummy_curr_symbol = __curr_symbol_;
     __init_pat(__pos_format_, __dummy_curr_symbol, false,
-               lc->p_cs_precedes, lc->p_sep_by_space, lc->p_sign_posn, L' ');
+               loc.__is_money_positive_sign_precedes(), loc.__get_money_positive_separation(), loc.__get_money_positive_sign_position(), L' ');
     __init_pat(__neg_format_, __curr_symbol_, false,
-               lc->n_cs_precedes, lc->n_sep_by_space, lc->n_sign_posn, L' ');
+               loc.__is_money_negative_sign_precedes(), loc.__get_money_negative_separation(), loc.__get_money_negative_sign_position(), L' ');
 }
 
 template<>
@@ -5872,77 +5966,28 @@ moneypunct_byname<wchar_t, true>::init(const char* nm)
     typedef moneypunct<wchar_t, true> base;
     __libcpp_locale_t loc(LC_ALL_MASK, nm);
 
-    lconv* lc = __libcpp_localeconv_l(loc);
-    if (*lc->mon_decimal_point)
-        __decimal_point_ = static_cast<wchar_t>(*lc->mon_decimal_point);
-    else
+    __decimal_point_ = loc.__getw_decimal_point();
+    if (!__decimal_point_)
         __decimal_point_ = base::do_decimal_point();
-    if (*lc->mon_thousands_sep)
-        __thousands_sep_ = static_cast<wchar_t>(*lc->mon_thousands_sep);
-    else
+    __thousands_sep_ = loc.__getw_thousands_sep();
+    if (!__thousands_sep_)
         __thousands_sep_ = base::do_thousands_sep();
-    __grouping_ = lc->mon_grouping;
-    wchar_t wbuf[100];
-    mbstate_t mb = {0};
-    const char* bb = lc->int_curr_symbol;
-    size_t j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
-    if (j == size_t(-1))
-        __throw_runtime_error("locale not supported");
-    wchar_t* wbe = wbuf + j;
-    __curr_symbol_.assign(wbuf, wbe);
-    if (lc->int_frac_digits != CHAR_MAX)
-        __frac_digits_ = lc->int_frac_digits;
-    else
+    __grouping_ = loc.__get_money_grouping();
+    __curr_symbol_ = loc.__getw_money_symbol();
+    __frac_digits_ = loc.__get_money_fract_digit();
+    if (__frac_digits_ != numeric_limits<char>::max())
         __frac_digits_ = base::do_frac_digits();
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-    if (lc->p_sign_posn == 0)
-#else // _LIBCPP_MSVCRT
-    if (lc->int_p_sign_posn == 0)
-#endif // !_LIBCPP_MSVCRT
-        __positive_sign_ = L"()";
-    else
-    {
-        mb = mbstate_t();
-        bb = lc->positive_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
-        if (j == size_t(-1))
-            __throw_runtime_error("locale not supported");
-        wbe = wbuf + j;
-        __positive_sign_.assign(wbuf, wbe);
-    }
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-    if (lc->n_sign_posn == 0)
-#else // _LIBCPP_MSVCRT
-    if (lc->int_n_sign_posn == 0)
-#endif // !_LIBCPP_MSVCRT
-        __negative_sign_ = L"()";
-    else
-    {
-        mb = mbstate_t();
-        bb = lc->negative_sign;
-        j = __libcpp_mbsrtowcs_l(wbuf, &bb, countof(wbuf), &mb, loc);
-        if (j == size_t(-1))
-            __throw_runtime_error("locale not supported");
-        wbe = wbuf + j;
-        __negative_sign_.assign(wbuf, wbe);
-    }
+    __positive_sign_ = loc.__getw_money_positive_sign();
+    __negative_sign_ = loc.__getw_money_negative_sign();
+
     // Assume the positive and negative formats will want spaces in
     // the same places in curr_symbol since there's no way to
     // represent anything else.
     string_type __dummy_curr_symbol = __curr_symbol_;
-#if defined(_LIBCPP_MSVCRT) || defined(__MINGW32__)
-    __init_pat(__pos_format_, __dummy_curr_symbol, true,
-               lc->p_cs_precedes, lc->p_sep_by_space, lc->p_sign_posn, L' ');
-    __init_pat(__neg_format_, __curr_symbol_, true,
-               lc->n_cs_precedes, lc->n_sep_by_space, lc->n_sign_posn, L' ');
-#else // _LIBCPP_MSVCRT
-    __init_pat(__pos_format_, __dummy_curr_symbol, true,
-               lc->int_p_cs_precedes, lc->int_p_sep_by_space,
-               lc->int_p_sign_posn, L' ');
-    __init_pat(__neg_format_, __curr_symbol_, true,
-               lc->int_n_cs_precedes, lc->int_n_sep_by_space,
-               lc->int_n_sign_posn, L' ');
-#endif // !_LIBCPP_MSVCRT
+    __init_pat(__pos_format_, __dummy_curr_symbol, false,
+               loc.__is_money_positive_sign_precedes(), loc.__get_money_positive_separation(), loc.__get_money_positive_sign_position(), L' ');
+    __init_pat(__neg_format_, __curr_symbol_, false,
+               loc.__is_money_negative_sign_precedes(), loc.__get_money_negative_separation(), loc.__get_money_negative_sign_position(), L' ');
 }
 
 void __do_nothing(void*) {}
