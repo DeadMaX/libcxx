@@ -37,6 +37,7 @@
 #endif
 
 #include <__ctime_support>
+#include <system_error>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
@@ -79,6 +80,9 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, long double __v);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
+bool __libcpp_get_pointer(const char *__src, const __libcpp_locale_t &__locale, void *& __v);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_put_money(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, long double __v);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -94,98 +98,129 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_do_transform(wchar_t* __dst, const wchar_t* __src, size_t __size, const __libcpp_locale_t &__locale);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-char __libcpp_do_toupper(char __c, const __libcpp_locale_t &__locale);
+char __libcpp_do_toupper(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-char __libcpp_do_tolower(char __c, const __libcpp_locale_t &__locale);
+char __libcpp_do_tolower(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-wchar_t __libcpp_do_toupper(wchar_t __c, const __libcpp_locale_t &__locale);
+wchar_t __libcpp_do_toupper(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale);
+wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_strftime(char *__out, size_t __len, const char *__format, const tm* __d,
-                         const __libcpp_locale_t &__locale);
+                         const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-bool __libcpp_iswascii(wchar_t __c);
+bool __libcpp_isascii(char __c) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswspace_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isspace_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswprint_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isprint_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswcntrl_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_iscntrl_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswupper_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isupper_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswlower_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_islower_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswdigit_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isdigit_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswpunct_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_ispunct_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswxdigit_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isxdigit_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswblank_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isblank_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_iswalpha_l(wchar_t __c, const __libcpp_locale_t &__locale);
+int __libcpp_isalpha_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
-template <typename _Mask, typename _Ctype>
 _LIBCPP_LOCALE_ABI_VISIBILITY
-bool __libcpp_is_wctype(wchar_t __c, _Mask __m, const __libcpp_locale_t &__locale);
+bool __libcpp_iswascii(wchar_t __c) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswspace_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswprint_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswcntrl_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswupper_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswlower_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswdigit_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswpunct_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswxdigit_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswblank_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_iswalpha_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
+
+template <typename _Ctype>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+bool __libcpp_is_wctype(wchar_t __c, typename _Ctype::mask __m, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 template <typename _Mask>
 _LIBCPP_LOCALE_ABI_VISIBILITY
-_Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale);
+_Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-size_t __libcpp_mb_cur_max_l(const __libcpp_locale_t &__locale);
+size_t __libcpp_mb_cur_max_l(const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-char_traits<wchar_t>::int_type __libcpp_btowc_l(char __c, const __libcpp_locale_t &__locale);
+char_traits<wchar_t>::int_type __libcpp_btowc_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-char_traits<char>::int_type __libcpp_wctob_l(wchar_t, const __libcpp_locale_t &__locale);
+char_traits<char>::int_type __libcpp_wctob_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_wcsnrtombs_l(char *__dst, const wchar_t *&__src, size_t __srclen, size_t __outlen, mbstate_t &__state,
-							 const __libcpp_locale_t &__locale);
+							 const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-size_t __libcpp_wcrtomb_l(char *__dst, wchar_t __c, mbstate_t &__state, const __libcpp_locale_t &__locale);
+size_t __libcpp_wcrtomb_l(char *__dst, wchar_t __c, mbstate_t &__state, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_mbsnrtowcs_l(wchar_t *__dst, const char *&__src, size_t __srclen, size_t __outlen, mbstate_t &__state,
-							 const __libcpp_locale_t &__locale);
+							 const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_mbrtowc_l(wchar_t *__dst, const char *__src, size_t __srclen, mbstate_t &__state,
-						  const __libcpp_locale_t &__locale);
+						  const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-int __libcpp_mbtowc_l(wchar_t*__dst, const char *__src, size_t __srclen, const __libcpp_locale_t &__locale);
+int __libcpp_mbtowc_l(wchar_t*__dst, const char *__src, size_t __srclen, const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-size_t __libcpp_mbrlen_l(const char *__src, size_t __srclen, mbstate_t &__state, const __libcpp_locale_t &__locale);
+size_t __libcpp_mbrlen_l(const char *__src, size_t __srclen, mbstate_t &__state,
+						 const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *&__src, size_t __dstlen, mbstate_t &__state,
-							const __libcpp_locale_t &__locale);
-
-_LIBCPP_LOCALE_ABI_VISIBILITY
-bool __libcpp_get_pointer(const char *__src, const __libcpp_locale_t &__locale, void *& __v);
+							const __libcpp_locale_t &__locale) _NOEXCEPT;
 
 _LIBCPP_END_NAMESPACE_STD
 
@@ -251,7 +286,6 @@ class __libcpp_locale_t
 	bool __new_locale;
     locale_t __locale;
     lconv *__lconv;
-    __libcpp_locale_t (locale_t __locale);
     wchar_t __w_decimal_point;
     wchar_t __w_thousands_sep;
     wchar_t __w_currency_symbol[100];
@@ -268,7 +302,7 @@ public:
         __before_symbol, // The sign string immediately precedes the currency symbol.
         __after_symbol, // The sign string immediately succeeds the currency symbol.
     };
-    
+
     enum class __money_space_separation
     {
         __nothing, // No space separates the currency symbol and value.
@@ -398,7 +432,8 @@ bool __libcpp_format_float(char* __fmtp, const char* __len,
 }
 
 template <typename _IOS>
-size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, long long __v)
+size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename
+_IOS::fmtflags __flags, long long __v)
 {
     char __fmt[8] = {'%', 0};
     const char* __len = "ll";
@@ -424,7 +459,8 @@ unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char
 }
 
 template <typename _IOS>
-size_t __libcpp_put_unsigned_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, unsigned long long __v)
+size_t __libcpp_put_unsigned_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename
+_IOS::fmtflags __flags, unsigned long long __v)
 {
     char __fmt[8] = {'%', 0};
     const char* __len = "ll";
@@ -457,7 +493,8 @@ float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_loca
 }
 
 template <typename _IOS>
-size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, double __v)
+size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags
+__flags, int __precision, double __v)
 {
     char __fmt[8] = {'%', 0};
     const char* __len = "";
@@ -486,7 +523,8 @@ double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_lo
 }
 
 template <typename _IOS>
-size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, long double __v)
+size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags
+__flags, int __precision, long double __v)
 {
     char __fmt[8] = {'%', 0};
     const char* __len = "L";
@@ -512,6 +550,16 @@ long double __libcpp_get_long_double(const char* __a, const char** __p2, const _
         __error_code = errc::result_out_of_range;
 
     return value;
+}
+
+bool __libcpp_get_pointer(const char *__src, const __libcpp_locale_t &__locale, void *& __v)
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+    return sscanf_l(__src, __locale.__get_locale(), "%p", &__v) == 1;
+#else
+    __locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+    return sscanf(__src, "%p", &__v) == 1;
+#endif
 }
 
 size_t __libcpp_put_money(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, long double __v)
@@ -544,91 +592,146 @@ size_t __libcpp_do_transform(wchar_t* __dst, const wchar_t* __src, size_t __size
 	return wcsxfrm_l(__dst, __src, __size, __locale.__get_locale());
 }
 
-char __libcpp_do_toupper(char __c, const __libcpp_locale_t &__locale)
+char __libcpp_do_toupper(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 	return static_cast<char>(toupper_l(static_cast<unsigned char>(__c), __locale.__get_locale()));
 }
 
-char __libcpp_do_tolower(char __c, const __libcpp_locale_t &__locale)
+char __libcpp_do_tolower(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 	return static_cast<char>(tolower_l(static_cast<unsigned char>(__c), __locale.__get_locale()));
 }
 
-wchar_t __libcpp_do_toupper(wchar_t __c, const __libcpp_locale_t &__locale)
+wchar_t __libcpp_do_toupper(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 	return towupper_l(__c, __locale.__get_locale());
 }
 
-wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale)
+wchar_t __libcpp_do_tolower(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 	return towlower_l(__c, __locale.__get_locale());
 }
 
-bool __libcpp_iswascii(wchar_t __c)
+bool __libcpp_isascii(char __c) _NOEXCEPT
+{
+    return isascii(__c);
+}
+
+int __libcpp_isspace_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isspace_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_isprint_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isprint_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_iscntrl_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return iscntrl_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_isupper_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isupper_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_islower_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return islower_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_isdigit_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isdigit_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_ispunct_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return ispunct_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_isxdigit_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isxdigit_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_isblank_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isblank_l(__c, __locale.__get_locale());
+}
+
+int __libcpp_isalpha_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+    return isalpha_l(__c, __locale.__get_locale());
+}
+
+bool __libcpp_iswascii(wchar_t __c) _NOEXCEPT
 {
 #ifdef _LIBCPP_LOCALE__L_EXTENSIONS
     return iswascii(__c);
 #else
     return isascii(__c);
 #endif
-    
+
 }
 
-int __libcpp_iswspace_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswspace_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswspace_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswprint_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswprint_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswprint_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswcntrl_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswcntrl_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswcntrl_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswupper_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswupper_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswupper_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswlower_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswlower_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswlower_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswdigit_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswdigit_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswdigit_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswpunct_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswpunct_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswpunct_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswxdigit_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswxdigit_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswxdigit_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswblank_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswblank_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswblank_l(__c, __locale.__get_locale());
 }
 
-int __libcpp_iswalpha_l(wchar_t __c, const __libcpp_locale_t &__locale)
+int __libcpp_iswalpha_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
     return iswalpha_l(__c, __locale.__get_locale());
 }
 
-template <typename _Mask, typename _Ctype>
-bool __libcpp_is_wctype(wchar_t __c, _Mask __m, const __libcpp_locale_t &__locale)
+template <typename _Ctype>
+bool __libcpp_is_wctype(wchar_t __c, typename _Ctype::mask __m, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 #ifdef _LIBCPP_WCTYPE_IS_MASK
-    return static_cast<bool>(__libcpp_iswctype_l(__c, __m, __locale.__get_locale()));
+    return static_cast<bool>(iswctype_l(__c, __m, __locale.__get_locale()));
 #else
     bool result = false;
     char_traits<wchar_t>::int_type ch = char_traits<wchar_t>::to_int_type(__c);
@@ -647,18 +750,113 @@ bool __libcpp_is_wctype(wchar_t __c, _Mask __m, const __libcpp_locale_t &__local
 }
 
 size_t __libcpp_strftime(char *__out, size_t __len, const char *__format, const tm* __d,
-						 const __libcpp_locale_t &__locale)
+						 const __libcpp_locale_t &__locale)  _NOEXCEPT
 {
 	return strftime_l(__out, __len, __format, __d, __locale.__get_locale());
 }
 
-bool __libcpp_get_pointer(const char *__src, const __libcpp_locale_t &__locale, void *& __v)
+size_t __libcpp_mb_cur_max_l(const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 #ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-    return sscanf_l(__src, __locale.__get_locale(), "%p", &__v) == 1;
+	return static_cast<size_t>(MB_CUR_MAX_L(__locale.__get_locale()));
 #else
-    __locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
-    return sscanf(__src, "%p", &__v) == 1;
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return static_cast<size_t>(MB_CUR_MAX);
+#endif
+}
+
+char_traits<wchar_t>::int_type __libcpp_btowc_l(char __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return btowc_l(__c, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return btowc(__c);
+#endif
+}
+
+char_traits<char>::int_type __libcpp_wctob_l(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return wctob_l(__c, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return wctob(__c);
+#endif
+}
+
+size_t __libcpp_wcsnrtombs_l(char *__dst, const wchar_t *&__src, size_t __srclen, size_t __outlen,
+							 mbstate_t &__state, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return wcsnrtombs_l(__dst, &__src, __srclen, __outlen, &__state, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return wcsnrtombs(__dst, &__src, __srclen, __outlen, &__state);
+#endif
+}
+
+size_t __libcpp_wcrtomb_l(char *__dst, wchar_t __c, mbstate_t &__state, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return wcrtomb_l(__dst, __c, &__state, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return wcrtomb(__dst, __c, &__state);
+#endif
+}
+
+size_t __libcpp_mbsnrtowcs_l(wchar_t *__dst, const char *&__src, size_t __srclen, size_t __outlen,
+							 mbstate_t &__state, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return mbsnrtowcs_l(__dst, &__src, __srclen, __outlen, &__state, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return mbsnrtowcs(__dst, &__src, __srclen, __outlen, &__state);
+#endif
+}
+
+size_t __libcpp_mbrtowc_l(wchar_t *__dst, const char *__src, size_t __srclen, mbstate_t &__state,
+						  const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return mbrtowc_l(__dst, __src, __srclen, &__state, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return mbrtowc(__dst, __src, __srclen, &__state);
+#endif
+}
+
+int __libcpp_mbtowc_l(wchar_t*__dst, const char *__src, size_t __srclen, const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return mbtowc_l(__dst, __src, __srclen, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return mbtowc(__dst, __src, __srclen);
+#endif
+}
+
+size_t __libcpp_mbrlen_l(const char *__src, size_t __srclen, mbstate_t &__state,
+						 const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return mbrlen_l(__src, __srclen, &__state, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return mbrlen(__src, __srclen, &__state);
+#endif
+}
+
+size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *&__src, size_t __dstlen, mbstate_t &__state,
+							const __libcpp_locale_t &__locale) _NOEXCEPT
+{
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+	return mbsrtowcs_l(__dst, &__src, __dstlen, &__state, __locale.__get_locale());
+#else
+	__locale_raii __current( uselocale(__locale.__get_locale()), uselocale );
+	return mbsrtowcs(__dst, &__src, __dstlen, &__state);
 #endif
 }
 

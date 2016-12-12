@@ -165,31 +165,33 @@ void __libcpp_locale_t::__init_lconv()
 #endif // _LIBCPP_LOCALE__L_EXTENSIONS
 		if (__lconv)
 		{
-			int nb_char = __libcpp_mbtowc_l(&__w_decimal_point, __lconv->decimal_point, strlen(__lconv->decimal_point),
-										__locale);
+			int nb_char = __libcpp_mbtowc_l(&__w_decimal_point, __lconv->decimal_point,
+											char_traits<char>::length(__lconv->decimal_point), *this);
 			if (nb_char <= 0 || __lconv->decimal_point[nb_char] != '\0')
 				__w_decimal_point = L'\0';
 
-			nb_char = __libcpp_mbtowc_l(&__w_thousands_sep, __lconv->thousands_sep, strlen(__lconv->thousands_sep),
-									__locale);
+			nb_char = __libcpp_mbtowc_l(&__w_thousands_sep, __lconv->thousands_sep,
+										char_traits<char>::length(__lconv->thousands_sep), *this);
 			if (nb_char <= 0 || __lconv->thousands_sep[nb_char] != '\0')
 				__w_thousands_sep = L'\0';
 
                         mbstate_t mb = mbstate_t();
                         const char *bb = __lconv->currency_symbol;
-                        nb_char = __libcpp_mbsrtowcs_l(__w_currency_symbol, bb, sizeof(__w_currency_symbol), mb, __locale);
+                        nb_char = __libcpp_mbsrtowcs_l(__w_currency_symbol, bb, sizeof(__w_currency_symbol), mb, *this);
                         if (nb_char < 0 || bb)
                             __throw_runtime_error("locale not supported");
-                        
+
                         mb = mbstate_t();
                         bb = __lconv->positive_sign;
-                        nb_char = __libcpp_mbsrtowcs_l(__w_money_positive_sign, bb, sizeof(__w_money_positive_sign), mb, __locale);
+                        nb_char = __libcpp_mbsrtowcs_l(__w_money_positive_sign, bb, sizeof(__w_money_positive_sign), mb,
+													   *this);
                         if (nb_char < 0 || bb)
                             __throw_runtime_error("locale not supported");
-                        
+
                         mb = mbstate_t();
                         bb = __lconv->negative_sign;
-                        nb_char = __libcpp_mbsrtowcs_l(__w_money_negative_sign, bb, sizeof(__w_money_negative_sign), mb, __locale);
+                        nb_char = __libcpp_mbsrtowcs_l(__w_money_negative_sign, bb, sizeof(__w_money_negative_sign), mb,
+													   *this);
                         if (nb_char < 0 || bb)
                             __throw_runtime_error("locale not supported");
                 }
@@ -406,7 +408,7 @@ __libcpp_locale_t::__money_sign_position __libcpp_locale_t::__get_money_negative
 }
 
 template <typename _Mask>
-_Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale)
+_Mask __libcpp_get_wtype(wchar_t __c, const __libcpp_locale_t &__locale) _NOEXCEPT
 {
 	_Mask __m = 0;
 	locale_t __l = __locale.__get_locale();
@@ -477,6 +479,7 @@ class _LIBCPP_HIDDEN locale::__imp
     vector<facet*, __sso_allocator<facet*, N> > facets_;
 #endif
     string         name_;
+	__libcpp_locale_t locale_;
 public:
     explicit __imp(size_t refs = 0);
     explicit __imp(const string& name, size_t refs = 0);
@@ -487,6 +490,7 @@ public:
     ~__imp();
 
     const string& name() const {return name_;}
+    const __libcpp_locale_t& native_handle() const {return locale_;}
     bool has_facet(long id) const
         {return static_cast<size_t>(id) < facets_.size() && facets_[static_cast<size_t>(id)];}
     const locale::facet* use_facet(long id) const;
@@ -931,6 +935,12 @@ locale::operator==(const locale& y) const
 {
     return (__locale_ == y.__locale_)
         || (__locale_->name() != "*" && __locale_->name() == y.__locale_->name());
+}
+
+const locale::native_handle_type &
+locale::native_handle() const
+{
+	return __locale_->native_handle();
 }
 
 // locale::facet
@@ -1552,7 +1562,7 @@ ctype_byname<wchar_t>::~ctype_byname()
 bool
 ctype_byname<wchar_t>::do_is(mask m, char_type c) const
 {
-	return __libcpp_is_wctype<mask, ctype_byname>(c, m, __l);
+	return __libcpp_is_wctype<ctype_byname>(c, m, __l);
 }
 
 const wchar_t*
@@ -1571,7 +1581,7 @@ ctype_byname<wchar_t>::do_scan_is(mask m, const char_type* low, const char_type*
     for (; low != high; ++low)
     {
 #ifdef _LIBCPP_WCTYPE_IS_MASK
-        if (__libcpp_is_wctype(*low, m, __l))
+        if (__libcpp_is_wctype<ctype_byname>(*low, m, __l))
             break;
 #else
         wint_t ch = static_cast<wint_t>(*low);
@@ -1596,7 +1606,7 @@ ctype_byname<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type
     for (; low != high; ++low)
     {
 #ifdef _LIBCPP_WCTYPE_IS_MASK
-        if (!__libcpp_is_wctype(*low, m, __l))
+        if (!__libcpp_is_wctype<ctype_byname>(*low, m, __l))
             break;
 #else
         wint_t ch = static_cast<wint_t>(*low);

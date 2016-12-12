@@ -62,7 +62,7 @@ __i_node::~__i_node()
 
 __c_node::~__c_node()
 {
-    ::operator delete(beg_);
+    ::operator delete[](beg_);
     if (__next_)
     {
         __next_->~__c_node();
@@ -92,7 +92,7 @@ __libcpp_db::~__libcpp_db()
                ::operator delete(*p);
             }
         }
-        ::operator delete(__cbeg_);
+        ::operator delete[](__cbeg_);
     }
     if (__ibeg_)
     {
@@ -104,7 +104,7 @@ __libcpp_db::~__libcpp_db()
                 ::operator delete(*p);
             }
         }
-        ::operator delete(__ibeg_);
+        ::operator delete[](__ibeg_);
     }
 }
 
@@ -151,9 +151,8 @@ __libcpp_db::__insert_c(void* __c)
     if (__csz_ + 1 > static_cast<size_t>(__cend_ - __cbeg_))
     {
         size_t nc = __next_prime(2*static_cast<size_t>(__cend_ - __cbeg_) + 1);
-        __c_node** cbeg = static_cast<__c_node**>(calloc(nc, sizeof(void*)));
-        if (cbeg == nullptr)
-            __throw_bad_alloc();
+        __c_node** cbeg = new __c_node*[nc];
+		fill(cbeg, cbeg + nc, nullptr);
 
         for (__c_node** p = __cbeg_; p != __cend_; ++p)
         {
@@ -167,16 +166,13 @@ __libcpp_db::__insert_c(void* __c)
                 q = r;
             }
         }
-        ::operator delete(__cbeg_);
+        ::operator delete[](__cbeg_);
         __cbeg_ = cbeg;
         __cend_ = __cbeg_ + nc;
     }
     size_t hc = hash<void*>()(__c) % static_cast<size_t>(__cend_ - __cbeg_);
     __c_node* p = __cbeg_[hc];
-    __c_node* r = __cbeg_[hc] =
-      static_cast<__c_node*>(malloc(sizeof(__c_node)));
-    if (__cbeg_[hc] == nullptr)
-        __throw_bad_alloc();
+    __c_node* r = __cbeg_[hc] = reinterpret_cast<__c_node*>(::operator new (sizeof(__c_node)));
 
     r->__c_ = __c;
     r->__next_ = p;

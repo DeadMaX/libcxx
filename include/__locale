@@ -84,7 +84,7 @@ public:
                       const basic_string<_CharT, _Traits, _Allocator>&) const;
 
     // native handle
-    native_handle_type native_handle();
+    const native_handle_type& native_handle() const;
 
     // global locale objects:
     static locale global(const locale&);

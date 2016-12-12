@@ -829,13 +829,11 @@ operator<<(basic_ostream<_CharT, _Traits>& __os, const char* __strn)
             const int __bs = 100;
             _CharT __wbb[__bs];
             _CharT* __wb = __wbb;
-            unique_ptr<_CharT, void(*)(void*)> __h(0, free);
+            vector<_CharT> __h;
             if (__len > __bs)
             {
-                __wb = (_CharT*)malloc(__len*sizeof(_CharT));
-                if (__wb == 0)
-                    __throw_bad_alloc();
-                __h.reset(__wb);
+		__h .resize(__len);
+                __wb = __h.data();
             }
             for (_CharT* __p = __wb; *__strn != '\0'; ++__strn, ++__p)
                 *__p = __os.widen(*__strn);
