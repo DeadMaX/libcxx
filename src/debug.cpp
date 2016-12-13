@@ -62,7 +62,7 @@ __i_node::~__i_node()
 
 __c_node::~__c_node()
 {
-    ::operator delete[](beg_);
+    delete[](beg_);
     if (__next_)
     {
         __next_->~__c_node();
@@ -92,7 +92,7 @@ __libcpp_db::~__libcpp_db()
                ::operator delete(*p);
             }
         }
-        ::operator delete[](__cbeg_);
+        delete[](__cbeg_);
     }
     if (__ibeg_)
     {
@@ -104,7 +104,7 @@ __libcpp_db::~__libcpp_db()
                 ::operator delete(*p);
             }
         }
-        ::operator delete[](__ibeg_);
+        delete[](__ibeg_);
     }
 }
 
@@ -145,6 +145,7 @@ __libcpp_db::__insert_ic(void* __i, const void* __c)
 __c_node*
 __libcpp_db::__insert_c(void* __c)
 {
+	using raw_node = aligned_storage<sizeof(__c_node), alignof(__c_node)>::type;
 #ifndef _LIBCPP_HAS_NO_THREADS
     WLock _(mut());
 #endif
@@ -166,13 +167,13 @@ __libcpp_db::__insert_c(void* __c)
                 q = r;
             }
         }
-        ::operator delete[](__cbeg_);
+        delete[](__cbeg_);
         __cbeg_ = cbeg;
         __cend_ = __cbeg_ + nc;
     }
     size_t hc = hash<void*>()(__c) % static_cast<size_t>(__cend_ - __cbeg_);
     __c_node* p = __cbeg_[hc];
-    __c_node* r = __cbeg_[hc] = reinterpret_cast<__c_node*>(::operator new (sizeof(__c_node)));
+    __c_node* r = __cbeg_[hc] = reinterpret_cast<__c_node*>(::new raw_node());
 
     r->__c_ = __c;
     r->__next_ = p;
@@ -463,14 +464,11 @@ __c_node::__add(__i_node* i)
         size_t nc = 2*static_cast<size_t>(cap_ - beg_);
         if (nc == 0)
             nc = 1;
-        __i_node** beg =
-           static_cast<__i_node**>(malloc(nc * sizeof(__i_node*)));
-        if (beg == nullptr)
-            __throw_bad_alloc();
+        __i_node** beg = new __i_node*[nc];
 
         if (nc > 1)
-            memcpy(beg, beg_, nc/2*sizeof(__i_node*));
-        ::operator delete(beg_);
+			copy(beg_, beg_ + (nc/2), beg);
+        delete[](beg_);
         beg_ = beg;
         end_ = beg_ + nc/2;
         cap_ = beg_ + nc;
@@ -484,12 +482,12 @@ _LIBCPP_HIDDEN
 __i_node*
 __libcpp_db::__insert_iterator(void* __i)
 {
+	using raw_node = aligned_storage<sizeof(__i_node), alignof(__i_node)>::type;
     if (__isz_ + 1 > static_cast<size_t>(__iend_ - __ibeg_))
     {
         size_t nc = __next_prime(2*static_cast<size_t>(__iend_ - __ibeg_) + 1);
-        __i_node** ibeg = static_cast<__i_node**>(calloc(nc, sizeof(void*)));
-        if (ibeg == nullptr)
-            __throw_bad_alloc();
+        __i_node** ibeg = new __i_node*[nc];
+		fill(ibeg, ibeg + nc, nullptr);
 
         for (__i_node** p = __ibeg_; p != __iend_; ++p)
         {
@@ -503,16 +501,13 @@ __libcpp_db::__insert_iterator(void* __i)
                 q = r;
             }
         }
-        ::operator delete(__ibeg_);
+        delete[](__ibeg_);
         __ibeg_ = ibeg;
         __iend_ = __ibeg_ + nc;
     }
     size_t hi = hash<void*>()(__i) % static_cast<size_t>(__iend_ - __ibeg_);
     __i_node* p = __ibeg_[hi];
-    __i_node* r = __ibeg_[hi] =
-      static_cast<__i_node*>(malloc(sizeof(__i_node)));
-    if (r == nullptr)
-        __throw_bad_alloc();
+    __i_node* r = __ibeg_[hi] = reinterpret_cast<__i_node*>(::new raw_node());
 
     ::new(r) __i_node(__i, p, nullptr);
     ++__isz_;
