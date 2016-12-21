@@ -4441,6 +4441,54 @@ __widen_from_utf8<32>::~__widen_from_utf8()
 {
 }
 
+
+static bool checked_string_to_wchar_convert(wchar_t& dest,
+                                            const char* ptr,
+                                            __locale_struct* loc) {
+  if (*ptr == '\0')
+    return false;
+  mbstate_t mb = {};
+  wchar_t out;
+  size_t ret = __libcpp_mbrtowc_l(&out, ptr, strlen(ptr), &mb, loc);
+  if (ret == static_cast<size_t>(-1) || ret == static_cast<size_t>(-2)) {
+    return false;
+  }
+  dest = out;
+  return true;
+}
+
+static bool checked_string_to_char_convert(char& dest,
+                                           const char* ptr,
+                                           __locale_struct* __loc) {
+  if (*ptr == '\0')
+    return false;
+  if (!ptr[1]) {
+    dest = *ptr;
+    return true;
+  }
+  // First convert the MBS into a wide char then attempt to narrow it using
+  // wctob_l.
+  wchar_t wout;
+  if (!checked_string_to_wchar_convert(wout, ptr, __loc))
+    return false;
+  int res;
+  if ((res = __libcpp_wctob_l(wout, __loc)) != char_traits<char>::eof()) {
+    dest = res;
+    return true;
+  }
+  // FIXME: Work around specific multibyte sequences that we can reasonable
+  // translate into a different single byte.
+  switch (wout) {
+  case L'\u00A0': // non-breaking space
+    dest = ' ';
+    return true;
+  default:
+    return false;
+  }
+  _LIBCPP_UNREACHABLE();
+}
+
+
 // numpunct<char> && numpunct<wchar_t>
 
 locale::id numpunct< char  >::id;
@@ -4543,7 +4591,7 @@ numpunct_byname<wchar_t>::__init(const char* nm)
         __decimal_point_ = loc.__getw_decimal_point();
         __thousands_sep_ = loc.__getw_thousands_sep();
         __grouping_ = loc.__get_grouping();
-        // locallization for truename and falsename is not available
+        // localization for truename and falsename is not available
     }
 }
 
@@ -5885,10 +5933,10 @@ moneypunct_byname<char, false>::init(const char* nm)
 
     __decimal_point_ = loc.__get_decimal_point();
     if (!__decimal_point_)
-        __decimal_point_ = base::do_decimal_point();
+      __decimal_point_ = base::do_decimal_point();
     __thousands_sep_ = loc.__get_thousands_sep();
     if (!__thousands_sep_)
-        __thousands_sep_ = base::do_thousands_sep();
+      __thousands_sep_ = base::do_thousands_sep();
     __grouping_ = loc.__get_money_grouping();
     __curr_symbol_ = loc.__get_money_symbol();
     __frac_digits_ = loc.__get_money_fract_digit();
@@ -5916,10 +5964,10 @@ moneypunct_byname<char, true>::init(const char* nm)
 
     __decimal_point_ = loc.__get_decimal_point();
     if (!__decimal_point_)
-        __decimal_point_ = base::do_decimal_point();
+      __decimal_point_ = base::do_decimal_point();
     __thousands_sep_ = loc.__get_thousands_sep();
     if (!__thousands_sep_)
-        __thousands_sep_ = base::do_thousands_sep();
+      __thousands_sep_ = base::do_thousands_sep();
     __grouping_ = loc.__get_money_grouping();
     __curr_symbol_ = loc.__get_money_symbol();
     __frac_digits_ = loc.__get_money_fract_digit();
@@ -5947,10 +5995,10 @@ moneypunct_byname<wchar_t, false>::init(const char* nm)
 
     __decimal_point_ = loc.__getw_decimal_point();
     if (!__decimal_point_)
-        __decimal_point_ = base::do_decimal_point();
+      __decimal_point_ = base::do_decimal_point();
     __thousands_sep_ = loc.__getw_thousands_sep();
     if (!__thousands_sep_)
-        __thousands_sep_ = base::do_thousands_sep();
+      __thousands_sep_ = base::do_thousands_sep();
     __grouping_ = loc.__get_money_grouping();
     __curr_symbol_ = loc.__getw_money_symbol();
     __frac_digits_ = loc.__get_money_fract_digit();
@@ -5978,10 +6026,10 @@ moneypunct_byname<wchar_t, true>::init(const char* nm)
 
     __decimal_point_ = loc.__getw_decimal_point();
     if (!__decimal_point_)
-        __decimal_point_ = base::do_decimal_point();
+      __decimal_point_ = base::do_decimal_point();
     __thousands_sep_ = loc.__getw_thousands_sep();
     if (!__thousands_sep_)
-        __thousands_sep_ = base::do_thousands_sep();
+      __thousands_sep_ = base::do_thousands_sep();
     __grouping_ = loc.__get_money_grouping();
     __curr_symbol_ = loc.__getw_money_symbol();
     __frac_digits_ = loc.__get_money_fract_digit();
