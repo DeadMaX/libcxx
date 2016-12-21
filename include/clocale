@@ -36,6 +36,9 @@ lconv* localeconv();
 */
 
 #include <__config>
+
+#ifndef _LIBCXX_DISABLE_C_LINKAGE
+
 #include <locale.h>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
@@ -51,5 +54,7 @@ using ::setlocale;
 using ::localeconv;
 
 _LIBCPP_END_NAMESPACE_STD
+
+#endif // _LIBCXX_DISABLE_C_LINKAGE
 
 #endif  // _LIBCPP_CLOCALE

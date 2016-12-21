@@ -36,11 +36,70 @@
 #define _LIBCPP_STDIO_ABI_VISIBILITY inline _LIBCPP_INLINE_VISIBILITY
 #endif
 
+#include <__string>
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+class __libcpp_file_stream;
+
+_LIBCPP_STDIO_ABI_VISIBILITY
+__libcpp_file_stream __libcpp_get_standard_in_stream();
+
+_LIBCPP_STDIO_ABI_VISIBILITY
+__libcpp_file_stream __libcpp_get_standard_out_stream();
+
+_LIBCPP_STDIO_ABI_VISIBILITY
+__libcpp_file_stream __libcpp_get_standard_err_stream();
+
+_LIBCPP_END_NAMESPACE_STD
+
 #ifndef _LIBCXX_DISABLE_C_LINKAGE
 
 #include <stdio.h>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
+
+class __libcpp_file_stream
+{
+	FILE *__f;
+public:
+	__libcpp_file_stream(FILE *__f) : __f (__f) {}
+
+	char __read_one();
+	bool __unread_one(char);
+
+};
+
+__libcpp_file_stream __libcpp_get_standard_in_stream()
+{
+	return __libcpp_file_stream(stdin);
+}
+
+__libcpp_file_stream __libcpp_get_standard_out_stream()
+{
+	return __libcpp_file_stream(stdout);
+}
+
+__libcpp_file_stream __libcpp_get_standard_err_stream()
+{
+	return __libcpp_file_stream(stderr);
+}
+
+_LIBCPP_END_NAMESPACE_STD
+
+#else
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+class __libcpp_file_stream
+{
+public:
+	char __read_one();
+	bool __unread_one(char);
+
+	size_t __write_many(const char *, size_t);
+	bool __flush();
+};
 
 _LIBCPP_END_NAMESPACE_STD
 
