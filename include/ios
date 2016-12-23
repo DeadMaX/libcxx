@@ -215,6 +215,7 @@ storage-class-specifier const error_category& iostream_category() noexcept;
 #include <iosfwd>
 #include <__locale>
 #include <system_error>
+#include <vector>
 
 #if !defined(_LIBCPP_HAS_NO_ATOMIC_HEADER)
 #include <atomic>     // for __xindex_
@@ -358,6 +359,11 @@ protected:
     }
 
 private:
+	struct _callbacks
+	{
+		event_callback __cb;
+		int __index;
+	};
     // All data members must be scalars
     fmtflags        __fmtflags_;
     streamsize      __precision_;
@@ -366,10 +372,7 @@ private:
     iostate         __exceptions_;
     void*           __rdbuf_;
     void*           __loc_;
-    event_callback* __fn_;
-    int*            __index_;
-    size_t          __event_size_;
-    size_t          __event_cap_;
+    vector<_callbacks> __fn_;
 // TODO(EricWF): Enable this for both Clang and GCC. Currently it is only
 // enabled with clang.
 #if defined(_LIBCPP_HAS_C_ATOMIC_IMP) && !defined(_LIBCPP_HAS_NO_THREADS)
@@ -377,12 +380,8 @@ private:
 #else
     static int      __xindex_;
 #endif
-    long*           __iarray_;
-    size_t          __iarray_size_;
-    size_t          __iarray_cap_;
-    void**          __parray_;
-    size_t          __parray_size_;
-    size_t          __parray_cap_;
+    vector<long>    __iarray_;
+    vector<void*>   __parray_;
 };
 
 //enum class io_errc

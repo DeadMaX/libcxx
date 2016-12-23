@@ -122,7 +122,7 @@ const ios_base::openmode ios_base::trunc;
 void
 ios_base::__call_callbacks(event ev)
 {
-    for (size_t i = __event_size_; i;)
+    for (size_t i = __fn_.size(); i;)
     {
         --i;
         __fn_[i](ev, *this, __index_[i]);
@@ -176,23 +176,19 @@ long&
 ios_base::iword(int index)
 {
     size_t req_size = static_cast<size_t>(index)+1;
-    if (req_size > __iarray_cap_)
+	size_t cur_cap = __iarray_.capacity();
+    if (req_size > cur_cap)
     {
-        size_t newcap = __ios_new_cap<long>(req_size, __iarray_cap_);
-        long* iarray = static_cast<long*>(realloc(__iarray_, newcap * sizeof(long)));
-        if (iarray == 0)
+        size_t newcap = __ios_new_cap<long>(req_size, cur_cap);
+        __iarray_.resize(newcap, 0);
+        if (req_size > __iarray_.capacity())
         {
             setstate(badbit);
             static long error;
             error = 0;
             return error;
         }
-        __iarray_ = iarray;
-        for (long* p = __iarray_ + __iarray_size_; p < __iarray_ + newcap; ++p)
-            *p = 0;
-        __iarray_cap_ = newcap;
     }
-    __iarray_size_ = max<size_t>(__iarray_size_, req_size);
     return __iarray_[index];
 }
 
@@ -200,23 +196,19 @@ void*&
 ios_base::pword(int index)
 {
     size_t req_size = static_cast<size_t>(index)+1;
-    if (req_size > __parray_cap_)
+	size_t cur_cap = __parray_.capacity();
+    if (req_size > cur_cap)
     {
-        size_t newcap = __ios_new_cap<void *>(req_size, __iarray_cap_);
-        void** parray = static_cast<void**>(realloc(__parray_, newcap * sizeof(void *)));
-        if (parray == 0)
+        size_t newcap = __ios_new_cap<void *>(req_size, cur_cap);
+        __parray_.resize(newcap, 0);
+        if (req_size > __parray_.capacity())
         {
             setstate(badbit);
             static void* error;
             error = 0;
             return error;
         }
-        __parray_ = parray;
-        for (void** p = __parray_ + __parray_size_; p < __parray_ + newcap; ++p)
-            *p = 0;
-        __parray_cap_ = newcap;
     }
-    __parray_size_ = max<size_t>(__parray_size_, req_size);
     return __parray_[index];
 }
 
@@ -225,23 +217,21 @@ ios_base::pword(int index)
 void
 ios_base::register_callback(event_callback fn, int index)
 {
-    size_t req_size = __event_size_ + 1;
-    if (req_size > __event_cap_)
+    size_t req_size = __fn_.size() + 1;
+	size_t cur_cap = __fn_.capacity();
+    if (req_size > cur_cap)
     {
-        size_t newcap = __ios_new_cap<event_callback>(req_size, __event_cap_);
-        event_callback* fns = static_cast<event_callback*>(realloc(__fn_, newcap * sizeof(event_callback)));
-        if (fns == 0)
+        size_t newcap = __ios_new_cap<_callbacks>(req_size, cur_cap);
+        __fn_.reserve(newcap);
+        if (__fn_.capacity() == cur_cap)
+		{
             setstate(badbit);
-        __fn_ = fns;
-        int* indxs = static_cast<int *>(realloc(__index_, newcap * sizeof(int)));
-        if (indxs == 0)
-            setstate(badbit);
-        __index_ = indxs;
-        __event_cap_ = newcap;
+			return;
+		}
     }
-    __fn_[__event_size_] = fn;
-    __index_[__event_size_] = index;
-    ++__event_size_;
+    __callbacks &cb = __fn_[req_size];
+    cb.__cb = fn;
+	cb.__index = index;
 }
 
 ios_base::~ios_base()
@@ -249,10 +239,6 @@ ios_base::~ios_base()
     __call_callbacks(erase_event);
     locale& loc_storage = *reinterpret_cast<locale*>(&__loc_);
     loc_storage.~locale();
-    free(__fn_);
-    free(__index_);
-    free(__iarray_);
-    free(__parray_);
 }
 
 // iostate
@@ -281,16 +267,9 @@ ios_base::init(void* sb)
     __fmtflags_ = skipws | dec;
     __width_ = 0;
     __precision_ = 6;
-    __fn_ = 0;
-    __index_ = 0;
-    __event_size_ = 0;
-    __event_cap_ = 0;
-    __iarray_ = 0;
-    __iarray_size_ = 0;
-    __iarray_cap_ = 0;
-    __parray_ = 0;
-    __parray_size_ = 0;
-    __parray_cap_ = 0;
+    __fn_.clear();
+    __iarray_.clear();
+    __parray_.clear();
     ::new(&__loc_) locale;
 }
 
@@ -299,43 +278,21 @@ ios_base::copyfmt(const ios_base& rhs)
 {
     // If we can't acquire the needed resources, throw bad_alloc (can't set badbit)
     // Don't alter *this until all needed resources are acquired
-    unique_ptr<event_callback, void (*)(void*)> new_callbacks(0, free);
-    unique_ptr<int, void (*)(void*)> new_ints(0, free);
-    unique_ptr<long, void (*)(void*)> new_longs(0, free);
-    unique_ptr<void*, void (*)(void*)> new_pointers(0, free);
-    if (__event_cap_ < rhs.__event_size_)
-    {
-        size_t newesize = sizeof(event_callback) * rhs.__event_size_;
-        new_callbacks.reset(static_cast<event_callback*>(malloc(newesize)));
-#ifndef _LIBCPP_NO_EXCEPTIONS
-        if (!new_callbacks)
-            throw bad_alloc();
-#endif  // _LIBCPP_NO_EXCEPTIONS
+    vector<_callbacks> new_fn;
+    vector<long>    new_iarray;
+    vector<void*>   new_parray;
 
-        size_t newisize = sizeof(int) * rhs.__event_size_;
-        new_ints.reset(static_cast<int *>(malloc(newisize)));
-#ifndef _LIBCPP_NO_EXCEPTIONS
-        if (!new_ints)
-            throw bad_alloc();
-#endif  // _LIBCPP_NO_EXCEPTIONS
-    }
-    if (__iarray_cap_ < rhs.__iarray_size_)
+    if (__fn_.capacity() < rhs.__fn_.size())
     {
-        size_t newsize = sizeof(long) * rhs.__iarray_size_;
-        new_longs.reset(static_cast<long*>(malloc(newsize)));
-#ifndef _LIBCPP_NO_EXCEPTIONS
-        if (!new_longs)
-            throw bad_alloc();
-#endif  // _LIBCPP_NO_EXCEPTIONS
+        new_fn = rhs.__fn_;
     }
-    if (__parray_cap_ < rhs.__parray_size_)
+    if (__iarray_.capacity() < rhs.__iarray_.size())
+	{
+		new_iarray = rhs.__iarray_;
+    }
+    if (__parray_.capacity() < rhs.__parray_.size())
     {
-        size_t newsize = sizeof(void*) * rhs.__parray_size_;
-        new_pointers.reset(static_cast<void**>(malloc(newsize)));
-#ifndef _LIBCPP_NO_EXCEPTIONS
-        if (!new_pointers)
-            throw bad_alloc();
-#endif  // _LIBCPP_NO_EXCEPTIONS
+		new_parray = rhs.__parray_;
     }
     // Got everything we need.  Copy everything but __rdstate_, __rdbuf_ and __exceptions_
     __fmtflags_ = rhs.__fmtflags_;
@@ -344,35 +301,30 @@ ios_base::copyfmt(const ios_base& rhs)
     locale& lhs_loc = *reinterpret_cast<locale*>(&__loc_);
     const locale& rhs_loc = *reinterpret_cast<const locale*>(&rhs.__loc_);
     lhs_loc = rhs_loc;
-    if (__event_cap_ < rhs.__event_size_)
+    if (new_fn.size())
     {
-        free(__fn_);
-        __fn_ = new_callbacks.release();
-        free(__index_);
-        __index_ = new_ints.release();
-        __event_cap_ = rhs.__event_size_;
+		__fn_.swap(new_fn);
     }
-    for (__event_size_ = 0; __event_size_ < rhs.__event_size_; ++__event_size_)
-    {
-        __fn_[__event_size_] = rhs.__fn_[__event_size_];
-        __index_[__event_size_] = rhs.__index_[__event_size_];
-    }
-    if (__iarray_cap_ < rhs.__iarray_size_)
-    {
-        free(__iarray_);
-        __iarray_ = new_longs.release();
-        __iarray_cap_ = rhs.__iarray_size_;
-    }
-    for (__iarray_size_ = 0; __iarray_size_ < rhs.__iarray_size_; ++__iarray_size_)
-        __iarray_[__iarray_size_] = rhs.__iarray_[__iarray_size_];
-    if (__parray_cap_ < rhs.__parray_size_)
-    {
-        free(__parray_);
-        __parray_ = new_pointers.release();
-        __parray_cap_ = rhs.__parray_size_;
-    }
-    for (__parray_size_ = 0; __parray_size_ < rhs.__parray_size_; ++__parray_size_)
-        __parray_[__parray_size_] = rhs.__parray_[__parray_size_];
+    else
+	{
+		__fn_ = rhs.__fn_;
+	}
+	if (new_iarray.size())
+	{
+		__iarray_.swap(new_iarray);
+	}
+	else
+	{
+		__iarray_ = rhs.__iarray_;
+	}
+	if (new_parray.size())
+	{
+		__parray_.swap(new_parray);
+	}
+	else
+	{
+		__parray_ = rhs.__parray_;
+	}
 }
 
 void
@@ -387,26 +339,12 @@ ios_base::move(ios_base& rhs)
     __rdbuf_ = 0;
     locale& rhs_loc = *reinterpret_cast<locale*>(&rhs.__loc_);
     ::new(&__loc_) locale(rhs_loc);
-    __fn_ = rhs.__fn_;
-    rhs.__fn_ = 0;
-    __index_ = rhs.__index_;
-    rhs.__index_ = 0;
-    __event_size_ = rhs.__event_size_;
-    rhs.__event_size_ = 0;
-    __event_cap_ = rhs.__event_cap_;
-    rhs.__event_cap_ = 0;
-    __iarray_ = rhs.__iarray_;
-    rhs.__iarray_ = 0;
-    __iarray_size_ = rhs.__iarray_size_;
-    rhs.__iarray_size_ = 0;
-    __iarray_cap_ = rhs.__iarray_cap_;
-    rhs.__iarray_cap_ = 0;
-    __parray_ = rhs.__parray_;
-    rhs.__parray_ = 0;
-    __parray_size_ = rhs.__parray_size_;
-    rhs.__parray_size_ = 0;
-    __parray_cap_ = rhs.__parray_cap_;
-    rhs.__parray_cap_ = 0;
+    __fn_.swap(rhs.__fn_);
+    rhs.__fn_.clear();
+    __iarray_.swap(rhs.__iarray_);
+    rhs.__iarray_.clear();
+    __parray_.swap(rhs.__parray_);
+    rhs.__parray_.clear();
 }
 
 void
@@ -421,15 +359,8 @@ ios_base::swap(ios_base& rhs) _NOEXCEPT
     locale& rhs_loc = *reinterpret_cast<locale*>(&rhs.__loc_);
     _VSTD::swap(lhs_loc, rhs_loc);
     _VSTD::swap(__fn_, rhs.__fn_);
-    _VSTD::swap(__index_, rhs.__index_);
-    _VSTD::swap(__event_size_, rhs.__event_size_);
-    _VSTD::swap(__event_cap_, rhs.__event_cap_);
     _VSTD::swap(__iarray_, rhs.__iarray_);
-    _VSTD::swap(__iarray_size_, rhs.__iarray_size_);
-    _VSTD::swap(__iarray_cap_, rhs.__iarray_cap_);
     _VSTD::swap(__parray_, rhs.__parray_);
-    _VSTD::swap(__parray_size_, rhs.__parray_size_);
-    _VSTD::swap(__parray_cap_, rhs.__parray_cap_);
 }
 
 void

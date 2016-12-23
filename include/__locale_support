@@ -222,6 +222,9 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *&__src, size_t __dstlen, mbstate_t &__state,
 							const __libcpp_locale_t &__locale) _NOEXCEPT;
 
+_LIBCPP_LOCALE_ABI_VISIBILITY
+void __libcpp_set_global_locale(const char *__name) _NOEXCEPT;
+
 _LIBCPP_END_NAMESPACE_STD
 
 #ifndef _LIBCXX_DISABLE_C_LINKAGE
@@ -309,8 +312,9 @@ public:
         __one_space, // Space between currency-and-sign or currency and value.
         __two_spaces, // Space between sign and currency or value.
     };
+
 	__libcpp_locale_t ();
-	__libcpp_locale_t (int __mask, const char *__name);
+	__libcpp_locale_t (const char *__name);
 	~__libcpp_locale_t();
     locale_t __get_locale() const { return __locale; }
     char __get_decimal_point();
@@ -860,6 +864,13 @@ size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *&__src, size_t __dstlen,
 #endif
 }
 
+void __libcpp_set_global_locale(const char *__name) _NOEXCEPT
+{
+#ifndef __CloudABI__
+	setlocale(LC_ALL, __name);
+#endif
+}
+
 _LIBCPP_END_NAMESPACE_STD
 
 #else // _LIBCXX_DISABLE_C_LINKAGE
@@ -871,9 +882,52 @@ _LIBCPP_END_NAMESPACE_STD
 # define LC_TIME_MASK       (1<<4)
 # define LC_MESSAGES_MASK   (1<<5)
 
+#define _LIBCPP_GET_C_LOCALE 0
+
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-class __libcpp_locale_t {};
+class __libcpp_locale_t {
+public:
+
+    enum class __money_sign_position
+    {
+        __parentheses, // Parentheses surround the quantity and currency symbol.
+        __before_all, // The sign string precedes the quantity and currency symbol.
+        __after_all, // The sign string succeeds the quantity and currency symbol.
+        __before_symbol, // The sign string immediately precedes the currency symbol.
+        __after_symbol, // The sign string immediately succeeds the currency symbol.
+    };
+
+    enum class __money_space_separation
+    {
+        __nothing, // No space separates the currency symbol and value.
+        __one_space, // Space between currency-and-sign or currency and value.
+        __two_spaces, // Space between sign and currency or value.
+    };
+
+	__libcpp_locale_t ();
+	__libcpp_locale_t (const char *__name);
+	~__libcpp_locale_t();
+    char __get_decimal_point();
+    wchar_t __getw_decimal_point();
+    char __get_thousands_sep();
+    wchar_t __getw_thousands_sep();
+    const char *__get_grouping();
+    const char *__get_money_grouping();
+    const char *__get_money_symbol();
+    const wchar_t *__getw_money_symbol();
+    int __get_money_fract_digit();
+    const char *__get_money_positive_sign();
+    const wchar_t *__getw_money_positive_sign();
+    const char *__get_money_negative_sign();
+    const wchar_t *__getw_money_negative_sign();
+    bool __is_money_positive_sign_precedes();
+    bool __is_money_negative_sign_precedes();
+    __money_space_separation __get_money_positive_separation();
+    __money_space_separation __get_money_negative_separation();
+    __money_sign_position __get_money_positive_sign_position();
+    __money_sign_position __get_money_negative_sign_position();
+};
 
 _LIBCPP_END_NAMESPACE_STD
 

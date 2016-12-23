@@ -130,9 +130,9 @@ __libcpp_locale_t::__libcpp_locale_t()
 }
 
 
-__libcpp_locale_t::__libcpp_locale_t(int __mask, const char *__name)
+__libcpp_locale_t::__libcpp_locale_t(const char *__name)
 : __new_locale(true)
-, __locale(newlocale(__mask, __name, nullptr))
+, __locale(newlocale(LC_ALL, __name, nullptr))
 , __lconv(nullptr)
 , __w_decimal_point(L'\0')
 , __w_thousands_sep(L'\0')
@@ -911,10 +911,8 @@ locale::global(const locale& loc)
     locale& g = __global();
     locale r = g;
     g = loc;
-#ifndef __CloudABI__
     if (g.name() != "*")
-        setlocale(LC_ALL, g.name().c_str());
-#endif
+        __libcpp_set_global_locale(g.name().c_str());
     return r;
 }
 
@@ -995,13 +993,13 @@ locale::id::__init()
 
 collate_byname<char>::collate_byname(const char* n, size_t refs)
     : collate<char>(refs),
-      __l(LC_ALL_MASK, n)
+      __l(n)
 {
 }
 
 collate_byname<char>::collate_byname(const string& name, size_t refs)
     : collate<char>(refs),
-      __l(LC_ALL_MASK, name.c_str())
+      __l(name.c_str())
 {
 }
 
@@ -1036,13 +1034,13 @@ collate_byname<char>::do_transform(const char_type* lo, const char_type* hi) con
 
 collate_byname<wchar_t>::collate_byname(const char* n, size_t refs)
     : collate<wchar_t>(refs),
-      __l(LC_ALL_MASK, n)
+      __l(n)
 {
 }
 
 collate_byname<wchar_t>::collate_byname(const string& name, size_t refs)
     : collate<wchar_t>(refs),
-      __l(LC_ALL_MASK, name.c_str())
+      __l(name.c_str())
 {
 }
 
@@ -1104,7 +1102,7 @@ const wchar_t*
 ctype<wchar_t>::do_is(const char_type* low, const char_type* high, mask* vec) const
 {
     for (; low != high; ++low, ++vec)
-        *vec = static_cast<mask>(isascii(*low) ?
+        *vec = static_cast<mask>(__libcpp_isascii(*low) ?
                                    ctype<char>::classic_table()[*low] : 0);
     return low;
 }
@@ -1113,7 +1111,7 @@ const wchar_t*
 ctype<wchar_t>::do_scan_is(mask m, const char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
-        if (isascii(*low) && (ctype<char>::classic_table()[*low] & m))
+        if (__libcpp_isascii(*low) && (ctype<char>::classic_table()[*low] & m))
             break;
     return low;
 }
@@ -1122,7 +1120,7 @@ const wchar_t*
 ctype<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
-        if (!(isascii(*low) && (ctype<char>::classic_table()[*low] & m)))
+        if (!(__libcpp_isascii(*low) && (ctype<char>::classic_table()[*low] & m)))
             break;
     return low;
 }
@@ -1131,12 +1129,12 @@ wchar_t
 ctype<wchar_t>::do_toupper(char_type c) const
 {
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-    return isascii(c) ? _DefaultRuneLocale.__mapupper[c] : c;
+    return __libcpp_isascii(c) ? _DefaultRuneLocale.__mapupper[c] : c;
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__) || \
       defined(__NetBSD__)
-    return isascii(c) ? ctype<char>::__classic_upper_table()[c] : c;
+    return __libcpp_isascii(c) ? ctype<char>::__classic_upper_table()[c] : c;
 #else
-    return (isascii(c) && iswlower_l(c, _LIBCPP_GET_C_LOCALE)) ? c-L'a'+L'A' : c;
+    return (__libcpp_isascii(c) && __libcpp_iswlower_l(c, _LIBCPP_GET_C_LOCALE)) ? c-L'a'+L'A' : c;
 #endif
 }
 
@@ -1145,13 +1143,13 @@ ctype<wchar_t>::do_toupper(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-        *low = isascii(*low) ? _DefaultRuneLocale.__mapupper[*low] : *low;
+        *low = __libcpp_isascii(*low) ? _DefaultRuneLocale.__mapupper[*low] : *low;
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__) || \
       defined(__NetBSD__)
-        *low = isascii(*low) ? ctype<char>::__classic_upper_table()[*low]
+        *low = __libcpp_isascii(*low) ? ctype<char>::__classic_upper_table()[*low]
                              : *low;
 #else
-        *low = (isascii(*low) && islower_l(*low, _LIBCPP_GET_C_LOCALE)) ? (*low-L'a'+L'A') : *low;
+        *low = (__libcpp_isascii(*low) && __libcpp_iswlower_l(*low, _LIBCPP_GET_C_LOCALE)) ? (*low-L'a'+L'A') : *low;
 #endif
     return low;
 }
@@ -1160,12 +1158,12 @@ wchar_t
 ctype<wchar_t>::do_tolower(char_type c) const
 {
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-    return isascii(c) ? _DefaultRuneLocale.__maplower[c] : c;
+    return __libcpp_isascii(c) ? _DefaultRuneLocale.__maplower[c] : c;
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__) || \
       defined(__NetBSD__)
-    return isascii(c) ? ctype<char>::__classic_lower_table()[c] : c;
+    return __libcpp_isascii(c) ? ctype<char>::__classic_lower_table()[c] : c;
 #else
-    return (isascii(c) && isupper_l(c, _LIBCPP_GET_C_LOCALE)) ? c-L'A'+'a' : c;
+    return (__libcpp_isascii(c) && __libcpp_isupper_l(c, _LIBCPP_GET_C_LOCALE)) ? c-L'A'+'a' : c;
 #endif
 }
 
@@ -1174,13 +1172,13 @@ ctype<wchar_t>::do_tolower(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-        *low = isascii(*low) ? _DefaultRuneLocale.__maplower[*low] : *low;
+        *low = __libcpp_isascii(*low) ? _DefaultRuneLocale.__maplower[*low] : *low;
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__) || \
       defined(__NetBSD__)
-        *low = isascii(*low) ? ctype<char>::__classic_lower_table()[*low]
+        *low = __libcpp_isascii(*low) ? ctype<char>::__classic_lower_table()[*low]
                              : *low;
 #else
-        *low = (isascii(*low) && isupper_l(*low, _LIBCPP_GET_C_LOCALE)) ? *low-L'A'+L'a' : *low;
+        *low = (__libcpp_isascii(*low) && __libcpp_isupper_l(*low, _LIBCPP_GET_C_LOCALE)) ? *low-L'A'+L'a' : *low;
 #endif
     return low;
 }
@@ -1202,7 +1200,7 @@ ctype<wchar_t>::do_widen(const char* low, const char* high, char_type* dest) con
 char
 ctype<wchar_t>::do_narrow(char_type c, char dfault) const
 {
-    if (isascii(c))
+    if (__libcpp_isascii(c))
         return static_cast<char>(c);
     return dfault;
 }
@@ -1211,7 +1209,7 @@ const wchar_t*
 ctype<wchar_t>::do_narrow(const char_type* low, const char_type* high, char dfault, char* dest) const
 {
     for (; low != high; ++low, ++dest)
-        if (isascii(*low))
+        if (__libcpp_isascii(*low))
             *dest = static_cast<char>(*low);
         else
             *dest = dfault;
@@ -1241,15 +1239,15 @@ char
 ctype<char>::do_toupper(char_type c) const
 {
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-    return isascii(c) ?
+    return __libcpp_isascii(c) ?
       static_cast<char>(_DefaultRuneLocale.__mapupper[static_cast<ptrdiff_t>(c)]) : c;
 #elif defined(__NetBSD__)
     return static_cast<char>(__classic_upper_table()[static_cast<unsigned char>(c)]);
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__)
-    return isascii(c) ?
+    return __libcpp_isascii(c) ?
       static_cast<char>(__classic_upper_table()[static_cast<unsigned char>(c)]) : c;
 #else
-    return (isascii(c) && islower_l(c, _LIBCPP_GET_C_LOCALE)) ? c-'a'+'A' : c;
+    return (__libcpp_isascii(c) && __libcpp_islower_l(c, _LIBCPP_GET_C_LOCALE)) ? c-'a'+'A' : c;
 #endif
 }
 
@@ -1258,15 +1256,15 @@ ctype<char>::do_toupper(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-        *low = isascii(*low) ?
+        *low = __libcpp_isascii(*low) ?
           static_cast<char>(_DefaultRuneLocale.__mapupper[static_cast<ptrdiff_t>(*low)]) : *low;
 #elif defined(__NetBSD__)
         *low = static_cast<char>(__classic_upper_table()[static_cast<unsigned char>(*low)]);
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__)
-        *low = isascii(*low) ?
+        *low = __libcpp_isascii(*low) ?
           static_cast<char>(__classic_upper_table()[static_cast<size_t>(*low)]) : *low;
 #else
-        *low = (isascii(*low) && islower_l(*low, _LIBCPP_GET_C_LOCALE)) ? *low-'a'+'A' : *low;
+        *low = (__libcpp_isascii(*low) && __libcpp_islower_l(*low, _LIBCPP_GET_C_LOCALE)) ? *low-'a'+'A' : *low;
 #endif
     return low;
 }
@@ -1275,15 +1273,15 @@ char
 ctype<char>::do_tolower(char_type c) const
 {
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-    return isascii(c) ?
+    return __libcpp_isascii(c) ?
       static_cast<char>(_DefaultRuneLocale.__maplower[static_cast<ptrdiff_t>(c)]) : c;
 #elif defined(__NetBSD__)
     return static_cast<char>(__classic_lower_table()[static_cast<unsigned char>(c)]);
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__)
-    return isascii(c) ?
+    return __libcpp_isascii(c) ?
       static_cast<char>(__classic_lower_table()[static_cast<size_t>(c)]) : c;
 #else
-    return (isascii(c) && isupper_l(c, _LIBCPP_GET_C_LOCALE)) ? c-'A'+'a' : c;
+    return (__libcpp_isascii(c) && __libcpp_isupper_l(c, _LIBCPP_GET_C_LOCALE)) ? c-'A'+'a' : c;
 #endif
 }
 
@@ -1292,13 +1290,14 @@ ctype<char>::do_tolower(char_type* low, const char_type* high) const
 {
     for (; low != high; ++low)
 #ifdef _LIBCPP_HAS_DEFAULTRUNELOCALE
-        *low = isascii(*low) ? static_cast<char>(_DefaultRuneLocale.__maplower[static_cast<ptrdiff_t>(*low)]) : *low;
+        *low = __libcpp_isascii(*low) ? static_cast<char>(_DefaultRuneLocale.__maplower[static_cast<ptrdiff_t>(*low)])
+									  : *low;
 #elif defined(__NetBSD__)
         *low = static_cast<char>(__classic_lower_table()[static_cast<unsigned char>(*low)]);
 #elif defined(__GLIBC__) || defined(__EMSCRIPTEN__)
-        *low = isascii(*low) ? static_cast<char>(__classic_lower_table()[static_cast<size_t>(*low)]) : *low;
+        *low = __libcpp_isascii(*low) ? static_cast<char>(__classic_lower_table()[static_cast<size_t>(*low)]) : *low;
 #else
-        *low = (isascii(*low) && isupper_l(*low, _LIBCPP_GET_C_LOCALE)) ? *low-'A'+'a' : *low;
+        *low = (__libcpp_isascii(*low) && __libcpp_isupper_l(*low, _LIBCPP_GET_C_LOCALE)) ? *low-'A'+'a' : *low;
 #endif
     return low;
 }
@@ -1320,7 +1319,7 @@ ctype<char>::do_widen(const char* low, const char* high, char_type* dest) const
 char
 ctype<char>::do_narrow(char_type c, char dfault) const
 {
-    if (isascii(c))
+    if (__libcpp_isascii(c))
         return static_cast<char>(c);
     return dfault;
 }
@@ -1329,7 +1328,7 @@ const char*
 ctype<char>::do_narrow(const char_type* low, const char_type* high, char dfault, char* dest) const
 {
     for (; low != high; ++low, ++dest)
-        if (isascii(*low))
+        if (__libcpp_isascii(*low))
             *dest = *low;
         else
             *dest = dfault;
@@ -1499,13 +1498,13 @@ ctype<char>::__classic_upper_table() _NOEXCEPT
 
 ctype_byname<char>::ctype_byname(const char* name, size_t refs)
     : ctype<char>(0, false, refs),
-      __l(LC_ALL_MASK, name)
+      __l(name)
 {
 }
 
 ctype_byname<char>::ctype_byname(const string& name, size_t refs)
     : ctype<char>(0, false, refs),
-      __l(LC_ALL_MASK, name.c_str())
+      __l(name.c_str())
 {
 }
 
@@ -1545,13 +1544,13 @@ ctype_byname<char>::do_tolower(char_type* low, const char_type* high) const
 
 ctype_byname<wchar_t>::ctype_byname(const char* name, size_t refs)
     : ctype<wchar_t>(refs),
-      __l(LC_ALL_MASK, name)
+      __l(name)
 {
 }
 
 ctype_byname<wchar_t>::ctype_byname(const string& name, size_t refs)
     : ctype<wchar_t>(refs),
-      __l(LC_ALL_MASK, name.c_str())
+      __l(name.c_str())
 {
 }
 
@@ -1584,7 +1583,7 @@ ctype_byname<wchar_t>::do_scan_is(mask m, const char_type* low, const char_type*
         if (__libcpp_is_wctype<ctype_byname>(*low, m, __l))
             break;
 #else
-        wint_t ch = static_cast<wint_t>(*low);
+		char_traits<wchar_t>::int_type ch = char_traits<wchar_t>::to_int_type(*low);
         if ((m & space) == space && __libcpp_iswspace_l(ch, __l)) break;
         if ((m & print) == print && __libcpp_iswprint_l(ch, __l)) break;
         if ((m & cntrl) == cntrl && __libcpp_iswcntrl_l(ch, __l)) break;
@@ -1609,7 +1608,7 @@ ctype_byname<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type
         if (!__libcpp_is_wctype<ctype_byname>(*low, m, __l))
             break;
 #else
-        wint_t ch = static_cast<wint_t>(*low);
+        char_traits<wchar_t>::int_type ch = char_traits<wchar_t>::to_int_type(*low);
         if ((m & space) == space && __libcpp_iswspace_l(ch, __l)) continue;
         if ((m & print) == print && __libcpp_iswprint_l(ch, __l)) continue;
         if ((m & cntrl) == cntrl && __libcpp_iswcntrl_l(ch, __l)) continue;
@@ -1671,8 +1670,8 @@ ctype_byname<wchar_t>::do_widen(const char* low, const char* high, char_type* de
 char
 ctype_byname<wchar_t>::do_narrow(char_type c, char dfault) const
 {
-    int r = __libcpp_wctob_l(c, __l);
-    return r != static_cast<int>(WEOF) ? static_cast<char>(r) : dfault;
+    char_traits<wchar_t>::int_type r = __libcpp_wctob_l(c, __l);
+    return r != char_traits<wchar_t>::eof() ? static_cast<char>(r) : dfault;
 }
 
 const wchar_t*
@@ -1680,8 +1679,8 @@ ctype_byname<wchar_t>::do_narrow(const char_type* low, const char_type* high, ch
 {
     for (; low != high; ++low, ++dest)
     {
-        int r = __libcpp_wctob_l(*low, __l);
-        *dest = r != static_cast<int>(WEOF) ? static_cast<char>(r) : dfault;
+        char_traits<wchar_t>::int_type r = __libcpp_wctob_l(*low, __l);
+        *dest = r != char_traits<wchar_t>::eof() ? static_cast<char>(r) : dfault;
     }
     return low;
 }
@@ -1759,7 +1758,7 @@ codecvt<wchar_t, char, mbstate_t>::codecvt(size_t refs)
 
 codecvt<wchar_t, char, mbstate_t>::codecvt(const char* nm, size_t refs)
     : locale::facet(refs),
-      __l(LC_ALL_MASK, nm)
+      __l(nm)
 {
 }
 
@@ -4441,7 +4440,7 @@ __widen_from_utf8<32>::~__widen_from_utf8()
 {
 }
 
-
+#if 0
 static bool checked_string_to_wchar_convert(wchar_t& dest,
                                             const char* ptr,
                                             __locale_struct* loc) {
@@ -4449,7 +4448,7 @@ static bool checked_string_to_wchar_convert(wchar_t& dest,
     return false;
   mbstate_t mb = {};
   wchar_t out;
-  size_t ret = __libcpp_mbrtowc_l(&out, ptr, strlen(ptr), &mb, loc);
+  size_t ret = __libcpp_mbrtowc_l(&out, ptr, char_traits<char>::length(ptr), &mb, loc);
   if (ret == static_cast<size_t>(-1) || ret == static_cast<size_t>(-2)) {
     return false;
   }
@@ -4487,6 +4486,7 @@ static bool checked_string_to_char_convert(char& dest,
   }
   _LIBCPP_UNREACHABLE();
 }
+#endif
 
 
 // numpunct<char> && numpunct<wchar_t>
@@ -4552,9 +4552,10 @@ numpunct_byname<char>::~numpunct_byname()
 void
 numpunct_byname<char>::__init(const char* nm)
 {
-    if (strcmp(nm, "C") != 0)
+	size_t len = char_traits<char>::length(nm);
+    if (len != 1 || char_traits<char>::compare(nm, "C", 1) != 0)
     {
-        __libcpp_locale_t loc(LC_ALL_MASK, nm);
+        __libcpp_locale_t loc(nm);
 
         __decimal_point_ = loc.__get_decimal_point();
         __thousands_sep_ = loc.__get_thousands_sep();
@@ -4584,9 +4585,10 @@ numpunct_byname<wchar_t>::~numpunct_byname()
 void
 numpunct_byname<wchar_t>::__init(const char* nm)
 {
-    if (strcmp(nm, "C") != 0)
+    size_t len = char_traits<char>::length(nm);
+    if (len != 1 || char_traits<char>::compare(nm, "C", 1) != 0)
     {
-        __libcpp_locale_t loc(LC_ALL_MASK, nm);
+        __libcpp_locale_t loc(nm);
 
         __decimal_point_ = loc.__getw_decimal_point();
         __thousands_sep_ = loc.__getw_thousands_sep();
@@ -4887,12 +4889,12 @@ __time_get_c_storage<wchar_t>::__r() const
 // time_get_byname
 
 __time_get::__time_get(const char* nm)
-    : __loc_(LC_ALL_MASK, nm)
+    : __loc_(nm)
 {
 }
 
 __time_get::__time_get(const string& nm)
-    : __loc_(LC_ALL_MASK, nm.c_str())
+    : __loc_(nm.c_str())
 {
 }
 
@@ -5536,12 +5538,12 @@ __time_get_storage<wchar_t>::__do_date_order() const
 // time_put
 
 __time_put::__time_put(const char* nm)
-    : __loc_(LC_ALL_MASK, nm)
+    : __loc_(nm)
 {
 }
 
 __time_put::__time_put(const string& nm)
-    : __loc_(LC_ALL_MASK, nm.c_str())
+    : __loc_(nm.c_str())
 {
 }
 
@@ -5929,7 +5931,7 @@ void
 moneypunct_byname<char, false>::init(const char* nm)
 {
     typedef moneypunct<char, false> base;
-    __libcpp_locale_t loc(LC_ALL_MASK, nm);
+    __libcpp_locale_t loc(nm);
 
     __decimal_point_ = loc.__get_decimal_point();
     if (!__decimal_point_)
@@ -5960,7 +5962,7 @@ void
 moneypunct_byname<char, true>::init(const char* nm)
 {
     typedef moneypunct<char, true> base;
-    __libcpp_locale_t loc(LC_ALL_MASK, nm);
+    __libcpp_locale_t loc(nm);
 
     __decimal_point_ = loc.__get_decimal_point();
     if (!__decimal_point_)
@@ -5991,7 +5993,7 @@ void
 moneypunct_byname<wchar_t, false>::init(const char* nm)
 {
     typedef moneypunct<wchar_t, false> base;
-    __libcpp_locale_t loc(LC_ALL_MASK, nm);
+    __libcpp_locale_t loc(nm);
 
     __decimal_point_ = loc.__getw_decimal_point();
     if (!__decimal_point_)
@@ -6022,7 +6024,7 @@ void
 moneypunct_byname<wchar_t, true>::init(const char* nm)
 {
     typedef moneypunct<wchar_t, true> base;
-    __libcpp_locale_t loc(LC_ALL_MASK, nm);
+    __libcpp_locale_t loc(nm);
 
     __decimal_point_ = loc.__getw_decimal_point();
     if (!__decimal_point_)
