@@ -335,6 +335,9 @@ class Configuration(object):
         if self.get_lit_bool('has_libatomic', False):
             self.config.available_features.add('libatomic')
 
+        if '__cpp_if_constexpr' not in self.cxx.dumpMacros():
+            self.config.available_features.add('libcpp-no-if-constexpr')
+
     def configure_compile_flags(self):
         no_default_flags = self.get_lit_bool('no_default_flags', False)
         if not no_default_flags:
@@ -576,10 +579,6 @@ class Configuration(object):
                 self.cxx.link_flags += [abs_path]
             else:
                 self.cxx.link_flags += ['-lc++']
-        # This needs to come after -lc++ as we want its unresolved thread-api symbols
-        # to be picked up from this one.
-        if self.get_lit_bool('libcxx_external_thread_api', default=False):
-            self.cxx.link_flags += ['-lc++external_threads']
 
     def configure_link_flags_abi_library(self):
         cxx_abi = self.get_lit_conf('cxx_abi', 'libcxxabi')
@@ -601,13 +600,15 @@ class Configuration(object):
                         self.cxx.link_flags += ['-lc++abi']
         elif cxx_abi == 'libcxxrt':
             self.cxx.link_flags += ['-lcxxrt']
-        elif cxx_abi == 'none':
+        elif cxx_abi == 'none' or cxx_abi == 'default':
             pass
         else:
             self.lit_config.fatal(
                 'C++ ABI setting %s unsupported for tests' % cxx_abi)
 
     def configure_extra_library_flags(self):
+        if self.get_lit_bool('cxx_ext_threads', default=False):
+            self.cxx.link_flags += ['-lc++external_threads']
         self.target_info.add_cxx_link_flags(self.cxx.link_flags)
 
     def configure_color_diagnostics(self):
@@ -646,6 +647,7 @@ class Configuration(object):
         enable_warnings = self.get_lit_bool('enable_warnings',
                                             default_enable_warnings)
         if enable_warnings:
+            self.cxx.useWarnings(True)
             self.cxx.warning_flags += [
                 '-D_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER',
                 '-Wall', '-Wextra', '-Werror'
@@ -659,13 +661,12 @@ class Configuration(object):
             # These warnings should be enabled in order to support the MSVC
             # team using the test suite; They enable the warnings below and
             # expect the test suite to be clean.
-            # FIXME: Re-enable this after fixing remaining occurrences.
-            self.cxx.addWarningFlagIfSupported('-Wno-sign-compare')
+            self.cxx.addWarningFlagIfSupported('-Wsign-compare')
+            self.cxx.addWarningFlagIfSupported('-Wunused-variable')
+            self.cxx.addWarningFlagIfSupported('-Wunused-parameter')
+            self.cxx.addWarningFlagIfSupported('-Wunreachable-code')
             # FIXME: Enable the two warnings below.
-            self.cxx.addWarningFlagIfSupported('-Wno-unused-variable')
-            self.cxx.addWarningFlagIfSupported('-Wno-unused-parameter')
-            # TODO(EricWF) Remove the unused warnings once the test suite
-            # compiles clean with them.
+            self.cxx.addWarningFlagIfSupported('-Wno-conversion')
             self.cxx.addWarningFlagIfSupported('-Wno-unused-local-typedef')
             std = self.get_lit_conf('std', None)
             if std in ['c++98', 'c++03']:
