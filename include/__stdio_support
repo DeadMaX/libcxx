@@ -65,10 +65,39 @@ class __libcpp_file_stream
 public:
 	__libcpp_file_stream(FILE *__f) : __f (__f) {}
 
+	_LIBCPP_STDIO_ABI_VISIBILITY
 	char __read_one();
+
+	_LIBCPP_STDIO_ABI_VISIBILITY
 	bool __unread_one(char);
 
+	_LIBCPP_STDIO_ABI_VISIBILITY
+	size_t __write_many(const char *, size_t);
+
+	_LIBCPP_STDIO_ABI_VISIBILITY
+	bool __flush();
 };
+
+char __libcpp_file_stream::__read_one()
+{
+	return char_traits<char>::to_char_type(fgetc(__f));
+}
+
+bool __libcpp_file_stream::__unread_one(char __c)
+{
+	return ungetc(char_traits<char>::to_int_type(__c), __f) != char_traits<char>::eof();
+}
+
+size_t __libcpp_file_stream::__write_many(const char *__c, size_t __sz)
+{
+	return fwrite(__c, sizeof(char), __sz, __f);
+}
+
+bool __libcpp_file_stream::__flush()
+{
+	return fflush(__f) == 0;
+}
+
 
 __libcpp_file_stream __libcpp_get_standard_in_stream()
 {
@@ -96,7 +125,6 @@ class __libcpp_file_stream
 public:
 	char __read_one();
 	bool __unread_one(char);
-
 	size_t __write_many(const char *, size_t);
 	bool __flush();
 };

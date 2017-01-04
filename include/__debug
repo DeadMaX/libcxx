@@ -21,6 +21,8 @@
 # include <cstddef>
 #endif
 
+#include <exception>
+
 #if _LIBCPP_DEBUG_LEVEL >= 1 || defined(_LIBCPP_BUILDING_LIBRARY)
 #include <__stdlib_support>
 

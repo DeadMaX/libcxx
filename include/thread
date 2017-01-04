@@ -174,7 +174,7 @@ template <class _Tp>
 __thread_specific_ptr<_Tp>::__thread_specific_ptr()
 {
     int __ec = __libcpp_tls_create(
-        &__key_,
+        __key_,
         &__thread_specific_ptr::__at_thread_exit);
     if (__ec)
         __throw_system_error(__ec,
@@ -288,10 +288,10 @@ class _LIBCPP_TYPE_VIS thread
     thread& operator=(const thread&);
 public:
     typedef __thread_id id;
-    typedef __libcpp_thread_t native_handle_type;
+    typedef __libcpp_thread_t* native_handle_type;
 
     _LIBCPP_INLINE_VISIBILITY
-    thread() _NOEXCEPT : __t_(0) {}
+    thread() _NOEXCEPT : __t_() {}
 #ifndef _LIBCPP_HAS_NO_VARIADICS
     template <class _Fp, class ..._Args,
               class = typename enable_if
@@ -307,7 +307,7 @@ public:
 
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
     _LIBCPP_INLINE_VISIBILITY
-    thread(thread&& __t) _NOEXCEPT : __t_(__t.__t_) {__t.__t_ = 0;}
+    thread(thread&& __t) _NOEXCEPT : __t_(_VSTD::move(__t.__t_)) {}
     _LIBCPP_INLINE_VISIBILITY
     thread& operator=(thread&& __t) _NOEXCEPT;
 #endif  // _LIBCPP_HAS_NO_RVALUE_REFERENCES
@@ -316,13 +316,13 @@ public:
     void swap(thread& __t) _NOEXCEPT {_VSTD::swap(__t_, __t.__t_);}
 
     _LIBCPP_INLINE_VISIBILITY
-    bool joinable() const _NOEXCEPT {return __t_ != 0;}
+    bool joinable() const _NOEXCEPT {return __libcpp_thread_joinable(__t_);}
     void join();
     void detach();
     _LIBCPP_INLINE_VISIBILITY
-    id get_id() const _NOEXCEPT {return __libcpp_thread_get_id(&__t_);}
+    id get_id() const _NOEXCEPT {return __libcpp_thread_get_id(__t_);}
     _LIBCPP_INLINE_VISIBILITY
-    native_handle_type native_handle() _NOEXCEPT {return __t_;}
+    native_handle_type native_handle() _NOEXCEPT {return &__t_;}
 
     static unsigned hardware_concurrency() _NOEXCEPT;
 };
@@ -410,10 +410,9 @@ inline
 thread&
 thread::operator=(thread&& __t) _NOEXCEPT
 {
-    if (__t_ != 0)
+    if (__libcpp_thread_joinable(__t_))
         terminate();
-    __t_ = __t.__t_;
-    __t.__t_ = 0;
+    _VSTD::swap(__t_, __t.__t_);
     return *this;
 }
 

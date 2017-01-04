@@ -94,7 +94,7 @@ _LIBCPP_END_NAMESPACE_STD
 
 #ifndef _LIBCXX_DISABLE_C_LINKAGE
 
-#include <cstdio>		// For EOF
+#include <stdio.h>		// For EOF
 #include <string.h>
 #include <wchar.h>		// For WEOF
 

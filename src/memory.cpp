@@ -155,13 +155,7 @@ __shared_weak_count::__get_deleter(const type_info&) const _NOEXCEPT
 #if !defined(_LIBCPP_HAS_NO_ATOMIC_HEADER)
 
 _LIBCPP_SAFE_STATIC static const std::size_t __sp_mut_count = 16;
-_LIBCPP_SAFE_STATIC static __libcpp_mutex_t mut_back[__sp_mut_count] =
-{
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
-    _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER
-};
+_LIBCPP_SAFE_STATIC static __libcpp_mutex_t mut_back[__sp_mut_count];
 
 _LIBCPP_CONSTEXPR __sp_mut::__sp_mut(void* p) _NOEXCEPT
    : __lx(p)
@@ -173,11 +167,11 @@ __sp_mut::lock() _NOEXCEPT
 {
     auto m = static_cast<__libcpp_mutex_t*>(__lx);
     unsigned count = 0;
-    while (__libcpp_mutex_trylock(m) != 0)
+    while (__libcpp_mutex_trylock(*m) != 0)
     {
         if (++count > 16)
         {
-            __libcpp_mutex_lock(m);
+            __libcpp_mutex_lock(*m);
             break;
         }
         this_thread::yield();
@@ -187,7 +181,7 @@ __sp_mut::lock() _NOEXCEPT
 void
 __sp_mut::unlock() _NOEXCEPT
 {
-    __libcpp_mutex_unlock(static_cast<__libcpp_mutex_t*>(__lx));
+    __libcpp_mutex_unlock(*static_cast<__libcpp_mutex_t*>(__lx));
 }
 
 __sp_mut&

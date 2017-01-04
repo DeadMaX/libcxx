@@ -125,7 +125,8 @@ ios_base::__call_callbacks(event ev)
     for (size_t i = __fn_.size(); i;)
     {
         --i;
-        __fn_[i](ev, *this, __index_[i]);
+		_callbacks &cb = __fn_[i];
+        cb.__cb(ev, *this, cb.__index);
     }
 }
 
@@ -229,7 +230,7 @@ ios_base::register_callback(event_callback fn, int index)
 			return;
 		}
     }
-    __callbacks &cb = __fn_[req_size];
+    _callbacks &cb = __fn_[req_size];
     cb.__cb = fn;
 	cb.__index = index;
 }

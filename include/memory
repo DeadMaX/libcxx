@@ -1966,7 +1966,7 @@ public:
     _LIBCPP_INLINE_VISIBILITY raw_storage_iterator  operator++(int)
         {raw_storage_iterator __t(*this); ++__x_; return __t;}
 #if _LIBCPP_STD_VER >= 14
-    _LIBCPP_INLINE_VISIBILITY _OutputIterator base() const { return __x_; } 
+    _LIBCPP_INLINE_VISIBILITY _OutputIterator base() const { return __x_; }
 #endif
 };
 
@@ -2227,7 +2227,7 @@ public:
                                      __tuple_indices<_I2...>)
             : _T2(_VSTD::forward<_Args2>(_VSTD::get<_I2>(__second_args))...),
               __first_(_VSTD::forward<_Args1>(_VSTD::get<_I1>(__first_args))...)
-              
+
             {}
 
 #endif  // _LIBCPP_HAS_NO_VARIADICS
@@ -3047,7 +3047,7 @@ struct __murmur2_or_cityhash<_Size, 32>
 // murmur2
 template <class _Size>
 _Size
-__murmur2_or_cityhash<_Size, 32>::operator()(const void* __key, _Size __len) _LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK 
+__murmur2_or_cityhash<_Size, 32>::operator()(const void* __key, _Size __len) _LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
 {
     const _Size __m = 0x5bd1e995;
     const _Size __r = 24;
@@ -3197,7 +3197,7 @@ struct __murmur2_or_cityhash<_Size, 64>
 // cityhash64
 template <class _Size>
 _Size
-__murmur2_or_cityhash<_Size, 64>::operator()(const void* __key, _Size __len) _LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK 
+__murmur2_or_cityhash<_Size, 64>::operator()(const void* __key, _Size __len) _LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
 {
   const char* __s = static_cast<const char*>(__key);
   if (__len <= 32) {
@@ -5521,7 +5521,7 @@ atomic_load(const shared_ptr<_Tp>* __p)
     __m.unlock();
     return __q;
 }
-  
+
 template <class _Tp>
 inline _LIBCPP_INLINE_VISIBILITY
 shared_ptr<_Tp>
@@ -5558,7 +5558,7 @@ atomic_exchange(shared_ptr<_Tp>* __p, shared_ptr<_Tp> __r)
     __m.unlock();
     return __r;
 }
-  
+
 template <class _Tp>
 inline _LIBCPP_INLINE_VISIBILITY
 shared_ptr<_Tp>
@@ -5659,7 +5659,7 @@ void __swap_allocator(_Alloc & __a1, _Alloc & __a2)
     _NOEXCEPT_(__is_nothrow_swappable<_Alloc>::value)
 #endif
 {
-    __swap_allocator(__a1, __a2, 
+    __swap_allocator(__a1, __a2,
       integral_constant<bool, _VSTD::allocator_traits<_Alloc>::propagate_on_container_swap::value>());
 }
 
@@ -5681,7 +5681,7 @@ inline _LIBCPP_INLINE_VISIBILITY
 void __swap_allocator(_Alloc &, _Alloc &, false_type) _NOEXCEPT {}
 
 template <typename _Alloc, typename _Traits=allocator_traits<_Alloc> >
-struct __noexcept_move_assign_container : public integral_constant<bool, 
+struct __noexcept_move_assign_container : public integral_constant<bool,
     _Traits::propagate_on_container_move_assignment::value
 #if _LIBCPP_STD_VER > 14
         || _Traits::is_always_equal::value
@@ -5695,17 +5695,17 @@ struct __noexcept_move_assign_container : public integral_constant<bool,
 template <class _Tp, class _Alloc>
 struct __temp_value {
     typedef allocator_traits<_Alloc> _Traits;
-    
+
     typename aligned_storage<sizeof(_Tp), alignof(_Tp)>::type __v;
     _Alloc &__a;
 
     _Tp *__addr() { return reinterpret_cast<_Tp *>(addressof(__v)); }
     _Tp &   get() { return *__addr(); }
-        
+
     template<class... _Args>
     __temp_value(_Alloc &__alloc, _Args&& ... __args) : __a(__alloc)
     { _Traits::construct(__a, __addr(), _VSTD::forward<_Args>(__args)...); }
-    
+
     ~__temp_value() { _Traits::destroy(__a, __addr()); }
     };
 #endif

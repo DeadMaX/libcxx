@@ -40,7 +40,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 
 thread::~thread()
 {
-    if (__t_ != 0)
+    if (__libcpp_thread_joinable(__t_))
         terminate();
 }
 
@@ -48,11 +48,9 @@ void
 thread::join()
 {
     int ec = EINVAL;
-    if (__t_ != 0)
+    if (__libcpp_thread_joinable(__t_))
     {
-        ec = __libcpp_thread_join(&__t_);
-        if (ec == 0)
-            __t_ = 0;
+        ec = __libcpp_thread_join(__t_);
     }
 
     if (ec)
@@ -63,11 +61,9 @@ void
 thread::detach()
 {
     int ec = EINVAL;
-    if (__t_ != 0)
+    if (__libcpp_thread_joinable(__t_))
     {
-        ec = __libcpp_thread_detach(&__t_);
-        if (ec == 0)
-            __t_ = 0;
+        ec = __libcpp_thread_detach(__t_);
     }
 
     if (ec)
@@ -153,7 +149,7 @@ class _LIBCPP_HIDDEN __hidden_allocator
 {
 public:
     typedef T  value_type;
-    
+
     T* allocate(size_t __n)
         {return static_cast<T*>(::operator new(__n * sizeof(T)));}
     void deallocate(T* __p, size_t) {::operator delete(static_cast<void*>(__p));}

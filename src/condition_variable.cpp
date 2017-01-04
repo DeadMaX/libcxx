@@ -20,19 +20,19 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 
 condition_variable::~condition_variable()
 {
-    __libcpp_condvar_destroy(&__cv_);
+    __libcpp_condvar_destroy(__cv_);
 }
 
 void
 condition_variable::notify_one() _NOEXCEPT
 {
-    __libcpp_condvar_signal(&__cv_);
+    __libcpp_condvar_signal(__cv_);
 }
 
 void
 condition_variable::notify_all() _NOEXCEPT
 {
-    __libcpp_condvar_broadcast(&__cv_);
+    __libcpp_condvar_broadcast(__cv_);
 }
 
 void
@@ -41,7 +41,7 @@ condition_variable::wait(unique_lock<mutex>& lk) _NOEXCEPT
     if (!lk.owns_lock())
         __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
                                   "condition_variable::wait: mutex not locked");
-    int ec = __libcpp_condvar_wait(&__cv_, lk.mutex()->native_handle());
+    int ec = __libcpp_condvar_wait(__cv_, *lk.mutex()->native_handle());
     if (ec)
         __throw_system_error(ec, "condition_variable wait failed");
 }
@@ -54,7 +54,7 @@ condition_variable::__do_timed_wait(unique_lock<mutex>& lk,
     if (!lk.owns_lock())
         __throw_system_error(error_condition{errc::operation_not_permitted}.value(),
                             "condition_variable::timed wait: mutex not locked");
-    int ec = __libcpp_condvar_timedwait(&__cv_, lk.mutex()->native_handle(), tp);
+    int ec = __libcpp_condvar_timedwait(__cv_, *lk.mutex()->native_handle(), tp);
     if (ec != 0 && ec != error_condition{errc::timed_out}.value())
         __throw_system_error(ec, "condition_variable timed_wait failed");
 }

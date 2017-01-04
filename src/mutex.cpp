@@ -23,13 +23,13 @@ const adopt_lock_t  adopt_lock = {};
 
 mutex::~mutex()
 {
-    __libcpp_mutex_destroy(&__m_);
+    __libcpp_mutex_destroy(__m_);
 }
 
 void
 mutex::lock()
 {
-    int ec = __libcpp_mutex_lock(&__m_);
+    int ec = __libcpp_mutex_lock(__m_);
     if (ec)
         __throw_system_error(ec, "mutex lock failed");
 }
@@ -37,13 +37,13 @@ mutex::lock()
 bool
 mutex::try_lock() _NOEXCEPT
 {
-    return __libcpp_mutex_trylock(&__m_) == 0;
+    return __libcpp_mutex_trylock(__m_) == 0;
 }
 
 void
 mutex::unlock() _NOEXCEPT
 {
-    int ec = __libcpp_mutex_unlock(&__m_);
+    int ec = __libcpp_mutex_unlock(__m_);
     (void)ec;
     assert(ec == 0);
 }
@@ -52,14 +52,14 @@ mutex::unlock() _NOEXCEPT
 
 recursive_mutex::recursive_mutex()
 {
-    int ec = __libcpp_recursive_mutex_init(&__m_);
+    int ec = __libcpp_recursive_mutex_init(__m_);
     if (ec)
         __throw_system_error(ec, "recursive_mutex constructor failed");
 }
 
 recursive_mutex::~recursive_mutex()
 {
-    int e = __libcpp_mutex_destroy(&__m_);
+    int e = __libcpp_mutex_destroy(__m_);
     (void)e;
     assert(e == 0);
 }
@@ -67,7 +67,7 @@ recursive_mutex::~recursive_mutex()
 void
 recursive_mutex::lock()
 {
-    int ec = __libcpp_mutex_lock(&__m_);
+    int ec = __libcpp_mutex_lock(__m_);
     if (ec)
         __throw_system_error(ec, "recursive_mutex lock failed");
 }
@@ -75,7 +75,7 @@ recursive_mutex::lock()
 void
 recursive_mutex::unlock() _NOEXCEPT
 {
-    int e = __libcpp_mutex_unlock(&__m_);
+    int e = __libcpp_mutex_unlock(__m_);
     (void)e;
     assert(e == 0);
 }
@@ -83,7 +83,7 @@ recursive_mutex::unlock() _NOEXCEPT
 bool
 recursive_mutex::try_lock() _NOEXCEPT
 {
-    return __libcpp_mutex_trylock(&__m_) == 0;
+    return __libcpp_mutex_trylock(__m_) == 0;
 }
 
 // timed_mutex
@@ -195,8 +195,8 @@ recursive_timed_mutex::unlock() _NOEXCEPT
 // keep in sync with:  7741191.
 
 #ifndef _LIBCPP_HAS_NO_THREADS
-_LIBCPP_SAFE_STATIC static __libcpp_mutex_t mut = _LIBCPP_MUTEX_INITIALIZER;
-_LIBCPP_SAFE_STATIC static __libcpp_condvar_t cv = _LIBCPP_CONDVAR_INITIALIZER;
+_LIBCPP_SAFE_STATIC static __libcpp_mutex_t mut;
+_LIBCPP_SAFE_STATIC static __libcpp_condvar_t cv;
 #endif
 
 void
@@ -222,9 +222,9 @@ __call_once(volatile unsigned long& flag, void* arg, void(*func)(void*))
 #endif  // _LIBCPP_NO_EXCEPTIONS
     }
 #else // !_LIBCPP_HAS_NO_THREADS
-    __libcpp_mutex_lock(&mut);
+    __libcpp_mutex_lock(mut);
     while (flag == 1)
-        __libcpp_condvar_wait(&cv, &mut);
+        __libcpp_condvar_wait(cv, mut);
     if (flag == 0)
     {
 #ifndef _LIBCPP_NO_EXCEPTIONS
@@ -232,26 +232,26 @@ __call_once(volatile unsigned long& flag, void* arg, void(*func)(void*))
         {
 #endif  // _LIBCPP_NO_EXCEPTIONS
             __libcpp_relaxed_store(&flag, 1ul);
-            __libcpp_mutex_unlock(&mut);
+            __libcpp_mutex_unlock(mut);
             func(arg);
-            __libcpp_mutex_lock(&mut);
+            __libcpp_mutex_lock(mut);
             __libcpp_atomic_store(&flag, ~0ul, _AO_Release);
-            __libcpp_mutex_unlock(&mut);
-            __libcpp_condvar_broadcast(&cv);
+            __libcpp_mutex_unlock(mut);
+            __libcpp_condvar_broadcast(cv);
 #ifndef _LIBCPP_NO_EXCEPTIONS
         }
         catch (...)
         {
-            __libcpp_mutex_lock(&mut);
+            __libcpp_mutex_lock(mut);
             __libcpp_relaxed_store(&flag, 0ul);
-            __libcpp_mutex_unlock(&mut);
-            __libcpp_condvar_broadcast(&cv);
+            __libcpp_mutex_unlock(mut);
+            __libcpp_condvar_broadcast(cv);
             throw;
         }
 #endif  // _LIBCPP_NO_EXCEPTIONS
     }
     else
-        __libcpp_mutex_unlock(&mut);
+        __libcpp_mutex_unlock(mut);
 #endif // !_LIBCPP_HAS_NO_THREADS
 
 }
