@@ -37,7 +37,7 @@ bool __libcpp_set_debug_function(__libcpp_debug_function_type __func) {
 }
 
 _LIBCPP_NORETURN void __libcpp_abort_debug_function(__libcpp_debug_info const& info) {
-  std::fprintf(stderr, "%s\n", make_what_str(info).c_str());
+  std::cerr<<make_what_str(info)<<'\n';
   std::abort();
 }
 

@@ -64,9 +64,8 @@ class __libcpp_thread_t;
 class __libcpp_tls_key;
 
 template<>
-class hash<__libcpp_thread_id>
+struct hash<__libcpp_thread_id>
 {
-public:
 	_LIBCPP_THREAD_ABI_VISIBILITY
 	size_t operator()(const __libcpp_thread_id &c) const;
 };
@@ -410,11 +409,24 @@ int __libcpp_tls_set(__libcpp_tls_key &__key, void *__p)
     return pthread_setspecific(__key._key, __p);
 }
 
-#endif // _LIBCPP_HAS_THREAD_API_PTHREAD
+_LIBCPP_END_NAMESPACE_STD
+
+#else
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
+class __libcpp_mutex_t {};
+class __libcpp_condvar_t {};
+class __libcpp_tls_t {};
+class __libcpp_tls_key {};
+class __libcpp_thread_id {};
+class __libcpp_thread_t {};
 
 _LIBCPP_END_NAMESPACE_STD
 
 #endif // !_LIBCPP_HAS_THREAD_API_EXTERNAL || !__libcpp_has_include(<__external_threading>)
+
+#endif // _LIBCPP_HAS_THREAD_API_PTHREAD
 
 #endif // _LIBCPP_HAS_NO_THREADS
 
