@@ -132,6 +132,9 @@ _LIBCPP_THREAD_ABI_VISIBILITY
 __libcpp_thread_id __libcpp_thread_get_id(const __libcpp_thread_t &__t);
 
 _LIBCPP_THREAD_ABI_VISIBILITY
+void __libcpp_thread_reset_id(__libcpp_thread_id &__t);
+
+_LIBCPP_THREAD_ABI_VISIBILITY
 bool __libcpp_thread_joinable(const __libcpp_thread_t &__t);
 
 _LIBCPP_THREAD_ABI_VISIBILITY
@@ -199,7 +202,8 @@ public:
 class __libcpp_thread_id
 {
 public:
-	__libcpp_thread_id(pthread_t id) : _id(id) {}
+// 	__libcpp_thread_id(pthread_t id) _NOEXCEPT : _id(id) {}
+	__libcpp_thread_id() _NOEXCEPT : _id(0) {}
 	pthread_t _id;
 };
 
@@ -359,12 +363,21 @@ int __libcpp_thread_create(__libcpp_thread_t &__t, void *(*__func)(void *),
 
 __libcpp_thread_id __libcpp_thread_get_current_id()
 {
-  return pthread_self();
+  __libcpp_thread_id id;
+  id._id = pthread_self();
+  return id;
 }
 
 __libcpp_thread_id __libcpp_thread_get_id(const __libcpp_thread_t &__t)
 {
-  return __t._thread;
+  __libcpp_thread_id id;
+  id._id = __t._thread;
+  return id;
+}
+
+void __libcpp_thread_reset_id(__libcpp_thread_id &__t)
+{
+  __t._id = 0;
 }
 
 bool __libcpp_thread_joinable(const __libcpp_thread_t &__t)

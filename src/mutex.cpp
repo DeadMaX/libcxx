@@ -131,7 +131,7 @@ timed_mutex::unlock() _NOEXCEPT
 
 recursive_timed_mutex::recursive_timed_mutex()
     : __count_(0),
-      __id_(0)
+      __id_()
 {
 }
 
@@ -180,7 +180,7 @@ recursive_timed_mutex::unlock() _NOEXCEPT
     unique_lock<mutex> lk(__m_);
     if (--__count_ == 0)
     {
-        __id_ = 0;
+        __libcpp_thread_reset_id(__id_);
         lk.unlock();
         __cv_.notify_one();
     }
