@@ -45,7 +45,11 @@ class __libcpp_locale_t;
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base,
-										const __libcpp_locale_t &__locale, errc &__error_code);
+										const __libcpp_locale_t &__locale, bool &__range_error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+long long __libcpp_get_signed_intergral(const wchar_t *__str, const wchar_t **__err, int __base,
+										const __libcpp_locale_t &__locale, bool &__range_error);
 
 template <typename _IOS>
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -53,7 +57,11 @@ size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcp
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char **__err, int __base,
-												   const __libcpp_locale_t &__locale, errc &__error_code);
+												   const __libcpp_locale_t &__locale, bool &__range_error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+unsigned long long __libcpp_get_unsigned_intergral(const wchar_t *__str, const wchar_t **__err, int __base,
+												   const __libcpp_locale_t &__locale, bool &__range_error);
 
 template <typename _IOS>
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -63,10 +71,16 @@ _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_put_pointer(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, const void *__v);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code);
+float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, bool &__range_error);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
-double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code);
+double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, bool &__range_error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+float __libcpp_get_float(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error);
+
+_LIBCPP_LOCALE_ABI_VISIBILITY
+double __libcpp_get_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error);
 
 template<typename _IOS>
 _LIBCPP_LOCALE_ABI_VISIBILITY
@@ -74,7 +88,10 @@ size_t __libcpp_put_double(char *__dst, size_t __dstlen, const __libcpp_locale_t
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 long double __libcpp_get_long_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale,
-									 errc &__error_code);
+									 bool &__range_error);
+_LIBCPP_LOCALE_ABI_VISIBILITY
+long double __libcpp_get_long_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale,
+									 bool &__range_error);
 template<typename _IOS>
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_put_long_double(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, long double __v);
@@ -344,7 +361,7 @@ typedef _VSTD::unique_ptr<__use_locale_struct, decltype(&uselocale)> __locale_ra
 #endif
 
 long long __libcpp_get_signed_intergral(const char *__str, const char **__err, int __base,
-										const __libcpp_locale_t &__locale, errc &__error_code)
+										const __libcpp_locale_t &__locale, bool &__range_error)
 {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
     long long value = strtoll_l(__str, const_cast<char **>(__err), __base, __locale.__get_locale());
@@ -352,7 +369,21 @@ long long __libcpp_get_signed_intergral(const char *__str, const char **__err, i
     if (__curr_errno == 0)
         errno = __save_errno;
     else if (__curr_errno == ERANGE)
-        __error_code = errc::result_out_of_range;
+        __range_error = true;
+
+    return value;
+}
+
+long long __libcpp_get_signed_intergral(const wchar_t *__str, const wchar_t **__err, int __base,
+										const __libcpp_locale_t &__locale, bool &__range_error)
+{
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    long long value = wcstoll_l(__str, const_cast<wchar_t **>(__err), __base, __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __range_error = true;
 
     return value;
 }
@@ -449,7 +480,7 @@ _IOS::fmtflags __flags, long long __v)
 }
 
 unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char **__err, int __base,
-												   const __libcpp_locale_t &__locale, errc &__error_code)
+												   const __libcpp_locale_t &__locale, bool &__range_error)
 {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
     unsigned long long value = strtoull_l(__str, const_cast<char **>(__err), __base, __locale.__get_locale());
@@ -457,7 +488,21 @@ unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char
     if (__curr_errno == 0)
         errno = __save_errno;
     else if (__curr_errno == ERANGE)
-        __error_code = errc::result_out_of_range;
+        __range_error = true;
+
+    return value;
+}
+
+unsigned long long __libcpp_get_unsigned_intergral(const wchar_t *__str, const wchar_t **__err, int __base,
+												   const __libcpp_locale_t &__locale, bool &__range_error)
+{
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    unsigned long long value = wcstoull_l(__str, const_cast<wchar_t **>(__err), __base, __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __range_error = true;
 
     return value;
 }
@@ -484,14 +529,26 @@ size_t __libcpp_put_pointer(char *__dst, size_t __dstlen, const __libcpp_locale_
     return __outlen;
 }
 
-float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code) {
+float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, bool &__range_error) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
     float value = strtof_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;
     else if (__curr_errno == ERANGE)
-        __error_code = errc::result_out_of_range;
+        __range_error = true;
+
+    return value;
+}
+
+float __libcpp_get_float(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error) {
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    float value = wcstof_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __range_error = true;
 
     return value;
 }
@@ -514,14 +571,26 @@ __flags, int __precision, double __v)
 }
 
 
-double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, errc &__error_code) {
+double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, bool &__range_error) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
     double value = strtod_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;
     else if (__curr_errno == ERANGE)
-        __error_code = errc::result_out_of_range;
+        __range_error = true;
+
+    return value;
+}
+
+double __libcpp_get_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error) {
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    double value = wcstod_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __range_error = true;
 
     return value;
 }
@@ -544,14 +613,27 @@ __flags, int __precision, long double __v)
 }
 
 long double __libcpp_get_long_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale,
-									 errc &__error_code) {
+									 bool &__range_error) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
     long double value = strtold_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;
     else if (__curr_errno == ERANGE)
-        __error_code = errc::result_out_of_range;
+        __range_error = true;
+
+    return value;
+}
+
+long double __libcpp_get_long_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale,
+									 bool &__range_error) {
+    typename remove_reference<decltype(errno)>::type __save_errno = errno;
+    long double value = wcstold_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    typename remove_reference<decltype(errno)>::type __curr_errno = errno;
+    if (__curr_errno == 0)
+        errno = __save_errno;
+    else if (__curr_errno == ERANGE)
+        __range_error = true;
 
     return value;
 }
@@ -881,8 +963,6 @@ _LIBCPP_END_NAMESPACE_STD
 # define LC_NUMERIC_MASK    (1<<3)
 # define LC_TIME_MASK       (1<<4)
 # define LC_MESSAGES_MASK   (1<<5)
-
-#define _LIBCPP_GET_C_LOCALE 0
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 

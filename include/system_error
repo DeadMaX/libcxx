@@ -365,7 +365,7 @@ _LIBCPP_DECLARE_STRONG_ENUM_EPILOG(errc)
 #else // _LIBCXX_DISABLE_C_LINKAGE
 _LIBCPP_DECLARE_STRONG_ENUM(errc)
 {
-    address_family_not_supported,       // EAFNOSUPPORT
+    address_family_not_supported = 1,   // EAFNOSUPPORT
     address_in_use,                     // EADDRINUSE
     address_not_available,              // EADDRNOTAVAIL
     already_connected,                  // EISCONN

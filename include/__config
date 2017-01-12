@@ -11,6 +11,10 @@
 #ifndef _LIBCPP_CONFIG
 #define _LIBCPP_CONFIG
 
+#ifndef __ELF__
+#define __ELF__
+#endif
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #define _LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER
 #endif

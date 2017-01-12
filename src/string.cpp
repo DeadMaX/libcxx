@@ -13,6 +13,8 @@
 #include "cerrno"
 #include "limits"
 #include "stdexcept"
+#include "locale"
+#include "ios"
 #ifdef _LIBCPP_MSVCRT
 #include "support/win32/support.h"
 #endif // _LIBCPP_MSVCRT
@@ -57,24 +59,40 @@ void throw_from_string_invalid_arg( const string& func )
 
 // as_integer
 
-template<typename V, typename S, typename F>
+template<typename V, typename S>
 inline
 V
-as_integer_helper(const string& func, const S& str, size_t* idx, int base, F f)
+as_signed_integer_helper(const string& func, const S& str, size_t* idx, int base)
 {
     typename S::value_type* ptr = nullptr;
     const typename S::value_type* const p = str.c_str();
-    typename remove_reference<decltype(errno)>::type errno_save = errno;
-    errno = 0;
-    V r = f(p, &ptr, base);
-    swap(errno, errno_save);
-    if (errno_save == ERANGE)
-        throw_from_string_out_of_range(func);
+    bool error = false;
+    long long int r = __libcpp_get_signed_intergral(p, &ptr, base, __libcpp_locale_t(), error);
+    if (error || r < numeric_limits<V>::min() || numeric_limits<V>::max() < r)
+	  throw_from_string_out_of_range(func);
     if (ptr == p)
-        throw_from_string_invalid_arg(func);
+	throw_from_string_invalid_arg(func);
     if (idx)
-        *idx = static_cast<size_t>(ptr - p);
-    return r;
+	*idx = static_cast<size_t>(ptr - p);
+    static_cast<V>(r);
+}
+
+template<typename V, typename S>
+inline
+V
+as_unsigned_integer_helper(const string& func, const S& str, size_t* idx, int base)
+{
+    typename S::value_type* ptr = nullptr;
+    const typename S::value_type* const p = str.c_str();
+    bool error = false;
+    long long int r = __libcpp_get_unsigned_intergral(p, &ptr, base, __libcpp_locale_t(), error);
+    if (error || numeric_limits<V>::max() < r)
+	  throw_from_string_out_of_range(func);
+    if (ptr == p)
+	throw_from_string_invalid_arg(func);
+    if (idx)
+	*idx = static_cast<size_t>(ptr - p);
+    static_cast<V>(r);
 }
 
 template<typename V, typename S>
@@ -89,10 +107,7 @@ int
 as_integer(const string& func, const string& s, size_t* idx, int base )
 {
     // Use long as no Standard string to integer exists.
-    long r = as_integer_helper<long>( func, s, idx, base, strtol );
-    if (r < numeric_limits<int>::min() || numeric_limits<int>::max() < r)
-        throw_from_string_out_of_range(func);
-    return static_cast<int>(r);
+    return as_signed_integer_helper<int>( func, s, idx, base );
 }
 
 template<>
@@ -100,7 +115,7 @@ inline
 long
 as_integer(const string& func, const string& s, size_t* idx, int base )
 {
-    return as_integer_helper<long>( func, s, idx, base, strtol );
+    return as_signed_integer_helper<long>( func, s, idx, base );
 }
 
 template<>
@@ -108,7 +123,7 @@ inline
 unsigned long
 as_integer( const string& func, const string& s, size_t* idx, int base )
 {
-    return as_integer_helper<unsigned long>( func, s, idx, base, strtoul );
+    return as_unsigned_integer_helper<unsigned long>( func, s, idx, base );
 }
 
 template<>
@@ -116,7 +131,7 @@ inline
 long long
 as_integer( const string& func, const string& s, size_t* idx, int base )
 {
-    return as_integer_helper<long long>( func, s, idx, base, strtoll );
+    return as_signed_integer_helper<long long>( func, s, idx, base );
 }
 
 template<>
@@ -124,7 +139,7 @@ inline
 unsigned long long
 as_integer( const string& func, const string& s, size_t* idx, int base )
 {
-    return as_integer_helper<unsigned long long>( func, s, idx, base, strtoull );
+    return as_unsigned_integer_helper<unsigned long long>( func, s, idx, base );
 }
 
 // wstring
@@ -134,10 +149,7 @@ int
 as_integer( const string& func, const wstring& s, size_t* idx, int base )
 {
     // Use long as no Stantard string to integer exists.
-    long r = as_integer_helper<long>( func, s, idx, base, wcstol );
-    if (r < numeric_limits<int>::min() || numeric_limits<int>::max() < r)
-        throw_from_string_out_of_range(func);
-    return static_cast<int>(r);
+    return as_signed_integer_helper<int>( func, s, idx, base );
 }
 
 template<>
@@ -145,7 +157,7 @@ inline
 long
 as_integer( const string& func, const wstring& s, size_t* idx, int base )
 {
-    return as_integer_helper<long>( func, s, idx, base, wcstol );
+    return as_signed_integer_helper<long>( func, s, idx, base );
 }
 
 template<>
@@ -153,7 +165,7 @@ inline
 unsigned long
 as_integer( const string& func, const wstring& s, size_t* idx, int base )
 {
-    return as_integer_helper<unsigned long>( func, s, idx, base, wcstoul );
+    return as_unsigned_integer_helper<unsigned long>( func, s, idx, base );
 }
 
 template<>
@@ -161,7 +173,7 @@ inline
 long long
 as_integer( const string& func, const wstring& s, size_t* idx, int base )
 {
-    return as_integer_helper<long long>( func, s, idx, base, wcstoll );
+    return as_signed_integer_helper<long long>( func, s, idx, base );
 }
 
 template<>
@@ -169,7 +181,7 @@ inline
 unsigned long long
 as_integer( const string& func, const wstring& s, size_t* idx, int base )
 {
-    return as_integer_helper<unsigned long long>( func, s, idx, base, wcstoull );
+    return as_unsigned_integer_helper<unsigned long long>( func, s, idx, base );
 }
 
 // as_float
@@ -181,11 +193,9 @@ as_float_helper(const string& func, const S& str, size_t* idx, F f )
 {
     typename S::value_type* ptr = nullptr;
     const typename S::value_type* const p = str.c_str();
-    typename remove_reference<decltype(errno)>::type errno_save = errno;
-    errno = 0;
-    V r = f(p, &ptr);
-    swap(errno, errno_save);
-    if (errno_save == ERANGE)
+    bool error = false;
+    V r = f(p, &ptr, __libcpp_locale_t(), error);
+    if (error)
         throw_from_string_out_of_range(func);
     if (ptr == p)
         throw_from_string_invalid_arg(func);
@@ -198,12 +208,44 @@ template<typename V, typename S>
 inline
 V as_float( const string& func, const S& s, size_t* idx = nullptr );
 
+float get_char_float(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, bool &__range_error)
+{
+    return __libcpp_get_float(__a, __p2, __locale, __range_error);
+}
+
+double get_char_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale, bool &__range_error)
+{
+    return __libcpp_get_double(__a, __p2, __locale, __range_error);
+}
+
+long double get_char_long_double(const char* __a, const char** __p2, const __libcpp_locale_t &__locale,
+									 bool &__range_error)
+{
+    return __libcpp_get_long_double(__a, __p2, __locale, __range_error);
+}
+
+float get_wchar_float(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error)
+{
+    return __libcpp_get_float(__a, __p2, __locale, __range_error);
+}
+
+double get_wchar_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error)
+{
+    return __libcpp_get_double(__a, __p2, __locale, __range_error);
+}
+
+long double get_wchar_long_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale,
+									 bool &__range_error)
+{
+    return __libcpp_get_long_double(__a, __p2, __locale, __range_error);
+}
+
 template<>
 inline
 float
 as_float( const string& func, const string& s, size_t* idx )
 {
-    return as_float_helper<float>( func, s, idx, strtof );
+    return as_float_helper<float>( func, s, idx, get_char_float );
 }
 
 template<>
@@ -211,7 +253,7 @@ inline
 double
 as_float(const string& func, const string& s, size_t* idx )
 {
-    return as_float_helper<double>( func, s, idx, strtod );
+    return as_float_helper<double>( func, s, idx, get_char_double );
 }
 
 template<>
@@ -219,7 +261,7 @@ inline
 long double
 as_float( const string& func, const string& s, size_t* idx )
 {
-    return as_float_helper<long double>( func, s, idx, strtold );
+    return as_float_helper<long double>( func, s, idx, get_char_long_double );
 }
 
 template<>
@@ -227,7 +269,7 @@ inline
 float
 as_float( const string& func, const wstring& s, size_t* idx )
 {
-    return as_float_helper<float>( func, s, idx, wcstof );
+    return as_float_helper<float>( func, s, idx, get_wchar_float );
 }
 
 template<>
@@ -235,7 +277,7 @@ inline
 double
 as_float( const string& func, const wstring& s, size_t* idx )
 {
-    return as_float_helper<double>( func, s, idx, wcstod );
+    return as_float_helper<double>( func, s, idx, get_wchar_double );
 }
 
 template<>
@@ -243,7 +285,7 @@ inline
 long double
 as_float( const string& func, const wstring& s, size_t* idx )
 {
-    return as_float_helper<long double>( func, s, idx, wcstold );
+    return as_float_helper<long double>( func, s, idx, get_wchar_long_double );
 }
 
 }  // unnamed namespace
@@ -351,31 +393,18 @@ namespace
 
 // as_string
 
-template<typename S, typename P, typename V >
+template<typename S, typename V >
 inline
 S
-as_string(P sprintf_like, S s, const typename S::value_type* fmt, V a)
+as_signed_string(V a)
 {
-    typedef typename S::size_type size_type;
-    size_type available = s.size();
-    while (true)
-    {
-        int status = sprintf_like(&s[0], available + 1, fmt, a);
-        if ( status >= 0 )
-        {
-            size_type used = static_cast<size_type>(status);
-            if ( used <= available )
-            {
-                s.resize( used );
-                break;
-            }
-            available = used; // Assume this is advice of how much space we need.
-        }
-        else
-            available = available * 2 + 1;
-        s.resize(available);
-    }
-    return s;
+    const unsigned __nbuf = (numeric_limits<V>::digits / 3)
+                            + ((numeric_limits<V>::digits % 3) != 0)
+                            + 2;
+    char __nar[__nbuf];
+
+    size_t len = __libcpp_put_signed_intergral(__nar, sizeof(__nar), __libcpp_locale_t(), ios_base::dec,a);
+    return S(__nar, len);
 }
 
 template <class S, class V, bool = is_floating_point<V>::value>
@@ -437,7 +466,7 @@ get_swprintf()
 
 string to_string(int val)
 {
-    return as_string(snprintf, initial_string<string, int>()(), "%d", val);
+    return as_signed_string<int>(val);
 }
 
 string to_string(unsigned val)

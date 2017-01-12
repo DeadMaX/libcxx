@@ -654,7 +654,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
 {
 	if (__a != __a_end)
 	{
-	errc __error;
+	bool __error = false;
 
 	const char *__p2;
 	long long __ll = __libcpp_get_signed_intergral(__a, &__p2, __base, __loc.native_handle(), __error);
@@ -663,7 +663,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
 		__err = ios_base::failbit;
 		return 0;
 	}
-	else if (__error == errc::result_out_of_range   ||
+	else if (__error ||
 			__ll < numeric_limits<_Tp>::min() ||
 			numeric_limits<_Tp>::max() < __ll)
 	{
@@ -691,7 +691,7 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
 		__err = ios_base::failbit;
 		return 0;
 	}
-	errc __error;
+	bool __error = false;
 	const char *__p2;
 	unsigned long long __ll = __libcpp_get_unsigned_intergral(__a, &__p2, __base, __loc.native_handle(), __error);
 	if (__p2 != __a_end)
@@ -699,7 +699,7 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
 		__err = ios_base::failbit;
 		return 0;
 	}
-	else if (__error == errc::result_out_of_range ||
+	else if (__error ||
 			numeric_limits<_Tp>::max() < __ll)
 	{
 		__err = ios_base::failbit;
@@ -713,23 +713,23 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
 
 template <class _Tp>
 _LIBCPP_INLINE_VISIBILITY
-_Tp __do_strtod(const char* __a, const char** __p2, locale &__loc, errc &__error);
+_Tp __do_strtod(const char* __a, const char** __p2, locale &__loc, bool &__error);
 
 template <>
 inline _LIBCPP_INLINE_VISIBILITY
-float __do_strtod<float>(const char* __a, const char** __p2, locale &__loc, errc &__error) {
+float __do_strtod<float>(const char* __a, const char** __p2, locale &__loc, bool &__error) {
 	return __libcpp_get_float(__a, __p2, __loc.native_handle(), __error);
 }
 
 template <>
 inline _LIBCPP_INLINE_VISIBILITY
-double __do_strtod<double>(const char* __a, const char** __p2, locale &__loc, errc &__error) {
+double __do_strtod<double>(const char* __a, const char** __p2, locale &__loc, bool &__error) {
 	return __libcpp_get_double(__a, __p2, __loc.native_handle(), __error);
 }
 
 template <>
 inline _LIBCPP_INLINE_VISIBILITY
-long double __do_strtod<long double>(const char* __a, const char** __p2, locale &__loc, errc &__error) {
+long double __do_strtod<long double>(const char* __a, const char** __p2, locale &__loc, bool &__error) {
 	return __libcpp_get_long_double(__a, __p2, __loc.native_handle(), __error);
 }
 
@@ -740,7 +740,7 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err, 
 {
 	if (__a != __a_end)
 	{
-	errc __error;
+	bool __error = false;
 	const char *__p2;
 	_Tp __ld = __do_strtod<_Tp>(__a, &__p2, __loc, __error);
 	if (__p2 != __a_end)
@@ -748,7 +748,7 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err, 
 		__err = ios_base::failbit;
 		return 0;
 	}
-	else if (__error == errc::result_out_of_range)
+	else if (__error)
 		__err = ios_base::failbit;
 	return __ld;
 	}
