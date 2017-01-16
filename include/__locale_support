@@ -55,6 +55,10 @@ template <typename _IOS>
 _LIBCPP_LOCALE_ABI_VISIBILITY
 size_t __libcpp_put_signed_intergral(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, long long __v);
 
+template <typename _IOS>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_put_signed_intergral(wchar_t *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, long long __v);
+
 _LIBCPP_LOCALE_ABI_VISIBILITY
 unsigned long long __libcpp_get_unsigned_intergral(const char *__str, const char **__err, int __base,
 												   const __libcpp_locale_t &__locale, bool &__range_error);
@@ -78,6 +82,10 @@ double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_lo
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 float __libcpp_get_float(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error);
+
+template<typename _IOS>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+size_t __libcpp_put_float(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags __flags, int __precision, float __v);
 
 _LIBCPP_LOCALE_ABI_VISIBILITY
 double __libcpp_get_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error);
@@ -242,6 +250,14 @@ size_t __libcpp_mbsrtowcs_l(wchar_t *__dst, const char *&__src, size_t __dstlen,
 _LIBCPP_LOCALE_ABI_VISIBILITY
 void __libcpp_set_global_locale(const char *__name) _NOEXCEPT;
 
+template <class ... _Types>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_snprintf_l(char *__s, size_t __n, locale_t __l, const char *__format, _Types ... args) _NOEXCEPT;
+
+template <class ... _Types>
+_LIBCPP_LOCALE_ABI_VISIBILITY
+int __libcpp_swprintf_l(wchar_t *__s, size_t __n, locale_t __l, const wchar_t *__format, _Types ... args) _NOEXCEPT;
+
 _LIBCPP_END_NAMESPACE_STD
 
 #ifndef _LIBCXX_DISABLE_C_LINKAGE
@@ -294,6 +310,7 @@ _LIBCPP_END_NAMESPACE_STD
 #define __cloc_defined
 #endif
 
+#include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -416,6 +433,32 @@ void __libcpp_format_int(char* __fmtp, const char* __len, bool __signd,
 
 template <typename _IOS>
 inline _LIBCPP_INLINE_VISIBILITY
+void __libcpp_format_int(wchar_t* __fmtp, const wchar_t* __len, bool __signd,
+                        typename _IOS::fmtflags __flags)
+{
+    if (__flags & _IOS::showpos)
+        *__fmtp++ = L'+';
+    if (__flags & _IOS::showbase)
+        *__fmtp++ = L'#';
+    while(*__len)
+        *__fmtp++ = *__len++;
+    if ((__flags & _IOS::basefield) == _IOS::oct)
+        *__fmtp = L'o';
+    else if ((__flags & _IOS::basefield) == _IOS::hex)
+    {
+        if (__flags & _IOS::uppercase)
+            *__fmtp = L'X';
+        else
+            *__fmtp = L'x';
+    }
+    else if (__signd)
+        *__fmtp = L'd';
+    else
+        *__fmtp = L'u';
+}
+
+template <typename _IOS>
+inline _LIBCPP_INLINE_VISIBILITY
 bool __libcpp_format_float(char* __fmtp, const char* __len,
                                typename _IOS::fmtflags __flags)
 {
@@ -473,7 +516,20 @@ _IOS::fmtflags __flags, long long __v)
     char __fmt[8] = {'%', 0};
     const char* __len = "ll";
     __libcpp_format_int<_IOS>(__fmt+1, __len, true, __flags);
-    int __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    int __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
+    if (__outlen < 0 || size_t(__outlen) >= __dstlen)
+        __throw_runtime_error("Unable to format integer");
+    return __outlen;
+}
+
+template <typename _IOS>
+size_t __libcpp_put_signed_intergral(wchar_t *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename
+_IOS::fmtflags __flags, long long __v)
+{
+    wchar_t __fmt[8] = {'%', 0};
+    const char* __len = "ll";
+    __libcpp_format_int<_IOS>(__fmt+1, __len, true, __flags);
+    int __outlen = __libcpp_swprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
     if (__outlen < 0 || size_t(__outlen) >= __dstlen)
         __throw_runtime_error("Unable to format integer");
     return __outlen;
@@ -514,7 +570,7 @@ _IOS::fmtflags __flags, unsigned long long __v)
     char __fmt[8] = {'%', 0};
     const char* __len = "ll";
     __libcpp_format_int<_IOS>(__fmt+1, __len, false, __flags);
-    int __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    int __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
     if (__outlen < 0 || size_t(__outlen) >= __dstlen)
         __throw_runtime_error("Unable to format integer");
     return __outlen;
@@ -523,7 +579,7 @@ _IOS::fmtflags __flags, unsigned long long __v)
 size_t __libcpp_put_pointer(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, const void *__v)
 {
     const char *__fmt = "%p";
-    int __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    int __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
     if (__outlen < 0 || size_t(__outlen) >= __dstlen)
         __throw_runtime_error("Unable to format pointer");
     return __outlen;
@@ -543,7 +599,7 @@ float __libcpp_get_float(const char* __a, const char** __p2, const __libcpp_loca
 
 float __libcpp_get_float(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
-    float value = wcstof_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    float value = wcstof_l(__a, const_cast<wchar_t **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;
@@ -551,6 +607,23 @@ float __libcpp_get_float(const wchar_t* __a, const wchar_t** __p2, const __libcp
         __range_error = true;
 
     return value;
+}
+
+template <typename _IOS>
+size_t __libcpp_put_float(char *__dst, size_t __dstlen, const __libcpp_locale_t &__locale, typename _IOS::fmtflags
+__flags, int __precision, double __v)
+{
+    char __fmt[8] = {'%', 0};
+    const char* __len = "";
+    bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, __flags);
+    int __outlen;
+    if (__specify_precision)
+        __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __precision, __v);
+    else
+        __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
+    if (__outlen < 0)
+        __throw_runtime_error("Unable to format double");
+    return __outlen;
 }
 
 template <typename _IOS>
@@ -562,9 +635,9 @@ __flags, int __precision, double __v)
     bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, __flags);
     int __outlen;
     if (__specify_precision)
-        __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);
+        __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __precision, __v);
     else
-        __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+        __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
     if (__outlen < 0)
         __throw_runtime_error("Unable to format double");
     return __outlen;
@@ -585,7 +658,7 @@ double __libcpp_get_double(const char* __a, const char** __p2, const __libcpp_lo
 
 double __libcpp_get_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale, bool &__range_error) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
-    double value = wcstod_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    double value = wcstod_l(__a, const_cast<wchar_t **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;
@@ -604,9 +677,9 @@ __flags, int __precision, long double __v)
     bool __specify_precision = __libcpp_format_float<_IOS>(__fmt+1, __len, __flags);
     int __outlen;
     if (__specify_precision)
-        __outlen = snprintf(__dst, __dstlen, __fmt, __precision, __v);
+        __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __precision, __v);
     else
-        __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+        __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
     if (__outlen < 0)
         __throw_runtime_error("Unable to format long double");
     return __outlen;
@@ -628,7 +701,7 @@ long double __libcpp_get_long_double(const char* __a, const char** __p2, const _
 long double __libcpp_get_long_double(const wchar_t* __a, const wchar_t** __p2, const __libcpp_locale_t &__locale,
 									 bool &__range_error) {
     typename remove_reference<decltype(errno)>::type __save_errno = errno;
-    long double value = wcstold_l(__a, const_cast<char **>(__p2), __locale.__get_locale());
+    long double value = wcstold_l(__a, const_cast<wchar_t **>(__p2), __locale.__get_locale());
     typename remove_reference<decltype(errno)>::type __curr_errno = errno;
     if (__curr_errno == 0)
         errno = __save_errno;
@@ -652,7 +725,7 @@ size_t __libcpp_put_money(char *__dst, size_t __dstlen, const __libcpp_locale_t 
 {
     const char *__fmt = "%.0Lf";
     int __outlen;
-    __outlen = snprintf(__dst, __dstlen, __fmt, __v);
+    __outlen = __libcpp_snprintf_l(__dst, __dstlen, __locale.__get_locale(), __fmt, __v);
     if (__outlen < 0)
         __throw_runtime_error("Unable to format money");
     return __outlen;
@@ -951,6 +1024,32 @@ void __libcpp_set_global_locale(const char *__name) _NOEXCEPT
 #ifndef __CloudABI__
 	setlocale(LC_ALL, __name);
 #endif
+}
+
+template <class ... _Types>
+int __libcpp_snprintf_l(char *__s, size_t __n, locale_t __l, const char *__format, _Types ... args) _NOEXCEPT
+{
+    int __res;
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+    __res = snprintf_l(__s, __n, __l, __format, args...);
+#else
+    __locale_raii __current( uselocale(__l), uselocale );
+    __res = snprintf(__s, __n, __format, args...);
+#endif
+    return __res;
+}
+
+template <class ... _Types>
+int __libcpp_swprintf_l(wchar_t *__s, size_t __n, locale_t __l, const wchar_t *__format, _Types ... args) _NOEXCEPT
+{
+    int __res;
+#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
+    __res = swprintf_l(__s, __n, __l, __format, args...);
+#else
+    __locale_raii __current( uselocale(__l), uselocale );
+    __res = swprintf(__s, __n, __format, args...);
+#endif
+    return __res;
 }
 
 _LIBCPP_END_NAMESPACE_STD

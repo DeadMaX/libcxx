@@ -1500,8 +1500,7 @@ num_put<_CharT, _OutputIterator>::do_put(iter_type __s, ios_base& __iob,
 	auto __locale = __libcpp_locale_t();
 	char __nar[__nbuf];
 	char* __nb = __nar;
-	size_t __nc = __libcpp_put_long_double<ios_base>(__nb, __nbuf, __locale, __iob.flags(), (int)__iob.precision(),
-__v);
+	size_t __nc = __libcpp_put_long_double<ios_base>(__nb, __nbuf, __locale, __iob.flags(), (int)__iob.precision(), __v);
 	vector<char> __nbh;
 	if (__nc > __nbuf-1)
 	{

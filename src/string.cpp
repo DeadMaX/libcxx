@@ -398,13 +398,102 @@ inline
 S
 as_signed_string(V a)
 {
+    typedef typename S::value_type _type;
     const unsigned __nbuf = (numeric_limits<V>::digits / 3)
                             + ((numeric_limits<V>::digits % 3) != 0)
                             + 2;
-    char __nar[__nbuf];
+    _type __nar[__nbuf];
 
-    size_t len = __libcpp_put_signed_intergral(__nar, sizeof(__nar), __libcpp_locale_t(), ios_base::dec,a);
+    size_t len = __libcpp_put_signed_intergral(__nar, sizeof(__nar), __libcpp_locale_t(), ios_base::dec, a);
     return S(__nar, len);
+}
+
+template<typename S, typename V >
+inline
+S
+as_unsigned_string(V a)
+{
+    typedef typename S::value_type _type;
+    const unsigned __nbuf = (numeric_limits<V>::digits / 3)
+                            + ((numeric_limits<V>::digits % 3) != 0)
+                            + 2;
+    _type __nar[__nbuf];
+
+    size_t len = __libcpp_put_unsigned_intergral(__nar, sizeof(__nar), __libcpp_locale_t(), ios_base::dec, a);
+    return S(__nar, len);
+}
+
+template<typename S>
+inline
+S
+as_float_string(float __v)
+{
+    typedef typename S::value_type _type;
+    const size_t __nbuf = 30;
+    size_t __nc;
+   _type __nar[__nbuf];
+   _type *__nb = __nar;
+    vector<_type> __nbh;
+    __libcpp_locale_t __locale;
+    
+    __nc = __libcpp_put_float<ios_base>(__nb, __nc + 1, __locale, ios_base::dec, 6, __v);
+    
+	if (__nc > (__nbuf-1))
+	{
+	__nbh.resize(__nc + 1);
+	__nb = __nbh.data();
+	__nc = __libcpp_put_float<ios_base>(__nb, __nc + 1, __locale, ios_base::dec, 6, __v);
+	}
+    return S(__nb, __nc);
+}
+
+template<typename S>
+inline
+S
+as_double_string(double __v)
+{
+    typedef typename S::value_type _type;
+    const size_t __nbuf = 30;
+    size_t __nc;
+   _type __nar[__nbuf];
+   _type *__nb = __nar;
+    vector<_type> __nbh;
+    __libcpp_locale_t __locale;
+    
+    __nc = __libcpp_put_double<ios_base>(__nb, __nc + 1, __locale, ios_base::dec, 6, __v);
+    
+	if (__nc > (__nbuf-1))
+	{
+	__nbh.resize(__nc + 1);
+	__nb = __nbh.data();
+	__nc = __libcpp_put_double<ios_base>(__nb, __nc + 1, __locale, ios_base::dec, 6, __v);
+	}
+    return S(__nb, __nc);
+}
+
+template<typename S>
+inline
+S
+as_long_double_string(long double __v)
+{
+    typedef typename S::value_type _type;
+    const size_t __nbuf = 30;
+    size_t __nc;
+   _type __nar[__nbuf];
+   _type *__nb = __nar;
+    vector<_type> __nbh;
+    __libcpp_locale_t __locale;
+    
+    __nc = __libcpp_put_long_double<ios_base>(__nb, __nc + 1, __locale, ios_base::dec, 6, __v);
+    
+	if (__nc > (__nbuf-1))
+	{
+	__nbh.resize(__nc + 1);
+	__nb = __nbh.data();
+	__nc = __libcpp_put_long_double<ios_base>(__nb, __nc + 1, __locale, ios_base::dec, 6, __v);
+	}
+    return S(__nb, __nc);
+
 }
 
 template <class S, class V, bool = is_floating_point<V>::value>
@@ -466,91 +555,91 @@ get_swprintf()
 
 string to_string(int val)
 {
-    return as_signed_string<int>(val);
+    return as_signed_string<string, int>(val);
 }
 
 string to_string(unsigned val)
 {
-    return as_string(snprintf, initial_string<string, unsigned>()(), "%u", val);
+    return as_unsigned_string<string, unsigned>(val);
 }
 
 string to_string(long val)
 {
-    return as_string(snprintf, initial_string<string, long>()(), "%ld", val);
+    return as_signed_string<string, long>(val);
 }
 
 string to_string(unsigned long val)
 {
-    return as_string(snprintf, initial_string<string, unsigned long>()(), "%lu", val);
+    return as_unsigned_string<string, unsigned long>(val);
 }
 
 string to_string(long long val)
 {
-    return as_string(snprintf, initial_string<string, long long>()(), "%lld", val);
+    return as_signed_string<string, long long>(val);
 }
 
 string to_string(unsigned long long val)
 {
-    return as_string(snprintf, initial_string<string, unsigned long long>()(), "%llu", val);
+    return as_unsigned_string<string, unsigned long long>(val);
 }
 
 string to_string(float val)
 {
-    return as_string(snprintf, initial_string<string, float>()(), "%f", val);
+    return as_float_string<string>(val);
 }
 
 string to_string(double val)
 {
-    return as_string(snprintf, initial_string<string, double>()(), "%f", val);
+    return as_double_string<string>(val);
 }
 
 string to_string(long double val)
 {
-    return as_string(snprintf, initial_string<string, long double>()(), "%Lf", val);
+    return as_long_double_string<string>(val);
 }
 
 wstring to_wstring(int val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, int>()(), L"%d", val);
+    return as_signed_string<wstring, int>(val);
 }
 
 wstring to_wstring(unsigned val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, unsigned>()(), L"%u", val);
+    return as_unsigned_string<wstring, unsigned>(val);
 }
 
 wstring to_wstring(long val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, long>()(), L"%ld", val);
+    return as_signed_string<wstring, long>(val);
 }
 
 wstring to_wstring(unsigned long val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, unsigned long>()(), L"%lu", val);
+    return as_unsigned_string<wstring, unsigned long>(val);
 }
 
 wstring to_wstring(long long val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, long long>()(), L"%lld", val);
+    return as_signed_string<wstring, long long>(val);
 }
 
 wstring to_wstring(unsigned long long val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, unsigned long long>()(), L"%llu", val);
+    return as_unsigned_string<wstring, unsigned long long>(val);
 }
 
 wstring to_wstring(float val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, float>()(), L"%f", val);
+    return as_float_string<wstring>(val);
 }
 
 wstring to_wstring(double val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, double>()(), L"%f", val);
+    return as_double_string<wstring>(val);
 }
 
 wstring to_wstring(long double val)
 {
-    return as_string(get_swprintf(), initial_string<wstring, long double>()(), L"%Lf", val);
+    return as_long_double_string<wstring>(val);
 }
 _LIBCPP_END_NAMESPACE_STD
