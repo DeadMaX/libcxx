@@ -15,7 +15,9 @@
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <stddef.h>
+#endif
 
 #elif !defined(_LIBCPP_STDDEF_H)
 #define _LIBCPP_STDDEF_H
@@ -43,7 +45,11 @@ Types:
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <stddef.h>
+#else
+#include <standfree/__compiler_def>
+#endif
 
 #ifdef __cplusplus
 

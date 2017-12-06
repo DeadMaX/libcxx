@@ -298,7 +298,9 @@ long double    truncl(long double x);
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <math.h>
+#endif
 
 #ifdef __cplusplus
 

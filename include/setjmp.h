@@ -32,7 +32,9 @@ void longjmp(jmp_buf env, int val);
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <setjmp.h>
+#endif
 
 #ifdef __cplusplus
 

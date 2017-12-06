@@ -14,7 +14,9 @@
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <wchar.h>
+#endif
 
 #elif !defined(_LIBCPP_WCHAR_H)
 #define _LIBCPP_WCHAR_H
@@ -116,7 +118,9 @@ size_t wcsrtombs(char* restrict dst, const wchar_t** restrict src, size_t len,
 #define __CORRECT_ISO_CPP_WCHAR_H_PROTO
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <wchar.h>
+#endif
 
 // Determine whether we have const-correct overloads for wcschr and friends.
 #if defined(_WCHAR_H_CPLUSPLUS_98_CONFORMANCE_)

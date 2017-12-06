@@ -30,7 +30,9 @@
 
 #else  // __cplusplus
 
+#ifndef LIBCXX_STANDFREE
 #include_next <complex.h>
+#endif
 
 #endif  // __cplusplus
 

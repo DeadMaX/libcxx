@@ -51,7 +51,9 @@ wctrans_t wctrans(const char* property);
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <wctype.h>
+#endif
 
 #ifdef __cplusplus
 

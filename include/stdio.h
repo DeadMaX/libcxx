@@ -14,7 +14,9 @@
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <stdio.h>
+#endif
 
 #elif !defined(_LIBCPP_STDIO_H)
 #define _LIBCPP_STDIO_H
@@ -105,7 +107,9 @@ void perror(const char* s);
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <stdio.h>
+#endif
 
 #ifdef __cplusplus
 

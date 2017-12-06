@@ -41,7 +41,11 @@ Types:
 #endif
 
 // Don't include our own <stddef.h>; we don't want to declare ::nullptr_t.
+#ifndef LIBCXX_STANDFREE
 #include_next <stddef.h>
+#else
+#include <standfree/__compiler_def>
+#endif
 #include <__nullptr>
 
 _LIBCPP_BEGIN_NAMESPACE_STD

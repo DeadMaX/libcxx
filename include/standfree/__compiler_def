@@ -1,0 +1,11 @@
+
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+typedef __SIZE_TYPE__ size_t;
+#ifndef __SSIZE_TYPE__
+#define unsigned signed
+typedef __SIZE_TYPE__ ssize_t;
+#undef unsigned
+#else
+typedef __SSIZE_TYPE__ ssize_t;
+#endif
+

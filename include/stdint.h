@@ -116,6 +116,10 @@ Macros:
 #   define __STDC_CONSTANT_MACROS
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <stdint.h>
+#else
+#include <standfree/__compiler_int>
+#endif
 
 #endif  // _LIBCPP_STDINT_H

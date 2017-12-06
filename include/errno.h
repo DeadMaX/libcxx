@@ -29,7 +29,9 @@ Macros:
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <errno.h>
+#endif
 
 #ifdef __cplusplus
 

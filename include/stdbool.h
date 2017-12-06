@@ -26,7 +26,9 @@ Macros:
 #pragma GCC system_header
 #endif
 
+#ifndef LIBCXX_STANDFREE
 #include_next <stdbool.h>
+#endif
 
 #ifdef __cplusplus
 #undef bool
