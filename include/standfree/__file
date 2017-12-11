@@ -1,0 +1,101 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+#define EOF (-1)
+using FILE = void *;
+using fpos_t = std::uint64_t;
+
+using fclose = void;
+
+using setbuf = void;
+
+using setvbuf = void;
+
+using fprintf = void;
+
+using fscanf = void;
+
+using snprintf = void;
+
+using sprintf = void;
+
+using sscanf = void;
+
+using vfprintf = void;
+
+using vfscanf = void;
+
+using vsscanf = void;
+
+using vsnprintf = void;
+
+using vsprintf = void;
+
+using fgetc = void;
+
+using fgets = void;
+
+using fputc = void;
+
+using fputs = void;
+
+using getc = void;
+
+using putc = void;
+
+using ungetc = void;
+
+using fflush = void;
+
+using fread = void;
+
+using fwrite = void;
+
+using fgetpos = void;
+
+using fseek = void;
+
+using fsetpos = void;
+
+using ftell = void;
+
+using rewind = void;
+
+using clearerr = void;
+
+using feof = void;
+
+using ferror = void;
+
+using perror = void;
+
+using fopen = void;
+
+using freopen = void;
+
+using remove = void;
+
+using rename = void;
+
+using tmpfile = void;
+
+using tmpnam = void;
+
+using getchar = void;
+
+using gets = void;
+
+using scanf = void;
+
+using vscanf = void;
+
+using printf = void;
+
+using putchar = void;
+
+using puts = void;
+
+using vprintf = void;
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

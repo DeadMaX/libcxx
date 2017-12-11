@@ -1,0 +1,17 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+[[noreturn]] void abort() noexcept;
+
+[[noreturn]] void exit( int exit_code );
+
+[[noreturn]] void _Exit( int exit_code ) noexcept;
+
+int atexit( void (*function)(void) );
+
+int system( const char* command );
+
+char* getenv( const char* env_var );
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

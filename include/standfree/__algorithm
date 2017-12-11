@@ -1,0 +1,9 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+void* bsearch( const void* key, const void* ptr, std::size_t count, std::size_t size, int (*comp)(const void *, const void *) );
+
+void qsort( void *ptr, std::size_t count, std::size_t size, int (*comp)(const void *, const void *) );
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

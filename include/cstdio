@@ -105,66 +105,66 @@ void perror(const char* s);
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::FILE;
-using ::fpos_t;
-using ::size_t;
+using _LIBCPP_CNAMESPACE::FILE;
+using _LIBCPP_CNAMESPACE::fpos_t;
+using _LIBCPP_CNAMESPACE::size_t;
 
-using ::fclose;
-using ::fflush;
-using ::setbuf;
-using ::setvbuf;
-using ::fprintf;
-using ::fscanf;
-using ::snprintf;
-using ::sprintf;
-using ::sscanf;
-using ::vfprintf;
-using ::vfscanf;
-using ::vsscanf;
-using ::vsnprintf;
-using ::vsprintf;
-using ::fgetc;
-using ::fgets;
-using ::fputc;
-using ::fputs;
-using ::getc;
-using ::putc;
-using ::ungetc;
-using ::fread;
-using ::fwrite;
-using ::fgetpos;
-using ::fseek;
-using ::fsetpos;
-using ::ftell;
-using ::rewind;
-using ::clearerr;
-using ::feof;
-using ::ferror;
-using ::perror;
+using _LIBCPP_CNAMESPACE::fclose;
+using _LIBCPP_CNAMESPACE::fflush;
+using _LIBCPP_CNAMESPACE::setbuf;
+using _LIBCPP_CNAMESPACE::setvbuf;
+using _LIBCPP_CNAMESPACE::fprintf;
+using _LIBCPP_CNAMESPACE::fscanf;
+using _LIBCPP_CNAMESPACE::snprintf;
+using _LIBCPP_CNAMESPACE::sprintf;
+using _LIBCPP_CNAMESPACE::sscanf;
+using _LIBCPP_CNAMESPACE::vfprintf;
+using _LIBCPP_CNAMESPACE::vfscanf;
+using _LIBCPP_CNAMESPACE::vsscanf;
+using _LIBCPP_CNAMESPACE::vsnprintf;
+using _LIBCPP_CNAMESPACE::vsprintf;
+using _LIBCPP_CNAMESPACE::fgetc;
+using _LIBCPP_CNAMESPACE::fgets;
+using _LIBCPP_CNAMESPACE::fputc;
+using _LIBCPP_CNAMESPACE::fputs;
+using _LIBCPP_CNAMESPACE::getc;
+using _LIBCPP_CNAMESPACE::putc;
+using _LIBCPP_CNAMESPACE::ungetc;
+using _LIBCPP_CNAMESPACE::fread;
+using _LIBCPP_CNAMESPACE::fwrite;
+using _LIBCPP_CNAMESPACE::fgetpos;
+using _LIBCPP_CNAMESPACE::fseek;
+using _LIBCPP_CNAMESPACE::fsetpos;
+using _LIBCPP_CNAMESPACE::ftell;
+using _LIBCPP_CNAMESPACE::rewind;
+using _LIBCPP_CNAMESPACE::clearerr;
+using _LIBCPP_CNAMESPACE::feof;
+using _LIBCPP_CNAMESPACE::ferror;
+using _LIBCPP_CNAMESPACE::perror;
 
 #ifndef _LIBCPP_HAS_NO_GLOBAL_FILESYSTEM_NAMESPACE
-using ::fopen;
-using ::freopen;
-using ::remove;
-using ::rename;
-using ::tmpfile;
-using ::tmpnam;
+using _LIBCPP_CNAMESPACE::fopen;
+using _LIBCPP_CNAMESPACE::freopen;
+using _LIBCPP_CNAMESPACE::remove;
+using _LIBCPP_CNAMESPACE::rename;
+using _LIBCPP_CNAMESPACE::tmpfile;
+using _LIBCPP_CNAMESPACE::tmpnam;
 #endif
 
 #ifndef _LIBCPP_HAS_NO_STDIN
-using ::getchar;
+using _LIBCPP_CNAMESPACE::getchar;
 #if _LIBCPP_STD_VER <= 11 && !defined(_LIBCPP_MSVCRT)
-using ::gets;
+using _LIBCPP_CNAMESPACE::gets;
 #endif
-using ::scanf;
-using ::vscanf;
+using _LIBCPP_CNAMESPACE::scanf;
+using _LIBCPP_CNAMESPACE::vscanf;
 #endif
 
 #ifndef _LIBCPP_HAS_NO_STDOUT
-using ::printf;
-using ::putchar;
-using ::puts;
-using ::vprintf;
+using _LIBCPP_CNAMESPACE::printf;
+using _LIBCPP_CNAMESPACE::putchar;
+using _LIBCPP_CNAMESPACE::puts;
+using _LIBCPP_CNAMESPACE::vprintf;
 #endif
 
 _LIBCPP_END_NAMESPACE_STD

@@ -173,11 +173,11 @@ typedef basic_ofstream<wchar_t>      wofstream;
 typedef basic_fstream<wchar_t>       wfstream;
 
 template <class _State>             class _LIBCPP_TEMPLATE_VIS fpos;
-typedef fpos<mbstate_t>    streampos;
-typedef fpos<mbstate_t>    wstreampos;
+typedef fpos<_LIBCPP_CNAMESPACE::mbstate_t>    streampos;
+typedef fpos<_LIBCPP_CNAMESPACE::mbstate_t>    wstreampos;
 #ifndef _LIBCPP_HAS_NO_UNICODE_CHARS
-typedef fpos<mbstate_t>    u16streampos;
-typedef fpos<mbstate_t>    u32streampos;
+typedef fpos<_LIBCPP_CNAMESPACE::mbstate_t>    u16streampos;
+typedef fpos<_LIBCPP_CNAMESPACE::mbstate_t>    u32streampos;
 #endif  // _LIBCPP_HAS_NO_UNICODE_CHARS
 
 #if defined(_NEWLIB_VERSION)

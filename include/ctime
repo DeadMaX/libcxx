@@ -53,21 +53,21 @@ size_t strftime(char* restrict s, size_t maxsize, const char* restrict format,
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::clock_t;
-using ::size_t;
-using ::time_t;
-using ::tm;
-using ::clock;
-using ::difftime;
-using ::mktime;
-using ::time;
+using _LIBCPP_CNAMESPACE::clock_t;
+using _LIBCPP_CNAMESPACE::size_t;
+using _LIBCPP_CNAMESPACE::time_t;
+using _LIBCPP_CNAMESPACE::tm;
+using _LIBCPP_CNAMESPACE::clock;
+using _LIBCPP_CNAMESPACE::difftime;
+using _LIBCPP_CNAMESPACE::mktime;
+using _LIBCPP_CNAMESPACE::time;
 #ifndef _LIBCPP_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
-using ::asctime;
-using ::ctime;
-using ::gmtime;
-using ::localtime;
+using _LIBCPP_CNAMESPACE::asctime;
+using _LIBCPP_CNAMESPACE::ctime;
+using _LIBCPP_CNAMESPACE::gmtime;
+using _LIBCPP_CNAMESPACE::localtime;
 #endif
-using ::strftime;
+using _LIBCPP_CNAMESPACE::strftime;
 
 _LIBCPP_END_NAMESPACE_STD
 

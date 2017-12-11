@@ -1,0 +1,37 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+// atoX
+
+double atof(const char* __v);
+
+int atoi(const char* __v);
+
+long atol(const char* __v);
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+long long atoll(const char* __v);
+#endif
+
+// strtoX
+
+float strtof(const char* str, char** str_end);
+
+double strtod(const char* str, char** str_end);
+
+long double strtold(const char* str, char** str_end);
+
+long strtol(const char* str, char** str_end, int base);
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+long long strtoll(const char* str, char** str_end, int base);
+#endif
+
+unsigned long strtoul(const char* str, char** str_end, int base);
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+unsigned long long strtoull(const char* str, char** str_end, int base);
+#endif
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

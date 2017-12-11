@@ -66,31 +66,31 @@ size_t strlen(const char* s);
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::size_t;
-using ::memcpy;
-using ::memmove;
-using ::strcpy;
-using ::strncpy;
-using ::strcat;
-using ::strncat;
-using ::memcmp;
-using ::strcmp;
-using ::strncmp;
-using ::strcoll;
-using ::strxfrm;
-using ::memchr;
-using ::strchr;
-using ::strcspn;
-using ::strpbrk;
-using ::strrchr;
-using ::strspn;
-using ::strstr;
+using _LIBCPP_CNAMESPACE::size_t;
+using _LIBCPP_CNAMESPACE::memcpy;
+using _LIBCPP_CNAMESPACE::memmove;
+using _LIBCPP_CNAMESPACE::strcpy;
+using _LIBCPP_CNAMESPACE::strncpy;
+using _LIBCPP_CNAMESPACE::strcat;
+using _LIBCPP_CNAMESPACE::strncat;
+using _LIBCPP_CNAMESPACE::memcmp;
+using _LIBCPP_CNAMESPACE::strcmp;
+using _LIBCPP_CNAMESPACE::strncmp;
+using _LIBCPP_CNAMESPACE::strcoll;
+using _LIBCPP_CNAMESPACE::strxfrm;
+using _LIBCPP_CNAMESPACE::memchr;
+using _LIBCPP_CNAMESPACE::strchr;
+using _LIBCPP_CNAMESPACE::strcspn;
+using _LIBCPP_CNAMESPACE::strpbrk;
+using _LIBCPP_CNAMESPACE::strrchr;
+using _LIBCPP_CNAMESPACE::strspn;
+using _LIBCPP_CNAMESPACE::strstr;
 #ifndef _LIBCPP_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
-using ::strtok;
+using _LIBCPP_CNAMESPACE::strtok;
 #endif
-using ::memset;
-using ::strerror;
-using ::strlen;
+using _LIBCPP_CNAMESPACE::memset;
+using _LIBCPP_CNAMESPACE::strerror;
+using _LIBCPP_CNAMESPACE::strlen;
 
 _LIBCPP_END_NAMESPACE_STD
 

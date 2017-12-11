@@ -1,0 +1,18 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+int mblen( const char* s, std::size_t n );
+
+int mbtowc( wchar_t* pwc, const char* s, std::size_t n );
+
+int wctomb( char *s, wchar_t wc );
+
+std::size_t mbstowcs( wchar_t* dst, const char* src, std::size_t len);
+
+std::size_t wcstombs( char* dst, const wchar_t* src, std::size_t len);
+
+//struct mbstate_t;
+//std::size_t mbsrtowcs( wchar_t* dst, const char** src, std::size_t len, mbstate_t* ps );
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

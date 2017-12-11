@@ -95,6 +95,14 @@ void *aligned_alloc(size_t alignment, size_t size);                       // C11
 
 #ifndef LIBCXX_STANDFREE
 #include_next <stdlib.h>
+#else
+#include <standfree/__algorithm> /* bsearch, qsort */
+#include <standfree/__charconv> /* atoX */
+#include <standfree/__math> /* abs, div */
+#include <standfree/__memory> /* malloc, calloc, realloc, ... */
+#include <standfree/__process> /* abort, atexit, getenv, system, ... */
+#include <standfree/__random> /* rand, srand */
+#include <standfree/__codecvt> /* mblen, mbtowc, wctomb, ... */
 #endif
 
 #ifdef __cplusplus
@@ -110,6 +118,8 @@ extern "C++" {
 #undef lldiv
 #endif
 
+#ifndef LIBCXX_STANDFREE
+
 // MSVCRT already has the correct prototype in <stdlib.h> if __cplusplus is defined
 #if !defined(_LIBCPP_MSVCRT) && !defined(__sun__) && !defined(_AIX)
 inline _LIBCPP_INLINE_VISIBILITY long      abs(     long __x) _NOEXCEPT {return  labs(__x);}
@@ -122,6 +132,8 @@ inline _LIBCPP_INLINE_VISIBILITY  ldiv_t div(     long __x,      long __y) _NOEX
 inline _LIBCPP_INLINE_VISIBILITY lldiv_t div(long long __x, long long __y) _NOEXCEPT {return lldiv(__x, __y);}
 #endif // _LIBCPP_HAS_NO_LONG_LONG
 #endif // _LIBCPP_MSVCRT / __sun__ / _AIX
+
+#endif // LIBCXX_STANDFREE
 
 }  // extern "C++"
 

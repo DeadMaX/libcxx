@@ -16,6 +16,8 @@
 
 #ifndef LIBCXX_STANDFREE
 #include_next <stdio.h>
+#else
+#include <standfree/__file>
 #endif
 
 #elif !defined(_LIBCPP_STDIO_H)
@@ -109,6 +111,8 @@ void perror(const char* s);
 
 #ifndef LIBCXX_STANDFREE
 #include_next <stdio.h>
+#else
+#include <standfree/__file>
 #endif
 
 #ifdef __cplusplus

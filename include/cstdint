@@ -150,41 +150,41 @@ Types:
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using::int8_t;
-using::int16_t;
-using::int32_t;
-using::int64_t;
+using _LIBCPP_CNAMESPACE::int8_t;
+using _LIBCPP_CNAMESPACE::int16_t;
+using _LIBCPP_CNAMESPACE::int32_t;
+using _LIBCPP_CNAMESPACE::int64_t;
 
-using::uint8_t;
-using::uint16_t;
-using::uint32_t;
-using::uint64_t;
+using _LIBCPP_CNAMESPACE::uint8_t;
+using _LIBCPP_CNAMESPACE::uint16_t;
+using _LIBCPP_CNAMESPACE::uint32_t;
+using _LIBCPP_CNAMESPACE::uint64_t;
 
-using::int_least8_t;
-using::int_least16_t;
-using::int_least32_t;
-using::int_least64_t;
+using _LIBCPP_CNAMESPACE::int_least8_t;
+using _LIBCPP_CNAMESPACE::int_least16_t;
+using _LIBCPP_CNAMESPACE::int_least32_t;
+using _LIBCPP_CNAMESPACE::int_least64_t;
 
-using::uint_least8_t;
-using::uint_least16_t;
-using::uint_least32_t;
-using::uint_least64_t;
+using _LIBCPP_CNAMESPACE::uint_least8_t;
+using _LIBCPP_CNAMESPACE::uint_least16_t;
+using _LIBCPP_CNAMESPACE::uint_least32_t;
+using _LIBCPP_CNAMESPACE::uint_least64_t;
 
-using::int_fast8_t;
-using::int_fast16_t;
-using::int_fast32_t;
-using::int_fast64_t;
+using _LIBCPP_CNAMESPACE::int_fast8_t;
+using _LIBCPP_CNAMESPACE::int_fast16_t;
+using _LIBCPP_CNAMESPACE::int_fast32_t;
+using _LIBCPP_CNAMESPACE::int_fast64_t;
 
-using::uint_fast8_t;
-using::uint_fast16_t;
-using::uint_fast32_t;
-using::uint_fast64_t;
+using _LIBCPP_CNAMESPACE::uint_fast8_t;
+using _LIBCPP_CNAMESPACE::uint_fast16_t;
+using _LIBCPP_CNAMESPACE::uint_fast32_t;
+using _LIBCPP_CNAMESPACE::uint_fast64_t;
 
-using::intptr_t;
-using::uintptr_t;
+using _LIBCPP_CNAMESPACE::intptr_t;
+using _LIBCPP_CNAMESPACE::uintptr_t;
 
-using::intmax_t;
-using::uintmax_t;
+using _LIBCPP_CNAMESPACE::intmax_t;
+using _LIBCPP_CNAMESPACE::uintmax_t;
 
 _LIBCPP_END_NAMESPACE_STD
 

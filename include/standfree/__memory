@@ -1,0 +1,15 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+void* malloc( std::size_t size );
+
+void* aligned_alloc( std::size_t alignment, std::size_t size );
+
+void* calloc( std::size_t num, std::size_t size );
+
+void* realloc( void* ptr, std::size_t new_size );
+
+void free( void* ptr );
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

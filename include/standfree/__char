@@ -1,0 +1,50 @@
+#include <cstddef>
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+std::size_t strlen( const char* str);
+
+char* strcpy( const char* str);
+
+char* strncpy( const char* str, std::size_t count);
+
+char* strcat( char *dest, const char* str);
+
+char* strncat( char *dest, const char* str, std::size_t count);
+
+int strcmp( const char *lhs, const char* rhs);
+
+int strncmp( const char *lhs, const char* rhs, std::size_t count);
+
+const char* strchr( const char* str, char ch );
+
+const char* strrchr( const char* str, char ch );
+
+const char* strpbrk( const char* dest, const char* str );
+
+const char* strstr( const char* dest, const char* src );
+
+const char* memchr( const void* ptr, int ch, std::size_t count );
+
+int memcmp( const void* lhs, const void* rhs, std::size_t count );
+
+const void* memcpy( void* ptr, const void *ch, std::size_t count );
+
+const void* memmove( void* ptr, const void *ch, std::size_t count );
+
+const void* memset( void* ptr, int ch, std::size_t count );
+
+int strcoll( const char* lhs, const char* rhs );
+
+std::size_t strxfrm( char* dest, const char* src, std::size_t count );
+
+std::size_t strcspn( const char *dest, const char *src );
+
+std::size_t strspn( const char* dest, const char* src );
+
+char* strtok( char* str, const char* delim );
+
+char* strerror( int errnum );
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

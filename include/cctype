@@ -101,20 +101,20 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 #endif
 
 
-using ::isalnum;
-using ::isalpha;
-using ::isblank;
-using ::iscntrl;
-using ::isdigit;
-using ::isgraph;
-using ::islower;
-using ::isprint;
-using ::ispunct;
-using ::isspace;
-using ::isupper;
-using ::isxdigit;
-using ::tolower;
-using ::toupper;
+using _LIBCPP_CNAMESPACE::isalnum;
+using _LIBCPP_CNAMESPACE::isalpha;
+using _LIBCPP_CNAMESPACE::isblank;
+using _LIBCPP_CNAMESPACE::iscntrl;
+using _LIBCPP_CNAMESPACE::isdigit;
+using _LIBCPP_CNAMESPACE::isgraph;
+using _LIBCPP_CNAMESPACE::islower;
+using _LIBCPP_CNAMESPACE::isprint;
+using _LIBCPP_CNAMESPACE::ispunct;
+using _LIBCPP_CNAMESPACE::isspace;
+using _LIBCPP_CNAMESPACE::isupper;
+using _LIBCPP_CNAMESPACE::isxdigit;
+using _LIBCPP_CNAMESPACE::tolower;
+using _LIBCPP_CNAMESPACE::toupper;
 
 _LIBCPP_END_NAMESPACE_STD
 

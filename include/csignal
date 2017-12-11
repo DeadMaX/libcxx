@@ -49,9 +49,9 @@ int raise(int sig);
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::sig_atomic_t;
-using ::signal;
-using ::raise;
+using _LIBCPP_CNAMESPACE::sig_atomic_t;
+using _LIBCPP_CNAMESPACE::signal;
+using _LIBCPP_CNAMESPACE::raise;
 
 _LIBCPP_END_NAMESPACE_STD
 

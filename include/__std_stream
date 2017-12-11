@@ -121,7 +121,7 @@ __stdinbuf<_CharT>::__getchar(bool __consume)
     for (int __i = 0; __i < __nread; ++__i)
     {
         int __c = getc(__file_);
-        if (__c == EOF)
+        if (__c == traits_type::eof())
             return traits_type::eof();
         __extbuf[__i] = static_cast<char>(__c);
     }
@@ -148,7 +148,7 @@ __stdinbuf<_CharT>::__getchar(bool __consume)
                     return traits_type::eof();
                 {
                     int __c = getc(__file_);
-                    if (__c == EOF)
+                    if (__c == traits_type::eof())
                         return traits_type::eof();
                     __extbuf[__nread] = static_cast<char>(__c);
                 }
@@ -166,7 +166,7 @@ __stdinbuf<_CharT>::__getchar(bool __consume)
     {
         for (int __i = __nread; __i > 0;)
         {
-            if (ungetc(traits_type::to_int_type(__extbuf[--__i]), __file_) == EOF)
+            if (ungetc(traits_type::to_int_type(__extbuf[--__i]), __file_) == traits_type::eof())
                 return traits_type::eof();
         }
     }
@@ -209,7 +209,7 @@ __stdinbuf<_CharT>::pbackfail(int_type __c)
             return traits_type::eof();
         }
         while (__enxt > __extbuf)
-            if (ungetc(*--__enxt, __file_) == EOF)
+            if (ungetc(*--__enxt, __file_) == traits_type::eof())
                 return traits_type::eof();
     }
     __last_consumed_ = __c;

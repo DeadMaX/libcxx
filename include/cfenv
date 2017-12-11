@@ -62,20 +62,20 @@ int feupdateenv(const fenv_t* envp);
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::fenv_t;
-using ::fexcept_t;
+using _LIBCPP_CNAMESPACE::fenv_t;
+using _LIBCPP_CNAMESPACE::fexcept_t;
 
-using ::feclearexcept;
-using ::fegetexceptflag;
-using ::feraiseexcept;
-using ::fesetexceptflag;
-using ::fetestexcept;
-using ::fegetround;
-using ::fesetround;
-using ::fegetenv;
-using ::feholdexcept;
-using ::fesetenv;
-using ::feupdateenv;
+using _LIBCPP_CNAMESPACE::feclearexcept;
+using _LIBCPP_CNAMESPACE::fegetexceptflag;
+using _LIBCPP_CNAMESPACE::feraiseexcept;
+using _LIBCPP_CNAMESPACE::fesetexceptflag;
+using _LIBCPP_CNAMESPACE::fetestexcept;
+using _LIBCPP_CNAMESPACE::fegetround;
+using _LIBCPP_CNAMESPACE::fesetround;
+using _LIBCPP_CNAMESPACE::fegetenv;
+using _LIBCPP_CNAMESPACE::feholdexcept;
+using _LIBCPP_CNAMESPACE::fesetenv;
+using _LIBCPP_CNAMESPACE::feupdateenv;
 
 _LIBCPP_END_NAMESPACE_STD
 

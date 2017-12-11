@@ -1,0 +1,42 @@
+#include <cstdint>
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+// ABS
+
+int abs(int n) _NOEXCEPT { return (n < 0 ? -n : n); }
+
+long labs(long n) _NOEXCEPT { return (n < 0 ? -n : n); }
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+long long llabs(long long n) _NOEXCEPT { return (n < 0 ? -n : n); }
+#endif
+
+std::intmax_t imaxabs(std::intmax_t n) _NOEXCEPT { return (n < 0 ? -n : n); }
+
+// DIV
+struct div_t {
+  int quot;
+  int rem;
+};
+struct ldiv_t {
+  long quot;
+  long rem;
+};
+struct lldiv_t {
+  long long quot;
+  long long rem;
+};
+
+div_t div(int __x, int __y) { return div_t{__x / __y, __x % __y}; }
+
+ldiv_t ldiv(long __x, long __y) { return ldiv_t{__x / __y, __x % __y}; }
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+lldiv_t lldiv(long long __x, long long __y) {
+  return lldiv_t{__x / __y, __x % __y};
+}
+#endif
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+

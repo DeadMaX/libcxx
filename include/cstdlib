@@ -97,66 +97,66 @@ void *aligned_alloc(size_t alignment, size_t size);                       // C11
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::size_t;
-using ::div_t;
-using ::ldiv_t;
+using _LIBCPP_CNAMESPACE::size_t;
+using _LIBCPP_CNAMESPACE::div_t;
+using _LIBCPP_CNAMESPACE::ldiv_t;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
-using ::lldiv_t;
+using _LIBCPP_CNAMESPACE::lldiv_t;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
-using ::atof;
-using ::atoi;
-using ::atol;
+using _LIBCPP_CNAMESPACE::atof;
+using _LIBCPP_CNAMESPACE::atoi;
+using _LIBCPP_CNAMESPACE::atol;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
-using ::atoll;
+using _LIBCPP_CNAMESPACE::atoll;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
-using ::strtod;
-using ::strtof;
-using ::strtold;
-using ::strtol;
+using _LIBCPP_CNAMESPACE::strtod;
+using _LIBCPP_CNAMESPACE::strtof;
+using _LIBCPP_CNAMESPACE::strtold;
+using _LIBCPP_CNAMESPACE::strtol;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
-using ::strtoll;
+using _LIBCPP_CNAMESPACE::strtoll;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
-using ::strtoul;
+using _LIBCPP_CNAMESPACE::strtoul;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
-using ::strtoull;
+using _LIBCPP_CNAMESPACE::strtoull;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
-using ::rand;
-using ::srand;
-using ::calloc;
-using ::free;
-using ::malloc;
-using ::realloc;
-using ::abort;
-using ::atexit;
-using ::exit;
-using ::_Exit;
+using _LIBCPP_CNAMESPACE::rand;
+using _LIBCPP_CNAMESPACE::srand;
+using _LIBCPP_CNAMESPACE::calloc;
+using _LIBCPP_CNAMESPACE::free;
+using _LIBCPP_CNAMESPACE::malloc;
+using _LIBCPP_CNAMESPACE::realloc;
+using _LIBCPP_CNAMESPACE::abort;
+using _LIBCPP_CNAMESPACE::atexit;
+using _LIBCPP_CNAMESPACE::exit;
+using _LIBCPP_CNAMESPACE::_Exit;
 #ifndef _LIBCPP_WINDOWS_STORE_APP
-using ::getenv;
-using ::system;
+using _LIBCPP_CNAMESPACE::getenv;
+using _LIBCPP_CNAMESPACE::system;
 #endif
-using ::bsearch;
-using ::qsort;
-using ::abs;
-using ::labs;
+using _LIBCPP_CNAMESPACE::bsearch;
+using _LIBCPP_CNAMESPACE::qsort;
+using _LIBCPP_CNAMESPACE::abs;
+using _LIBCPP_CNAMESPACE::labs;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
-using ::llabs;
+using _LIBCPP_CNAMESPACE::llabs;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
-using ::div;
-using ::ldiv;
+using _LIBCPP_CNAMESPACE::div;
+using _LIBCPP_CNAMESPACE::ldiv;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
-using ::lldiv;
+using _LIBCPP_CNAMESPACE::lldiv;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
-using ::mblen;
-using ::mbtowc;
-using ::wctomb;
-using ::mbstowcs;
-using ::wcstombs;
+using _LIBCPP_CNAMESPACE::mblen;
+using _LIBCPP_CNAMESPACE::mbtowc;
+using _LIBCPP_CNAMESPACE::wctomb;
+using _LIBCPP_CNAMESPACE::mbstowcs;
+using _LIBCPP_CNAMESPACE::wcstombs;
 #ifdef _LIBCPP_HAS_QUICK_EXIT
-using ::at_quick_exit;
-using ::quick_exit;
+using _LIBCPP_CNAMESPACE::at_quick_exit;
+using _LIBCPP_CNAMESPACE::quick_exit;
 #endif
 #ifdef _LIBCPP_HAS_C11_FEATURES
-using ::aligned_alloc;
+using _LIBCPP_CNAMESPACE::aligned_alloc;
 #endif
 
 _LIBCPP_END_NAMESPACE_STD

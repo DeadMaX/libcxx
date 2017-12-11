@@ -44,11 +44,11 @@ lconv* localeconv();
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-using ::lconv;
+using _LIBCPP_CNAMESPACE::lconv;
 #ifndef _LIBCPP_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
-using ::setlocale;
+using _LIBCPP_CNAMESPACE::setlocale;
 #endif
-using ::localeconv;
+using _LIBCPP_CNAMESPACE::localeconv;
 
 _LIBCPP_END_NAMESPACE_STD
 

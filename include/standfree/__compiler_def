@@ -1,3 +1,4 @@
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef __SIZE_TYPE__ size_t;
@@ -9,3 +10,4 @@ typedef __SIZE_TYPE__ ssize_t;
 typedef __SSIZE_TYPE__ ssize_t;
 #endif
 
+_LIBCPP_END_NAMESPACE_STANDFREE
