@@ -1,7 +1,6 @@
 
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
-#define EOF (-1)
 using FILE = void *;
 using fpos_t = std::uint64_t;
 
@@ -73,7 +72,9 @@ using fopen = void;
 
 using freopen = void;
 
-using remove = void;
+// conflict with std::remove(iterator, iterator, iterator)
+//using remove = void;
+void remove(const char *) = delete;
 
 using rename = void;
 

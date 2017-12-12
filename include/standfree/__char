@@ -1,5 +1,7 @@
 #include <cstddef>
 
+#define EOF (-1)
+
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
 std::size_t strlen( const char* str);

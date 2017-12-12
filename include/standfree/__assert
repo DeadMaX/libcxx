@@ -5,15 +5,15 @@ static inline void assert(bool e) { (void)e; }
 
 #else
 
-#include <iostream>
-
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
-[[noreturn]] static inline void __assertion_failed(const char *func, const char *file, std::size_t line, const char *line_value)
+[[noreturn]] static inline void __assertion_failed(const char *func, const char *file, std::size_t line, const char *line_value);
+/*
 {
 	std::cerr<<"Assertion failed \""<<line_value<<"\" into function \""<<func<<"\" at: \""<<file<<":"<<line<<"\"\n";
 	std::terminate();
 }
+*/
 
 _LIBCPP_END_NAMESPACE_STANDFREE
 

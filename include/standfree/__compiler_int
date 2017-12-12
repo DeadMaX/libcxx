@@ -3,6 +3,8 @@ _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
 #if !defined(_WIN32)
 /* UNIX */
+#define CHAR_BIT __CHAR_BIT__
+
 typedef __INT8_TYPE__ int8_t;
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;
@@ -85,6 +87,7 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 #else
 
 /* WIN32 or WIN64 */
+#define CHAR_BIT 8
 
 typedef signed char int8_t;
 typedef signed short int int16_t;
