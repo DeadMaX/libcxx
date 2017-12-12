@@ -107,8 +107,9 @@
 
 #define _LIBCPP_NAMESPACE _LIBCPP_CONCAT(__,_LIBCPP_ABI_VERSION)
 
-#if __cplusplus < 201103L
+#if (!defined (_MSC_VER) || _MSC_VER < 1900) && __cplusplus < 201103L
 #define _LIBCPP_CXX03_LANG
+#error mlkdf
 #endif
 
 #ifndef __has_attribute
@@ -321,7 +322,7 @@
 #  define _ALIGNAS(x) __attribute__((__aligned__(x)))
 #endif
 
-#if __cplusplus < 201103L
+#if (!defined (_MSC_VER) || _MSC_VER < 1900) && __cplusplus < 201103L
 typedef __char16_t char16_t;
 typedef __char32_t char32_t;
 #endif
@@ -942,7 +943,7 @@ template <unsigned> struct __static_assert_check {};
 #endif
 
 #ifndef _LIBCPP_STD_VER
-#  if  __cplusplus <= 201103L
+#  if (!defined (_MSC_VER) || _MSC_VER <= 1900) && __cplusplus <= 201103L
 #    define _LIBCPP_STD_VER 11
 #  elif __cplusplus <= 201402L
 #    define _LIBCPP_STD_VER 14
@@ -1280,9 +1281,9 @@ _LIBCPP_FUNC_VIS extern "C" void __sanitizer_annotate_contiguous_container(
 
 #if defined(_LIBCPP_ABI_MICROSOFT) && !defined(_LIBCPP_BUILDING_LIBRARY)
 # if defined(_DLL)
-#   pragma(lib, "c++.lib")
+#   pragma comment(lib, "c++.lib")
 # else
-#   pragma(lib, "libc++.lib")
+#   pragma comment(lib, "libc++.lib")
 # endif
 #endif // defined(_LIBCPP_ABI_MICROSOFT) && !defined(_LIBCPP_BUILDING_LIBRARY)
 
