@@ -1,13 +1,26 @@
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
+#if defined(__PTRDIFF_TYPE__)
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
+#else
+typedef long int ptrdiff_t;
+#endif
+
+#if defined(__SIZE_TYPE__)
 typedef __SIZE_TYPE__ size_t;
-#ifndef __SSIZE_TYPE__
+#else
+typedef unsigned long int size_t;
+#endif
+
+
+#if defined(__SSIZE_TYPE__)
+typedef __SSIZE_TYPE__ ssize_t;
+#elif defined(__SIZE_TYPE__)
 #define unsigned signed
 typedef __SIZE_TYPE__ ssize_t;
 #undef unsigned
 #else
-typedef __SSIZE_TYPE__ ssize_t;
+typedef long int ssize_t;
 #endif
 
 _LIBCPP_END_NAMESPACE_STANDFREE

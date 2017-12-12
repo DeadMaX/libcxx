@@ -13,5 +13,10 @@ int system( const char* command );
 
 char* getenv( const char* env_var );
 
+#ifdef _LIBCPP_HAS_QUICK_EXIT
+int at_quick_exit( void (*func)() );
+void quick_exit( int exit_code );
+#endif
+
 _LIBCPP_END_NAMESPACE_STANDFREE
 
