@@ -38,6 +38,8 @@ int toupper(int c);
 
 #ifndef LIBCXX_STANDFREE
 #include_next <ctype.h>
+#else
+#include <standfree/__clocale>
 #endif
 
 #ifdef __cplusplus
