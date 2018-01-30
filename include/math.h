@@ -8,6 +8,16 @@
 //
 //===----------------------------------------------------------------------===//
 
+// This include lives outside the header guard in order to support an MSVC
+// extension which allows users to do:
+//
+// #define _USE_MATH_DEFINES
+// #include <math.h>
+//
+// and receive the definitions of mathematical constants, even if <math.h>
+// has previously been included.
+#include_next <math.h>
+
 #ifndef _LIBCPP_MATH_H
 #define _LIBCPP_MATH_H
 
@@ -299,9 +309,7 @@ long double    truncl(long double x);
 #endif
 
 #ifndef LIBCXX_STANDFREE
-#include_next <math.h>
 #endif
-
 #ifdef __cplusplus
 
 // We support including .h headers inside 'extern "C"' contexts, so switch
