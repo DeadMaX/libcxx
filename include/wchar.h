@@ -18,6 +18,7 @@
 #include_next <wchar.h>
 #else
 #include <standfree/__wchar>
+#include <standfree/__charconv>
 #endif
 
 #elif !defined(_LIBCPP_WCHAR_H)

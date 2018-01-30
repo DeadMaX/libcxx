@@ -98,5 +98,37 @@ using puts = void;
 
 using vprintf = void;
 
+using fwprintf = void;
+
+using fwscanf = void;
+
+using swprintf = void;
+
+using vfwprintf = void;
+
+using vswprintf = void;
+
+using swscanf = void;
+
+using vfwscanf = void;
+
+using vswscanf = void;
+
+using fgetwc = void;
+
+using fgetws = void;
+
+using fputwc = void;
+
+using fputws = void;
+
+using fwide = void;
+
+using getwc = void;
+
+using putwc = void;
+
+using ungetwc = void;
+
 _LIBCPP_END_NAMESPACE_STANDFREE
 

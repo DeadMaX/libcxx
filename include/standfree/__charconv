@@ -33,5 +33,26 @@ unsigned long strtoul(const char* str, char** str_end, int base);
 unsigned long long strtoull(const char* str, char** str_end, int base);
 #endif
 
+// wcstoX
+
+float wcstof(const wchar_t* str, wchar_t** str_end);
+
+double wcstod(const wchar_t* str, wchar_t** str_end);
+
+long double wcstold(const wchar_t* str, wchar_t** str_end);
+
+long wcstol(const wchar_t* str, wchar_t** str_end, int base);
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+long long wcstoll(const wchar_t* str, wchar_t** str_end, int base);
+#endif
+
+unsigned long wcstoul(const wchar_t* str, wchar_t** str_end, int base);
+
+#ifndef _LIBCPP_HAS_NO_LONG_LONG
+unsigned long long wcstoull(const wchar_t* str, wchar_t** str_end, int base);
+#endif
+
+
 _LIBCPP_END_NAMESPACE_STANDFREE
 

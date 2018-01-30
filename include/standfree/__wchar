@@ -1,12 +1,17 @@
 #include <cstddef>
+#include "__time"
 
 #define WEOF (0xFFFF)
 
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
-using mbstate_t = char[128];
-
 using wint_t = int;
+
+struct wctype_t;
+
+struct wctrans_t;
+
+wctype_t wctype( const char* str );
 
 const wchar_t* wcschr( const wchar_t* str, wchar_t ch );
 
@@ -18,11 +23,51 @@ const wchar_t* wcsstr( const wchar_t* dest, const wchar_t* src );
 
 const wchar_t* wmemchr( const wchar_t* ptr, wchar_t ch, std::size_t count );
 
+int wmemcmp( const wchar_t* lhs, const wchar_t* rhs, std::size_t count );
+
 wchar_t* wmemmove( wchar_t* dest, const wchar_t* src, std::size_t count );
 
 wchar_t* wmemcpy( wchar_t* dest, const wchar_t* src, std::size_t count );
 
 wchar_t* wmemset( wchar_t* dest, wchar_t ch, std::size_t count );
+
+wint_t towctrans( wint_t wc, wctrans_t desc );
+
+wctrans_t wctrans( const char* str );
+
+wchar_t* wcscpy(const wchar_t* str);
+
+wchar_t* wcsncpy(const wchar_t* str, std::size_t count );
+
+wchar_t* wcscat(wchar_t* dst, const wchar_t* str );
+
+wchar_t* wcsncat(wchar_t* dst, const wchar_t* str, std::size_t count );
+
+int wcscmp( const wchar_t *lhs, const wchar_t* rhs);
+
+int wcscoll( const wchar_t* lhs, const wchar_t* rhs );
+
+int wcsncmp( const wchar_t* lhs, const wchar_t* rhs, std::size_t count );
+
+std::size_t wcsxfrm( wchar_t* dest, const wchar_t* src, std::size_t count );
+
+std::size_t wcscspn( const wchar_t* dest, const wchar_t* src );
+
+std::size_t wcslen( const wchar_t* str );
+
+std::size_t wcsspn( const wchar_t* dest, const wchar_t* src );
+
+wchar_t* wcstok( wchar_t* str, const wchar_t* delim, wchar_t ** ptr);
+
+std::size_t wcsftime( wchar_t* str, std::size_t count, const wchar_t* format, const tm* time );
+
+wint_t btowc( int c );
+
+int wctob( wint_t c );
+
+int mbsinit( const mbstate_t* ps);
+
+std::size_t mbrlen( const char* s, std::size_t n, mbstate_t* ps);
 
 _LIBCPP_END_NAMESPACE_STANDFREE
 
