@@ -15,5 +15,15 @@ int mbtowc( wchar_t* pwc, const char* s, std::size_t n );
 
 std::size_t mbstowcs( wchar_t* dst, const char* src, std::size_t len);
 
+int mbsinit( const mbstate_t* ps);
+
+std::size_t mbrlen( const char* s, std::size_t n, mbstate_t* ps);
+
+std::size_t wcrtomb( char* s, wchar_t wc, mbstate_t* ps );
+
+std::size_t mbsrtowcs( wchar_t* dst, const char** src, std::size_t len, mbstate_t* ps );
+
+std::size_t wcsrtombs( char* dst, const wchar_t** src, std::size_t len, mbstate_t* ps );
+
 _LIBCPP_END_NAMESPACE_STANDFREE
 

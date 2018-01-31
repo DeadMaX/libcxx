@@ -19,7 +19,9 @@
 #pragma GCC system_header
 #endif
 
-#if defined(_LIBCPP_HAS_THREAD_API_EXTERNAL)
+#if defined(LIBCXX_STANDFREE)
+# include <standfree/__threading>
+#elif defined(_LIBCPP_HAS_THREAD_API_EXTERNAL)
 # include <__external_threading>
 #elif !defined(_LIBCPP_HAS_NO_THREADS)
 

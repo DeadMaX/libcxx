@@ -19,6 +19,7 @@
 #else
 #include <standfree/__wchar>
 #include <standfree/__charconv>
+#include <standfree/__codecvt>
 #endif
 
 #elif !defined(_LIBCPP_WCHAR_H)
@@ -125,6 +126,8 @@ size_t wcsrtombs(char* restrict dst, const wchar_t** restrict src, size_t len,
 #include_next <wchar.h>
 #else
 #include <standfree/__wchar>
+#include <standfree/__charconv>
+#include <standfree/__codecvt>
 #endif
 
 // Determine whether we have const-correct overloads for wcschr and friends.

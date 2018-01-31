@@ -2,4 +2,26 @@ _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
 struct tm;
 
+using clock_t = unsigned long long;
+
+using time_t = unsigned long long;
+
+clock_t clock();
+
+double difftime( time_t time_end, time_t time_beg );
+
+time_t mktime( tm* time );
+
+time_t time( time_t* arg );
+
+char* asctime( const tm* time_ptr );
+
+char* ctime( const tm* time_ptr );
+
+tm* gmtime( const time_t* time );
+
+tm* localtime( const time_t *time );
+
+std::size_t strftime( char* str, std::size_t count, const char* format, const tm* time );
+
 _LIBCPP_END_NAMESPACE_STANDFREE

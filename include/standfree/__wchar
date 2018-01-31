@@ -65,9 +65,17 @@ wint_t btowc( int c );
 
 int wctob( wint_t c );
 
-int mbsinit( const mbstate_t* ps);
+wint_t getwchar();
 
-std::size_t mbrlen( const char* s, std::size_t n, mbstate_t* ps);
+int vwscanf( const wchar_t* format, va_list vlist );
+
+int wscanf( const wchar_t* format, ... );
+
+wint_t putwchar( wchar_t ch );
+
+int vwprintf( const wchar_t* format, va_list vlist );
+
+int wprintf( const wchar_t* format, ... );
 
 _LIBCPP_END_NAMESPACE_STANDFREE
 

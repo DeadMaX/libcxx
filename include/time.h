@@ -1,5 +1,5 @@
 // -*- C++ -*-
-//===---------------------------- assert.h --------------------------------===//
+//===---------------------------- time.h --------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,15 +8,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _LIBCPP_ASSERT_H
-#define _LIBCPP_ASSERT_H
+#ifndef _LIBCPP_TIME_H
+#define _LIBCPP_TIME_H
 
 /*
-    assert.h synopsis
+    time.h synopsis
 
 Macros:
 
-    assert
+    time
 
 */
 
@@ -27,9 +27,9 @@ Macros:
 #endif
 
 #ifndef LIBCXX_STANDFREE
-#include_next <assert.h>
+#include_next <time.h>
 #else
-#include <standfree/__assert>
+#include <standfree/__time>
 #endif
 
-#endif  // _LIBCPP_ASSERT_H
+#endif  // _LIBCPP_TIME_H

@@ -23,4 +23,6 @@ typedef __SIZE_TYPE__ ssize_t;
 typedef long int ssize_t;
 #endif
 
+using va_list = void *;
+
 _LIBCPP_END_NAMESPACE_STANDFREE

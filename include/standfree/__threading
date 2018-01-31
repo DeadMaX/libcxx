@@ -1,0 +1,29 @@
+class __libcpp_mutex_t
+{
+
+};
+
+#define _LIBCPP_MUTEX_INITIALIZER {}
+
+class __libcpp_recursive_mutex_t
+{
+
+};
+
+class __libcpp_condvar_t
+{
+
+};
+
+#define _LIBCPP_CONDVAR_INITIALIZER {}
+
+class __libcpp_thread_id
+{
+
+};
+
+void __libcpp_thread_yield();
+
+__libcpp_thread_id __libcpp_thread_get_current_id();
+
+bool __libcpp_thread_id_equal(const __libcpp_thread_id &lhs, const __libcpp_thread_id &rhs);
