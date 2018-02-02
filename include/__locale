@@ -52,7 +52,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 #if !defined(_LIBCPP_LOCALE__L_EXTENSIONS)
 struct __libcpp_locale_guard {
   _LIBCPP_INLINE_VISIBILITY
-  __libcpp_locale_guard(locale_t& __loc) : __old_loc_(uselocale(__loc)) {}
+  __libcpp_locale_guard(_LIBCPP_CNAMESPACE::locale_t& __loc) : __old_loc_(_LIBCPP_CNAMESPACE::uselocale(__loc)) {}
 
   _LIBCPP_INLINE_VISIBILITY
   ~__libcpp_locale_guard() {
@@ -60,7 +60,7 @@ struct __libcpp_locale_guard {
       uselocale(__old_loc_);
   }
 
-  locale_t __old_loc_;
+  _LIBCPP_CNAMESPACE::locale_t __old_loc_;
 private:
   __libcpp_locale_guard(__libcpp_locale_guard const&);
   __libcpp_locale_guard& operator=(__libcpp_locale_guard const&);
@@ -331,7 +331,7 @@ template <>
 class _LIBCPP_TYPE_VIS collate_byname<char>
     : public collate<char>
 {
-    locale_t __l;
+    _LIBCPP_CNAMESPACE::locale_t __l;
 public:
     typedef char char_type;
     typedef basic_string<char_type> string_type;
@@ -350,7 +350,7 @@ template <>
 class _LIBCPP_TYPE_VIS collate_byname<wchar_t>
     : public collate<wchar_t>
 {
-    locale_t __l;
+    _LIBCPP_CNAMESPACE::locale_t __l;
 public:
     typedef wchar_t char_type;
     typedef basic_string<char_type> string_type;
@@ -594,14 +594,14 @@ public:
     _LIBCPP_ALWAYS_INLINE
     bool is(mask __m, char_type __c) const
     {
-        return isascii(__c) ? (__tab_[static_cast<int>(__c)] & __m) !=0 : false;
+        return _LIBCPP_CNAMESPACE::isascii(__c) ? (__tab_[static_cast<int>(__c)] & __m) !=0 : false;
     }
 
     _LIBCPP_ALWAYS_INLINE
     const char_type* is(const char_type* __low, const char_type* __high, mask* __vec) const
     {
         for (; __low != __high; ++__low, ++__vec)
-            *__vec = isascii(*__low) ? __tab_[static_cast<int>(*__low)] : 0;
+            *__vec = _LIBCPP_CNAMESPACE::isascii(*__low) ? __tab_[static_cast<int>(*__low)] : 0;
         return __low;
     }
 
@@ -609,7 +609,7 @@ public:
     const char_type* scan_is (mask __m, const char_type* __low, const char_type* __high) const
     {
         for (; __low != __high; ++__low)
-            if (isascii(*__low) && (__tab_[static_cast<int>(*__low)] & __m))
+            if (_LIBCPP_CNAMESPACE::isascii(*__low) && (__tab_[static_cast<int>(*__low)] & __m))
                 break;
         return __low;
     }
@@ -618,7 +618,7 @@ public:
     const char_type* scan_not(mask __m, const char_type* __low, const char_type* __high) const
     {
         for (; __low != __high; ++__low)
-            if (!(isascii(*__low) && (__tab_[static_cast<int>(*__low)] & __m)))
+            if (!(_LIBCPP_CNAMESPACE::isascii(*__low) && (__tab_[static_cast<int>(*__low)] & __m)))
                 break;
         return __low;
     }
@@ -709,7 +709,7 @@ template <>
 class _LIBCPP_TYPE_VIS ctype_byname<char>
     : public ctype<char>
 {
-    locale_t __l;
+    _LIBCPP_CNAMESPACE::locale_t __l;
 
 public:
     explicit ctype_byname(const char*, size_t = 0);
@@ -727,7 +727,7 @@ template <>
 class _LIBCPP_TYPE_VIS ctype_byname<wchar_t>
     : public ctype<wchar_t>
 {
-    locale_t __l;
+    _LIBCPP_CNAMESPACE::locale_t __l;
 
 public:
     explicit ctype_byname(const char*, size_t = 0);
@@ -959,7 +959,7 @@ class _LIBCPP_TYPE_VIS codecvt<wchar_t, char, mbstate_t>
     : public locale::facet,
       public codecvt_base
 {
-    locale_t __l;
+    _LIBCPP_CNAMESPACE::locale_t __l;
 public:
     typedef wchar_t   intern_type;
     typedef char      extern_type;

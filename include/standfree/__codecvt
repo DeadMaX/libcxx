@@ -1,29 +1,52 @@
+// -*- C++ -*-
+//===------------------------- __codecvt ----------------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is dual licensed under the MIT and the University of Illinois Open
+// Source Licenses. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+#ifndef _LIBCPP_CODECVT_H
+#define _LIBCPP_CODECVT_H
 
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
-struct mbstate_t;
+class mbstate_t
+{
+};
+
+class codecvt_t
+{
+};
 
 int mblen( const char* s, std::size_t n );
 
-int wctomb( char *s, wchar_t wc );
+int wctomb( char *s, codecvt_t wc );
 
-std::size_t mbrtowc( wchar_t* pwc, const char* s, std::size_t n, mbstate_t* ps ); 
+std::size_t mbrtowc( codecvt_t* pwc, const char* s, std::size_t n, mbstate_t* ps ); 
 
-std::size_t wcstombs( char* dst, const wchar_t* src, std::size_t len);
+std::size_t wcstombs( char* dst, const codecvt_t* src, std::size_t len);
 
-int mbtowc( wchar_t* pwc, const char* s, std::size_t n );
+int mbtowc( codecvt_t* pwc, const char* s, std::size_t n );
 
-std::size_t mbstowcs( wchar_t* dst, const char* src, std::size_t len);
+std::size_t mbstowcs( codecvt_t* dst, const char* src, std::size_t len);
 
 int mbsinit( const mbstate_t* ps);
 
 std::size_t mbrlen( const char* s, std::size_t n, mbstate_t* ps);
 
-std::size_t wcrtomb( char* s, wchar_t wc, mbstate_t* ps );
+std::size_t wcrtomb( char* s, codecvt_t wc, mbstate_t* ps );
 
-std::size_t mbsrtowcs( wchar_t* dst, const char** src, std::size_t len, mbstate_t* ps );
+std::size_t mbsrtowcs( codecvt_t* dst, const char** src, std::size_t len, mbstate_t* ps );
 
-std::size_t wcsrtombs( char* dst, const wchar_t** src, std::size_t len, mbstate_t* ps );
+std::size_t wcsrtombs( char* dst, const codecvt_t** src, std::size_t len, mbstate_t* ps );
 
 _LIBCPP_END_NAMESPACE_STANDFREE
 
+#endif // _LIBCPP_CODECVT_H

@@ -14,11 +14,11 @@ using fprintf = void;
 
 using fscanf = void;
 
-using snprintf = void;
+int snprintf(char* s, size_t n, const char* format, ...);
 
 using sprintf = void;
 
-using sscanf = void;
+int sscanf(const char* s, const char* format, ...);
 
 using vfprintf = void;
 

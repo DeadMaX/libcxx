@@ -471,10 +471,10 @@ basic_stringbuf<_CharT, _Traits, _Allocator>::str(const string_type& __s)
                    const_cast<char_type*>(__str_.data()) + __str_.size());
         if (__mode_ & (ios_base::app | ios_base::ate))
         {
-            while (__sz > INT_MAX)
+            while (__sz > numeric_limits<int>::max())
             {
-            	this->pbump(INT_MAX);
-            	__sz -= INT_MAX;
+            	this->pbump(numeric_limits<int>::max());
+            	__sz -= numeric_limits<int>::max();
             }
             if (__sz > 0)
             	this->pbump(__sz);

@@ -1,5 +1,7 @@
 // NOTE: standfree doesn't support other locales than C.
 
+int thread_local errno = 0;
+
 // atoX
 
 double atof(const char *__v)

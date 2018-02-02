@@ -1,0 +1,30 @@
+
+_LIBCPP_BEGIN_NAMESPACE_STANDFREE
+
+long long strtoll_l(const char * nptr, char ** endptr, int base, locale_t);
+
+unsigned long long strtoull_l(const char * nptr, char ** endptr, int base, locale_t);
+
+float strtof_l(const char * nptr, char ** endptr, locale_t);
+
+double strtod_l(const char * nptr, char ** endptr, locale_t);
+
+long double strtold_l(const char * nptr, char ** endptr, locale_t);
+
+bool isxdigit_l(int c, locale_t);
+
+bool isdigit_l(int c, locale_t);
+
+_LIBCPP_END_NAMESPACE_STANDFREE
+
+static inline _LIBCPP_CNAMESPACE::locale_t __cloc()
+{
+	return {};
+}
+
+int __libcpp_sscanf_l(const char *__s, _LIBCPP_CNAMESPACE::locale_t __l, const char *__format, ...);
+
+int __libcpp_snprintf_l(char *__s, std::size_t __n, _LIBCPP_CNAMESPACE::locale_t __l, const char *__format, ...);
+
+int __libcpp_asprintf_l(char **__s, _LIBCPP_CNAMESPACE::locale_t __l, const char *__format, ...);
+

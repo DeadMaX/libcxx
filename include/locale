@@ -201,10 +201,12 @@ template <class charT> class messages_byname;
 #include <Availability.h>
 #endif
 
-#ifdef _LIBCPP_LOCALE__L_EXTENSIONS
-#include <__bsd_locale_defaults.h>
+#if defined(_LIBCPP_LOCALE__L_EXTENSIONS)
+# include <__bsd_locale_defaults.h>
+#elif defined(LIBCXX_STANDFREE)
+# include <standfree/__clocale_l>
 #else
-#include <__bsd_locale_fallbacks.h>
+# include <__bsd_locale_fallbacks.h>
 #endif
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
@@ -224,7 +226,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 #else
 #  define _LIBCPP_GET_C_LOCALE __cloc()
    // Get the C locale object
-   _LIBCPP_FUNC_VIS locale_t __cloc();
+   _LIBCPP_FUNC_VIS _LIBCPP_CNAMESPACE::locale_t __cloc();
 #define __cloc_defined
 #endif
 
@@ -733,13 +735,13 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
 {
     if (__a != __a_end)
     {
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
+        typename remove_reference<decltype(_LIBCPP_CNAMESPACE::errno)>::type __save_errno = _LIBCPP_CNAMESPACE::errno;
+        _LIBCPP_CNAMESPACE::errno = 0;
         char *__p2;
         long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
+        typename remove_reference<decltype(_LIBCPP_CNAMESPACE::errno)>::type __current_errno = _LIBCPP_CNAMESPACE::errno;
         if (__current_errno == 0)
-            errno = __save_errno;
+            _LIBCPP_CNAMESPACE::errno = __save_errno;
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
@@ -773,13 +775,13 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
             __err = ios_base::failbit;
             return 0;
         }
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
+        typename remove_reference<decltype(_LIBCPP_CNAMESPACE::errno)>::type __save_errno = _LIBCPP_CNAMESPACE::errno;
+        _LIBCPP_CNAMESPACE::errno = 0;
         char *__p2;
-        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
+        unsigned long long __ll = _LIBCPP_CNAMESPACE::strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
+        typename remove_reference<decltype(_LIBCPP_CNAMESPACE::errno)>::type __current_errno = _LIBCPP_CNAMESPACE::errno;
         if (__current_errno == 0)
-            errno = __save_errno;
+            _LIBCPP_CNAMESPACE::errno = __save_errno;
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
@@ -826,13 +828,13 @@ __num_get_float(const char* __a, const char* __a_end, ios_base::iostate& __err)
 {
     if (__a != __a_end)
     {
-        typename remove_reference<decltype(errno)>::type __save_errno = errno;
-        errno = 0;
+        typename remove_reference<decltype(_LIBCPP_CNAMESPACE::errno)>::type __save_errno = _LIBCPP_CNAMESPACE::errno;
+        _LIBCPP_CNAMESPACE::errno = 0;
         char *__p2;
         _Tp __ld = __do_strtod<_Tp>(__a, &__p2);
-        typename remove_reference<decltype(errno)>::type __current_errno = errno;
+        typename remove_reference<decltype(_LIBCPP_CNAMESPACE::errno)>::type __current_errno = _LIBCPP_CNAMESPACE::errno;
         if (__current_errno == 0)
-            errno = __save_errno;
+            _LIBCPP_CNAMESPACE::errno = __save_errno;
         if (__p2 != __a_end)
         {
             __err = ios_base::failbit;
@@ -2373,7 +2375,7 @@ _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS time_get<wchar_t
 class _LIBCPP_TYPE_VIS __time_get
 {
 protected:
-    locale_t __loc_;
+    _LIBCPP_CNAMESPACE::locale_t __loc_;
 
     __time_get(const char* __nm);
     __time_get(const string& __nm);
@@ -2455,7 +2457,7 @@ _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS time_get_byname<
 
 class _LIBCPP_TYPE_VIS __time_put
 {
-    locale_t __loc_;
+    _LIBCPP_CNAMESPACE::locale_t __loc_;
 protected:
     _LIBCPP_ALWAYS_INLINE __time_put() : __loc_(_LIBCPP_GET_C_LOCALE) {}
     __time_put(const char* __nm);
