@@ -12,7 +12,7 @@ void* realloc( void* ptr, std::size_t new_size );
 
 void free( void* ptr );
 
-int posix_memalign(void **ptr, std::size_t alignment, std::size_t size);
+int posix_memalign(void **ptr, std::size_t alignment, std::size_t size);
 
 _LIBCPP_END_NAMESPACE_STANDFREE
 

@@ -60,6 +60,7 @@ include(CMakeDependentOption)
 include(HandleCompilerRT)
 
 # Basic options ---------------------------------------------------------------
+option(LIBCXX_STANDFREE "Build a standfree version of libcxx" OFF)
 option(LIBCXX_ENABLE_ASSERTIONS "Enable assertions independent of build mode." OFF)
 option(LIBCXX_ENABLE_SHARED "Build libc++ as a shared library." ON)
 option(LIBCXX_ENABLE_STATIC "Build libc++ as a static library." ON)
@@ -474,6 +475,21 @@ if(NOT ${SUPPORTS_DIALECT_NAME})
     message(FATAL_ERROR "C++11 or greater is required but the compiler does not support ${LIBCXX_STANDARD_VER}")
   endif()
 endif()
+
+if (LIBCXX_STANDFREE)
+  add_definitions(-DLIBCXX_STANDFREE)
+  if (WIN32)
+    list(APPEND LIBCXX_COMPILE_FLAGS /X)
+  else (WIN32)
+    list(APPEND LIBCXX_COMPILE_FLAGS -nostdinc)
+  endif (WIN32)
+  list(APPEND LIBCXX_LINK_FLAGS -nostdlib)
+# TODO: remove following line
+  list(APPEND LIBCXX_COMPILE_FLAGS -D_LIBCPP_NO_VCRUNTIME)
+  if (NOT WIN32)
+    list(APPEND LIBCXX_COMPILE_FLAGS -D__ELF__)
+  endif (NOT WIN32)
+endif (LIBCXX_STANDFREE)
 
 # On all systems the system c++ standard library headers need to be excluded.
 # MSVC only has -X, which disables all default includes; including the crt.
