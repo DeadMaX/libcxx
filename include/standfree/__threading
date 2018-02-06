@@ -1,7 +1,12 @@
+namespace std
+{
+
 class __libcpp_mutex_t
 {
 
 };
+int __libcpp_mutex_lock(__libcpp_mutex_t *);
+int __libcpp_mutex_unlock(__libcpp_mutex_t *);
 
 #define _LIBCPP_MUTEX_INITIALIZER {}
 
@@ -14,6 +19,8 @@ class __libcpp_condvar_t
 {
 
 };
+int __libcpp_condvar_wait(__libcpp_condvar_t *, __libcpp_mutex_t*);
+int __libcpp_condvar_broadcast(__libcpp_condvar_t *);
 
 #define _LIBCPP_CONDVAR_INITIALIZER {}
 
@@ -27,3 +34,22 @@ void __libcpp_thread_yield();
 __libcpp_thread_id __libcpp_thread_get_current_id();
 
 bool __libcpp_thread_id_equal(const __libcpp_thread_id &lhs, const __libcpp_thread_id &rhs);
+
+class __libcpp_tls_key
+{
+};
+
+void *__libcpp_tls_get(__libcpp_tls_key);
+int __libcpp_tls_set(__libcpp_tls_key, void *);
+int __libcpp_tls_create(__libcpp_tls_key *, void (*)(void *));
+
+class __libcpp_exec_once_flag
+{
+};
+
+int __libcpp_execute_once(__libcpp_exec_once_flag*, void (*)());
+#define _LIBCPP_EXEC_ONCE_INITIALIZER {}
+#define _LIBCPP_TLS_DESTRUCTOR_CC
+
+}
+
