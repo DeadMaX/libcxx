@@ -1,5 +1,11 @@
 #include <cstdint>
 
+#define FP_INFINITE 0
+#define FP_NAN 1
+#define FP_NORMAL 2
+#define FP_SUBNORMAL 3
+#define FP_ZERO 4
+
 _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
 // ABS
@@ -142,7 +148,8 @@ double fmod(double, double);
 long double fmodl(long double, long double);
 
 float modff(float, float *);
-double modfl(long double, long double *);
+double modf(double, double *);
+long double modfl(long double, long double *);
 
 float frexpf(float, int*);
 double frexp(double, int*);
@@ -265,6 +272,102 @@ long double scalblnl(long double, long);
 float scalbnf(float, int);
 double scalbn(double, int);
 long double scalbnl(long double, int);
+
+bool signbit( float arg );
+bool signbit( double arg );
+bool signbit( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool signbit( Integral arg ) { return arg < Integral{0}; }
+
+int fpclassify( float arg );
+int fpclassify( double arg );
+int fpclassify( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+int fpclassify( Integral arg )
+{
+	if (isinf(arg))
+		return FP_INFINITE;
+	if (isnan(arg))
+		return FP_NAN;
+	if (iszero(arg))
+		return FP_ZERO;
+	if (isnormal(arg))
+		return FP_NORMAL;
+	return FP_SUBNORMAL;
+}
+
+bool iszero( float arg );
+bool iszero( double arg );
+bool iszero( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool iszero( Integral arg ) { return arg == Integral{0}; }
+
+bool isfinite( float arg );
+bool isfinite( double arg );
+bool isfinite( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isfinite( Integral arg ) { return true; }
+
+bool isinf( float arg );
+bool isinf( double arg );
+bool isinf( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isinf( Integral arg ) { return false; }
+
+bool isnan( float arg );
+bool isnan( double arg );
+bool isnan( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isnan( Integral arg ) { return false; }
+
+bool isnormal( float arg );
+bool isnormal( double arg );
+bool isnormal( long double arg );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isnormal( Integral arg ) { return true; }
+
+bool isunordered( float x, double y );
+bool isunordered( double x, double y );
+bool isunordered( long double x, long double y );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isunordered( Integral arg1, Integral arg2 ) { return false; }
+
+bool isgreater( float x, float y );
+bool isgreater( double x, double y );
+bool isgreater( long double x, long double y );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isgreater( Integral arg1, Integral arg2 ) { return arg1 > arg2; }
+
+bool isgreaterequal( float x, float y );
+bool isgreaterequal( double x, double y );
+bool isgreaterequal( long double x, long double y );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isgreaterequal( Integral arg1, Integral arg2 ) { return arg1 >= arg2; }
+
+bool isless( float x, float y );
+bool isless( double x, double y );
+bool isless( long double x, long double y );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool isless( Integral arg1, Integral arg2 ) { return arg1 < arg2; }
+
+bool islessequal( float x, float y );
+bool islessequal( double x, double y );
+bool islessequal( long double x, long double y );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool islessequal( Integral arg1, Integral arg2 ) { return arg1 <= arg2; }
+
+bool islessgreater( float x, float y );
+bool islessgreater( double x, double y );
+bool islessgreater( long double x, long double y );
+template <class Integral, typename = typename std::enable_if<std::is_integral<Integral>::value>::type>
+bool islessgreater( Integral arg1, Integral arg2 ) { return isless(arg1, arg2) || isgreater(arg1, arg2); }
+
+using float_t = float;
+using double_t = double;
+
+const float nanf = 0.0/0.0;
+const double nan = 0.0/0.0;
+const long double nanl = 0.0/0.0;
 
 _LIBCPP_END_NAMESPACE_STANDFREE
 

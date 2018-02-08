@@ -338,7 +338,7 @@ char_traits<wchar_t>::compare(const char_type* __s1, const char_type* __s2, size
 #if __has_feature(cxx_constexpr_string_builtins)
     return __builtin_wmemcmp(__s1, __s2, __n);
 #elif _LIBCPP_STD_VER <= 14
-    return wmemcmp(__s1, __s2, __n);
+    return _LIBCPP_CNAMESPACE::wmemcmp(__s1, __s2, __n);
 #else
     for (; __n; --__n, ++__s1, ++__s2)
     {
@@ -358,7 +358,7 @@ char_traits<wchar_t>::length(const char_type* __s) _NOEXCEPT
 #if __has_feature(cxx_constexpr_string_builtins)
     return __builtin_wcslen(__s);
 #elif _LIBCPP_STD_VER <= 14
-    return wcslen(__s);
+    return _LIBCPP_CNAMESPACE::wcslen(__s);
 #else
     size_t __len = 0;
     for (; !eq(*__s, char_type(0)); ++__s)
@@ -376,7 +376,7 @@ char_traits<wchar_t>::find(const char_type* __s, size_t __n, const char_type& __
 #if __has_feature(cxx_constexpr_string_builtins)
         return __builtin_wmemchr(__s, __a, __n);
 #elif _LIBCPP_STD_VER <= 14
-    return wmemchr(__s, __a, __n);
+    return _LIBCPP_CNAMESPACE::wmemchr(__s, __a, __n);
 #else
     for (; __n; --__n)
     {
