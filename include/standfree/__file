@@ -3,9 +3,6 @@ _LIBCPP_BEGIN_NAMESPACE_STANDFREE
 
 using FILE = void *;
 
-static FILE stdout = nullptr;
-static FILE stderr = nullptr;
-
 using fpos_t = std::uint64_t;
 
 using fclose = void;
